@@ -1,0 +1,319 @@
+package com.tereigo.atlas_expr;
+
+import com.tereigo.atlas_expr.variant.Variant;
+import com.tereigo.atlas_expr.variant.VariantFactory;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import static com.tereigo.atlas_expr.TokenType.AND;
+import static com.tereigo.atlas_expr.TokenType.COMMA;
+import static com.tereigo.atlas_expr.TokenType.DIV;
+import static com.tereigo.atlas_expr.TokenType.DOUBLE_NUMBER;
+import static com.tereigo.atlas_expr.TokenType.EOF;
+import static com.tereigo.atlas_expr.TokenType.EQUAL_EQUAL;
+import static com.tereigo.atlas_expr.TokenType.FALSE;
+import static com.tereigo.atlas_expr.TokenType.GREATER;
+import static com.tereigo.atlas_expr.TokenType.GREATER_EQUAL;
+import static com.tereigo.atlas_expr.TokenType.IDENTIFIER;
+import static com.tereigo.atlas_expr.TokenType.IN;
+import static com.tereigo.atlas_expr.TokenType.LEFT_BRACKET;
+import static com.tereigo.atlas_expr.TokenType.LEFT_PAREN;
+import static com.tereigo.atlas_expr.TokenType.LESS;
+import static com.tereigo.atlas_expr.TokenType.LESS_EQUAL;
+import static com.tereigo.atlas_expr.TokenType.LONG_NUMBER;
+import static com.tereigo.atlas_expr.TokenType.MINUS;
+import static com.tereigo.atlas_expr.TokenType.MODULUS;
+import static com.tereigo.atlas_expr.TokenType.MUL;
+import static com.tereigo.atlas_expr.TokenType.NOT;
+import static com.tereigo.atlas_expr.TokenType.NOT_EQUAL;
+import static com.tereigo.atlas_expr.TokenType.OR;
+import static com.tereigo.atlas_expr.TokenType.PLUS;
+import static com.tereigo.atlas_expr.TokenType.RIGHT_BRACKET;
+import static com.tereigo.atlas_expr.TokenType.RIGHT_PAREN;
+import static com.tereigo.atlas_expr.TokenType.STRING;
+import static com.tereigo.atlas_expr.TokenType.TRUE;
+
+/*
+    This Expr module is largely based on the brilliant book "Crafting interpreters" by Bob Nystrom
+    http://craftinginterpreters.com/contents.html
+
+    It's been refactored significantly to introduce the following main features:
+    1. Support Long values
+    2. Support ByteBuffer values
+    3. Support "IN" operator
+    4. Make expression evaluation garbage-free
+    5. Hierarchical AST graph output
+
+    But conceptually and architecturally it's an exact replica of what's presented in the book
+
+    Another good step-by-step guide of building a parser: https://ruslanspivak.com/lsbasi-part1/
+
+
+    Expression language grammar:
+
+    expression : logic_or
+    logic_or   : logic_and ( "or" logic_and )* ;
+    logic_and  : logic_in ( "and" logic_in )* ;
+    logic_in   : equality ( "in" "[" LIST_ENTRY ( "," LIST_ENTRY )* "]" ) ;
+    equality   : comparison ( ( "!=" | "==" ) comparison )* ;
+    comparison : term ( ( ">" | ">=" | "<" | "<=" ) term )* ;
+    term       : factor ( ( "-" | "+" ) factor )* ;
+    factor     : unary ( ( "/" | "*" | "%" ) unary )* ;
+    unary      : ( "!" | "-" ) unary | primary ;
+    primary    : BOOLEAN | DOUBLE_NUMBER | LONG_NUMBER | STRING | IDENTIFIER | "(" expression ")" ;
+
+    Lexems:
+    BOOLEAN: true|false|True|False|TRUE|FALSE
+    LIST_ENTRY: (DOUBLE_NUMBER | LONG_NUMBER | STRING)
+
+    You can find plenty of the expression examples in the tests
+*/
+
+class Parser {
+
+  private final List<Token> tokens;
+  private int current = 0;
+
+  Parser(List<Token> tokens) {
+    this.tokens = tokens;
+  }
+
+  Expr parse() {
+    Expr result = expression();
+    if (current < tokens.size() - 1) {
+      throw error(peek(), "Malformed expression: parsing ended prematurely");
+    }
+    return result;
+  }
+
+  // expression : logic_or
+  private Expr expression() {
+    return logic_or();
+  }
+
+  // logic_or   : logic_and ( "or" logic_and )* ;
+  private Expr logic_or() {
+    Expr expr = logic_and();
+
+    while (match(OR)) {
+      Token operator = previous();
+      Expr right = logic_and();
+      expr = new Expr.Logical(expr, operator, right);
+    }
+
+    return expr;
+  }
+
+  // logic_and  : logic_in ( "and" logic_in )* ;
+  private Expr logic_and() {
+    Expr expr = logic_in();
+
+    while (match(AND)) {
+      Token operator = previous();
+      Expr right = logic_in();
+      expr = new Expr.Logical(expr, operator, right);
+    }
+
+    return expr;
+  }
+
+  // logic_in   : equality ("in" [ LIST_ENTRY ("," LIST_ENTRY)* ]) ;
+  private Expr logic_in() {
+    Expr expr = equality();
+    if (match(IN)) {
+      return in_operator(expr);
+    }
+    return expr;
+  }
+
+  private Expr in_operator(Expr expr) {
+    Token operator = previous();
+    if (match(LEFT_BRACKET)) {
+      List<Variant> values = list();
+      consume(RIGHT_BRACKET, "Expect ']' after '['");
+      return new Expr.InOperator(expr, operator, values);
+    } else {
+      throw error(peek(), "Expect '[' after IN operator");
+    }
+  }
+
+  private List<Variant> list() {
+    List<Variant> values = new ArrayList<>();
+    ExprType type = null;
+    do {
+      Variant entry = list_entry();
+      if (type == null) {
+        type = entry.exprType();
+      } else if (type != entry.exprType()) {
+          throw error(peek(), "Different value types in IN operator list: " + type + " and " + entry.exprType());
+      }
+      values.add(entry);
+    } while (match(COMMA));
+    return values;
+  }
+
+  private Variant list_entry() {
+    if (match(DOUBLE_NUMBER)) {
+      return VariantFactory.createImmutableDouble((double)previous().literal);
+    } else if (match(LONG_NUMBER)) {
+      return VariantFactory.createImmutableLong((long)previous().literal);
+    } else if (match(STRING)) {
+      return VariantFactory.createImmutableString((String)previous().literal);
+    }
+    throw error(peek(), "Expect number/string list entry inside '[]'");
+  }
+
+  // equality   : comparison ( ( "!=" | "==" ) comparison )* ;
+  private Expr equality() {
+    Expr expr = comparison();
+
+    while (match(NOT_EQUAL, EQUAL_EQUAL)) {
+      Token operator = previous();
+      Expr right = comparison();
+      expr = new Expr.Binary(expr, operator, right);
+    }
+
+    return expr;
+  }
+
+  // comparison : term ( ( ">" | ">=" | "<" | "<=" ) term )* ;
+  private Expr comparison() {
+    Expr expr = term();
+
+    while (match(GREATER, GREATER_EQUAL, LESS, LESS_EQUAL)) {
+      Token operator = previous();
+      Expr right = term();
+      expr = new Expr.Binary(expr, operator, right);
+    }
+
+    return expr;
+  }
+
+  // term       : factor ( ( "-" | "+" ) factor )* ;
+  private Expr term() {
+    Expr expr = factor();
+
+    while (match(MINUS, PLUS)) {
+      Token operator = previous();
+      Expr right = factor();
+      expr = new Expr.Binary(expr, operator, right);
+    }
+
+    return expr;
+  }
+
+  // factor     : unary ( ( "/" | "*" | "%" ) unary )* ;
+  private Expr factor() {
+    Expr expr = unary();
+
+    while (match(DIV, MUL, MODULUS)) {
+      Token operator = previous();
+      Expr right = unary();
+      expr = new Expr.Binary(expr, operator, right);
+    }
+
+    return expr;
+  }
+
+  // unary      : ( "!" | "-" ) unary | primary ;
+  private Expr unary() {
+    if (match(NOT, MINUS)) {
+      Token operator = previous();
+      Expr right = unary();
+      return new Expr.Unary(operator, right);
+    }
+
+    return primary();
+  }
+
+  // primary    : BOOLEAN | DOUBLE_NUMBER | LONG_NUMBER | STRING | IDENTIFIER | "(" expression ")" ;
+  private Expr primary() {
+    if (match(FALSE)) {
+      return Expr.Literal.BOOL_FALSE;
+    }
+    if (match(TRUE)) {
+      return Expr.Literal.BOOL_TRUE;
+    }
+
+    if (match(DOUBLE_NUMBER)) {
+      return new Expr.Literal((double)previous().literal);
+    } else if (match(LONG_NUMBER)) {
+      return new Expr.Literal((long)previous().literal);
+    } else if (match(STRING)) {
+      return new Expr.Literal((String)previous().literal);
+    }
+
+    if (match(IDENTIFIER)) {
+      return new Expr.Identifier(previous());
+    }
+
+    if (match(LEFT_PAREN)) {
+      Expr expr = expression();
+      consume(RIGHT_PAREN, "Expect ')' after expression");
+      return new Expr.Grouping(expr);
+    }
+
+    throw error(peek(), "Expect expression");
+  }
+
+  private boolean match(TokenType... types) {
+    for (TokenType type : types) {
+      if (check(type)) {
+        advance();
+        return true;
+      }
+    }
+    return false;
+  }
+
+  private Token consume(TokenType type, String message) {
+    if (check(type)) {
+      return advance();
+    }
+    throw error(peek(), message);
+  }
+
+  private boolean check(TokenType type) {
+    if (isAtEnd()) {
+      return false;
+    }
+    return peek().type == type;
+  }
+
+  private Token advance() {
+    if (!isAtEnd()) {
+      current++;
+    }
+    return previous();
+  }
+
+  private boolean isAtEnd() {
+    return peek().type == EOF;
+  }
+
+  private Token peek() {
+    return tokens.get(current);
+  }
+
+  private Token previous() {
+    return tokens.get(current - 1);
+  }
+
+  private ParseError error(Token token, String message) {
+    return new ParseError(errorMsg(token, message));
+  }
+
+  private static String errorMsg(int line, String where, String message) {
+    return "[line " + line + "] Error " + where + ": " + message;
+  }
+
+  private static String errorMsg(Token token, String message) {
+    if (token.type == TokenType.EOF) {
+      return errorMsg(token.line, "at pos " + (token.pos + 1), message);
+    } else {
+      return errorMsg(token.line, "at pos " + (token.pos + 1) + " ('" + token.lexeme + "')", message);
+    }
+  }
+
+}

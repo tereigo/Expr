@@ -59,82 +59,82 @@ class ComparisonsTest extends EvaluatorTestBase {
     }
 
     @Test
-    void equalityWithEnvTests() {
-        final ExprEnvironmentImpl env = createEnvironment();
+    void equalityWithContextTests() {
+        final ExprContextImpl ctx = createContext();
 
         RuntimeError runErr;
-        assertTrue(evaluateBool("$enabled == true", env));
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("true == $tuid", env));
+        assertTrue(evaluateBool("$enabled == true", ctx));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("true == $tuid", ctx));
         assertEquals("Operands of different types cannot be compared: BOOL and BYTE_BUFFER", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$tuid == false", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$tuid == false", ctx));
         assertEquals("Operands of different types cannot be compared: BYTE_BUFFER and BOOL", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$ric == false", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$ric == false", ctx));
         assertEquals("Operands of different types cannot be compared: STRING and BOOL", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$productId == false", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$productId == false", ctx));
         assertEquals("Operands of different types cannot be compared: LONG and BOOL", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$PI == false", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$PI == false", ctx));
         assertEquals("Operands of different types cannot be compared: DOUBLE and BOOL", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$enabled == $ric", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$enabled == $ric", ctx));
         assertEquals("Operands of different types cannot be compared: BOOL and STRING", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$enabled == $tuid", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$enabled == $tuid", ctx));
         assertEquals("Operands of different types cannot be compared: BOOL and BYTE_BUFFER", runErr.getMessage());
         // long
-        assertTrue(evaluateBool("$productId == 123", env));
-        assertTrue(evaluateBool("$productId == 123.0", env));
-        assertFalse(evaluateBool("$productId == $PI", env));
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$productId == $ric", env));
+        assertTrue(evaluateBool("$productId == 123", ctx));
+        assertTrue(evaluateBool("$productId == 123.0", ctx));
+        assertFalse(evaluateBool("$productId == $PI", ctx));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$productId == $ric", ctx));
         assertEquals("Operands of different types cannot be compared: LONG and STRING", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("0 == $tuid", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("0 == $tuid", ctx));
         assertEquals("Operands of different types cannot be compared: LONG and BYTE_BUFFER", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool(" $tuid == 0", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool(" $tuid == 0", ctx));
         assertEquals("Operands of different types cannot be compared: BYTE_BUFFER and LONG", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$productId == $enabled", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$productId == $enabled", ctx));
         assertEquals("Operands of different types cannot be compared: LONG and BOOL", runErr.getMessage());
         // double
-        assertTrue(evaluateBool("$PI == 3.14", env));
-        assertFalse(evaluateBool("$PI == 3", env));
-        assertFalse(evaluateBool("$PI == $productId", env));
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$PI == $ric", env));
+        assertTrue(evaluateBool("$PI == 3.14", ctx));
+        assertFalse(evaluateBool("$PI == 3", ctx));
+        assertFalse(evaluateBool("$PI == $productId", ctx));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$PI == $ric", ctx));
         assertEquals("Operands of different types cannot be compared: DOUBLE and STRING", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("0.0 == $tuid", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("0.0 == $tuid", ctx));
         assertEquals("Operands of different types cannot be compared: DOUBLE and BYTE_BUFFER", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$tuid == 0.0", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$tuid == 0.0", ctx));
         assertEquals("Operands of different types cannot be compared: BYTE_BUFFER and DOUBLE", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$PI == $enabled", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$PI == $enabled", ctx));
         assertEquals("Operands of different types cannot be compared: DOUBLE and BOOL", runErr.getMessage());
         // String
-        assertTrue(evaluateBool("$ric == \"VOD.L\"", env));
-        assertFalse(evaluateBool("$ric == $tuid", env));
-        assertTrue(evaluateBool("\"CLIENT1\" == $tuid", env));
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$ric == $productId", env));
+        assertTrue(evaluateBool("$ric == \"VOD.L\"", ctx));
+        assertFalse(evaluateBool("$ric == $tuid", ctx));
+        assertTrue(evaluateBool("\"CLIENT1\" == $tuid", ctx));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$ric == $productId", ctx));
         assertEquals("Operands of different types cannot be compared: STRING and LONG", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$ric == 123", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$ric == 123", ctx));
         assertEquals("Operands of different types cannot be compared: STRING and LONG", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$ric == 0.0", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$ric == 0.0", ctx));
         assertEquals("Operands of different types cannot be compared: STRING and DOUBLE", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$ric == $PI", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$ric == $PI", ctx));
         assertEquals("Operands of different types cannot be compared: STRING and DOUBLE", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$ric == true", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$ric == true", ctx));
         assertEquals("Operands of different types cannot be compared: STRING and BOOL", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$ric == $enabled", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$ric == $enabled", ctx));
         assertEquals("Operands of different types cannot be compared: STRING and BOOL", runErr.getMessage());
         // ByteBuffer
-        assertFalse(evaluateBool("\"\" == $tuid", env));
-        assertFalse(evaluateBool("$tuid == \"A\"", env));
-        assertTrue(evaluateBool("$tuid == \"CLIENT1\"", env));
-        assertTrue(evaluateBool("$tuid in [\"CLIENT1\"]", env));
-        assertTrue(evaluateBool("$ric == \"VOD.L\" and $ric != $tuid", env));
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$tuid == $productId", env));
+        assertFalse(evaluateBool("\"\" == $tuid", ctx));
+        assertFalse(evaluateBool("$tuid == \"A\"", ctx));
+        assertTrue(evaluateBool("$tuid == \"CLIENT1\"", ctx));
+        assertTrue(evaluateBool("$tuid in [\"CLIENT1\"]", ctx));
+        assertTrue(evaluateBool("$ric == \"VOD.L\" and $ric != $tuid", ctx));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$tuid == $productId", ctx));
         assertEquals("Operands of different types cannot be compared: BYTE_BUFFER and LONG", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$tuid == 123", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$tuid == 123", ctx));
         assertEquals("Operands of different types cannot be compared: BYTE_BUFFER and LONG", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$tuid == 0.0", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$tuid == 0.0", ctx));
         assertEquals("Operands of different types cannot be compared: BYTE_BUFFER and DOUBLE", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$tuid == $PI", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$tuid == $PI", ctx));
         assertEquals("Operands of different types cannot be compared: BYTE_BUFFER and DOUBLE", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$tuid == true", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$tuid == true", ctx));
         assertEquals("Operands of different types cannot be compared: BYTE_BUFFER and BOOL", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$tuid == $enabled", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$tuid == $enabled", ctx));
         assertEquals("Operands of different types cannot be compared: BYTE_BUFFER and BOOL", runErr.getMessage());
     }
 
@@ -188,81 +188,81 @@ class ComparisonsTest extends EvaluatorTestBase {
     }
 
     @Test
-    void nonEqualityWithEnvTests() {
-        final ExprEnvironmentImpl env = createEnvironment();
+    void nonEqualityWithContextTests() {
+        final ExprContextImpl ctx = createContext();
 
         RuntimeError runErr;
-        assertFalse(evaluateBool("$enabled != true", env));
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("true != $tuid", env));
+        assertFalse(evaluateBool("$enabled != true", ctx));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("true != $tuid", ctx));
         assertEquals("Operands of different types cannot be compared: BOOL and BYTE_BUFFER", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$tuid != false", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$tuid != false", ctx));
         assertEquals("Operands of different types cannot be compared: BYTE_BUFFER and BOOL", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$ric != false", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$ric != false", ctx));
         assertEquals("Operands of different types cannot be compared: STRING and BOOL", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$productId != false", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$productId != false", ctx));
         assertEquals("Operands of different types cannot be compared: LONG and BOOL", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$PI != false", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$PI != false", ctx));
         assertEquals("Operands of different types cannot be compared: DOUBLE and BOOL", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$enabled != $ric", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$enabled != $ric", ctx));
         assertEquals("Operands of different types cannot be compared: BOOL and STRING", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$enabled != $tuid", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$enabled != $tuid", ctx));
         assertEquals("Operands of different types cannot be compared: BOOL and BYTE_BUFFER", runErr.getMessage());
         // long
-        assertFalse(evaluateBool("$productId != 123", env));
-        assertFalse(evaluateBool("$productId != 123.0", env));
-        assertTrue(evaluateBool("$productId != $PI", env));
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$productId != $ric", env));
+        assertFalse(evaluateBool("$productId != 123", ctx));
+        assertFalse(evaluateBool("$productId != 123.0", ctx));
+        assertTrue(evaluateBool("$productId != $PI", ctx));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$productId != $ric", ctx));
         assertEquals("Operands of different types cannot be compared: LONG and STRING", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("0 != $tuid", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("0 != $tuid", ctx));
         assertEquals("Operands of different types cannot be compared: LONG and BYTE_BUFFER", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool(" $tuid != 0", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool(" $tuid != 0", ctx));
         assertEquals("Operands of different types cannot be compared: BYTE_BUFFER and LONG", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$productId != $enabled", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$productId != $enabled", ctx));
         assertEquals("Operands of different types cannot be compared: LONG and BOOL", runErr.getMessage());
         // double
-        assertFalse(evaluateBool("$PI != 3.14", env));
-        assertTrue(evaluateBool("$PI != 3", env));
-        assertTrue(evaluateBool("$PI != $productId", env));
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$PI != $ric", env));
+        assertFalse(evaluateBool("$PI != 3.14", ctx));
+        assertTrue(evaluateBool("$PI != 3", ctx));
+        assertTrue(evaluateBool("$PI != $productId", ctx));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$PI != $ric", ctx));
         assertEquals("Operands of different types cannot be compared: DOUBLE and STRING", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("0.0 != $tuid", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("0.0 != $tuid", ctx));
         assertEquals("Operands of different types cannot be compared: DOUBLE and BYTE_BUFFER", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$tuid != 0.0", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$tuid != 0.0", ctx));
         assertEquals("Operands of different types cannot be compared: BYTE_BUFFER and DOUBLE", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$PI != $enabled", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$PI != $enabled", ctx));
         assertEquals("Operands of different types cannot be compared: DOUBLE and BOOL", runErr.getMessage());
         // String
-        assertFalse(evaluateBool("$ric != \"VOD.L\"", env));
-        assertTrue(evaluateBool("$ric != $tuid", env));
-        assertFalse(evaluateBool("\"CLIENT1\" != $tuid", env));
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$ric != $productId", env));
+        assertFalse(evaluateBool("$ric != \"VOD.L\"", ctx));
+        assertTrue(evaluateBool("$ric != $tuid", ctx));
+        assertFalse(evaluateBool("\"CLIENT1\" != $tuid", ctx));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$ric != $productId", ctx));
         assertEquals("Operands of different types cannot be compared: STRING and LONG", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$ric != 123", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$ric != 123", ctx));
         assertEquals("Operands of different types cannot be compared: STRING and LONG", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$ric != 0.0", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$ric != 0.0", ctx));
         assertEquals("Operands of different types cannot be compared: STRING and DOUBLE", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$ric != $PI", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$ric != $PI", ctx));
         assertEquals("Operands of different types cannot be compared: STRING and DOUBLE", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$ric != true", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$ric != true", ctx));
         assertEquals("Operands of different types cannot be compared: STRING and BOOL", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$ric != $enabled", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$ric != $enabled", ctx));
         assertEquals("Operands of different types cannot be compared: STRING and BOOL", runErr.getMessage());
         // ByteBuffer
-        assertTrue(evaluateBool("\"\" != $tuid", env));
-        assertTrue(evaluateBool("$tuid != \"A\"", env));
-        assertFalse(evaluateBool("$tuid != \"CLIENT1\"", env));
-        assertFalse(evaluateBool("$ric != \"VOD.L\" and $ric != $tuid", env));
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$tuid != $productId", env));
+        assertTrue(evaluateBool("\"\" != $tuid", ctx));
+        assertTrue(evaluateBool("$tuid != \"A\"", ctx));
+        assertFalse(evaluateBool("$tuid != \"CLIENT1\"", ctx));
+        assertFalse(evaluateBool("$ric != \"VOD.L\" and $ric != $tuid", ctx));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$tuid != $productId", ctx));
         assertEquals("Operands of different types cannot be compared: BYTE_BUFFER and LONG", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$tuid != 123", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$tuid != 123", ctx));
         assertEquals("Operands of different types cannot be compared: BYTE_BUFFER and LONG", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$tuid != 0.0", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$tuid != 0.0", ctx));
         assertEquals("Operands of different types cannot be compared: BYTE_BUFFER and DOUBLE", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$tuid != $PI", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$tuid != $PI", ctx));
         assertEquals("Operands of different types cannot be compared: BYTE_BUFFER and DOUBLE", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$tuid != true", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$tuid != true", ctx));
         assertEquals("Operands of different types cannot be compared: BYTE_BUFFER and BOOL", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$tuid != $enabled", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$tuid != $enabled", ctx));
         assertEquals("Operands of different types cannot be compared: BYTE_BUFFER and BOOL", runErr.getMessage());
     }
 
@@ -313,89 +313,89 @@ class ComparisonsTest extends EvaluatorTestBase {
     }
 
     @Test
-    void comparisonWithEnvTestsGreater() {
-        final ExprEnvironmentImpl env = createEnvironment();
+    void comparisonWithContextTestsGreater() {
+        final ExprContextImpl ctx = createContext();
 
         RuntimeError runErr;
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$enabled > true", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$enabled > true", ctx));
         assertEquals("Operands must be numbers", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("true > $tuid", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("true > $tuid", ctx));
         assertEquals("Operands must be numbers", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$tuid > false", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$tuid > false", ctx));
         assertEquals("Operands must be numbers", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$ric > false", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$ric > false", ctx));
         assertEquals("Operands must be numbers", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$productId > false", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$productId > false", ctx));
         assertEquals("Operands must be numbers", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$PI > false", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$PI > false", ctx));
         assertEquals("Operands must be numbers", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$enabled > $ric", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$enabled > $ric", ctx));
         assertEquals("Operands must be numbers", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$enabled > $tuid", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$enabled > $tuid", ctx));
         assertEquals("Operands must be numbers", runErr.getMessage());
         // long
-        assertFalse(evaluateBool("$productId > 123", env));
-        assertFalse(evaluateBool("$productId > 123.0", env));
-        assertTrue(evaluateBool("$productId > $PI", env));
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$productId > $ric", env));
+        assertFalse(evaluateBool("$productId > 123", ctx));
+        assertFalse(evaluateBool("$productId > 123.0", ctx));
+        assertTrue(evaluateBool("$productId > $PI", ctx));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$productId > $ric", ctx));
         assertEquals("Operands must be numbers", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("0 > $tuid", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("0 > $tuid", ctx));
         assertEquals("Operands must be numbers", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool(" $tuid > 0", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool(" $tuid > 0", ctx));
         assertEquals("Operands must be numbers", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$productId > $enabled", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$productId > $enabled", ctx));
         assertEquals("Operands must be numbers", runErr.getMessage());
         // double
-        assertFalse(evaluateBool("$PI > 3.14", env));
-        assertTrue(evaluateBool("$PI > 3", env));
-        assertFalse(evaluateBool("$PI > $productId", env));
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$PI > $ric", env));
+        assertFalse(evaluateBool("$PI > 3.14", ctx));
+        assertTrue(evaluateBool("$PI > 3", ctx));
+        assertFalse(evaluateBool("$PI > $productId", ctx));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$PI > $ric", ctx));
         assertEquals("Operands must be numbers", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("0.0 > $tuid", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("0.0 > $tuid", ctx));
         assertEquals("Operands must be numbers", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$tuid > 0.0", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$tuid > 0.0", ctx));
         assertEquals("Operands must be numbers", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$PI > $enabled", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$PI > $enabled", ctx));
         assertEquals("Operands must be numbers", runErr.getMessage());
         // String
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$ric > \"VOD.L\"", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$ric > \"VOD.L\"", ctx));
         assertEquals("Operands must be numbers", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$ric > $tuid", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$ric > $tuid", ctx));
         assertEquals("Operands must be numbers", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("\"CLIENT1\" > $tuid", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("\"CLIENT1\" > $tuid", ctx));
         assertEquals("Operands must be numbers", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$ric > $productId", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$ric > $productId", ctx));
         assertEquals("Operands must be numbers", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$ric > 123", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$ric > 123", ctx));
         assertEquals("Operands must be numbers", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$ric > 0.0", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$ric > 0.0", ctx));
         assertEquals("Operands must be numbers", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$ric > $PI", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$ric > $PI", ctx));
         assertEquals("Operands must be numbers", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$ric > true", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$ric > true", ctx));
         assertEquals("Operands must be numbers", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$ric > $enabled", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$ric > $enabled", ctx));
         assertEquals("Operands must be numbers", runErr.getMessage());
         // ByteBuffer
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("\"\" > $tuid", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("\"\" > $tuid", ctx));
         assertEquals("Operands must be numbers", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$tuid > \"A\"", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$tuid > \"A\"", ctx));
         assertEquals("Operands must be numbers", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$tuid > \"CLIENT1\"", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$tuid > \"CLIENT1\"", ctx));
         assertEquals("Operands must be numbers", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$ric > \"VOD.L\" and $ric > $tuid", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$ric > \"VOD.L\" and $ric > $tuid", ctx));
         assertEquals("Operands must be numbers", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$tuid > $productId", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$tuid > $productId", ctx));
         assertEquals("Operands must be numbers", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$tuid > 123", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$tuid > 123", ctx));
         assertEquals("Operands must be numbers", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$tuid > 0.0", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$tuid > 0.0", ctx));
         assertEquals("Operands must be numbers", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$tuid > $PI", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$tuid > $PI", ctx));
         assertEquals("Operands must be numbers", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$tuid > true", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$tuid > true", ctx));
         assertEquals("Operands must be numbers", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$tuid > $enabled", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$tuid > $enabled", ctx));
         assertEquals("Operands must be numbers", runErr.getMessage());
     }
 
@@ -448,89 +448,89 @@ class ComparisonsTest extends EvaluatorTestBase {
     }
 
     @Test
-    void comparisonWithEnvTestsGreaterOrEqual() {
-        final ExprEnvironmentImpl env = createEnvironment();
+    void comparisonWithContextTestsGreaterOrEqual() {
+        final ExprContextImpl ctx = createContext();
 
         RuntimeError runErr;
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$enabled >= true", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$enabled >= true", ctx));
         assertEquals("Operands must be numbers", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("true >= $tuid", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("true >= $tuid", ctx));
         assertEquals("Operands must be numbers", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$tuid >= false", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$tuid >= false", ctx));
         assertEquals("Operands must be numbers", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$ric >= false", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$ric >= false", ctx));
         assertEquals("Operands must be numbers", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$productId >= false", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$productId >= false", ctx));
         assertEquals("Operands must be numbers", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$PI >= false", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$PI >= false", ctx));
         assertEquals("Operands must be numbers", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$enabled >= $ric", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$enabled >= $ric", ctx));
         assertEquals("Operands must be numbers", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$enabled >= $tuid", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$enabled >= $tuid", ctx));
         assertEquals("Operands must be numbers", runErr.getMessage());
         // long
-        assertTrue(evaluateBool("$productId >= 123", env));
-        assertTrue(evaluateBool("$productId >= 123.0", env));
-        assertTrue(evaluateBool("$productId >= $PI", env));
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$productId >= $ric", env));
+        assertTrue(evaluateBool("$productId >= 123", ctx));
+        assertTrue(evaluateBool("$productId >= 123.0", ctx));
+        assertTrue(evaluateBool("$productId >= $PI", ctx));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$productId >= $ric", ctx));
         assertEquals("Operands must be numbers", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("0 >= $tuid", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("0 >= $tuid", ctx));
         assertEquals("Operands must be numbers", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool(" $tuid >= 0", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool(" $tuid >= 0", ctx));
         assertEquals("Operands must be numbers", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$productId >= $enabled", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$productId >= $enabled", ctx));
         assertEquals("Operands must be numbers", runErr.getMessage());
         // double
-        assertTrue(evaluateBool("$PI >= 3.14", env));
-        assertTrue(evaluateBool("$PI >= 3", env));
-        assertFalse(evaluateBool("$PI >= $productId", env));
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$PI >= $ric", env));
+        assertTrue(evaluateBool("$PI >= 3.14", ctx));
+        assertTrue(evaluateBool("$PI >= 3", ctx));
+        assertFalse(evaluateBool("$PI >= $productId", ctx));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$PI >= $ric", ctx));
         assertEquals("Operands must be numbers", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("0.0 >= $tuid", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("0.0 >= $tuid", ctx));
         assertEquals("Operands must be numbers", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$tuid >= 0.0", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$tuid >= 0.0", ctx));
         assertEquals("Operands must be numbers", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$PI >= $enabled", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$PI >= $enabled", ctx));
         assertEquals("Operands must be numbers", runErr.getMessage());
         // String
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$ric >= \"VOD.L\"", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$ric >= \"VOD.L\"", ctx));
         assertEquals("Operands must be numbers", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$ric >= $tuid", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$ric >= $tuid", ctx));
         assertEquals("Operands must be numbers", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("\"CLIENT1\" >= $tuid", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("\"CLIENT1\" >= $tuid", ctx));
         assertEquals("Operands must be numbers", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$ric >= $productId", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$ric >= $productId", ctx));
         assertEquals("Operands must be numbers", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$ric >= 123", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$ric >= 123", ctx));
         assertEquals("Operands must be numbers", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$ric >= 0.0", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$ric >= 0.0", ctx));
         assertEquals("Operands must be numbers", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$ric >= $PI", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$ric >= $PI", ctx));
         assertEquals("Operands must be numbers", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$ric >= true", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$ric >= true", ctx));
         assertEquals("Operands must be numbers", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$ric >= $enabled", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$ric >= $enabled", ctx));
         assertEquals("Operands must be numbers", runErr.getMessage());
         // ByteBuffer
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("\"\" >= $tuid", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("\"\" >= $tuid", ctx));
         assertEquals("Operands must be numbers", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$tuid >= \"A\"", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$tuid >= \"A\"", ctx));
         assertEquals("Operands must be numbers", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$tuid >= \"CLIENT1\"", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$tuid >= \"CLIENT1\"", ctx));
         assertEquals("Operands must be numbers", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$ric >= \"VOD.L\" and $ric >= $tuid", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$ric >= \"VOD.L\" and $ric >= $tuid", ctx));
         assertEquals("Operands must be numbers", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$tuid >= $productId", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$tuid >= $productId", ctx));
         assertEquals("Operands must be numbers", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$tuid >= 123", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$tuid >= 123", ctx));
         assertEquals("Operands must be numbers", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$tuid >= 0.0", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$tuid >= 0.0", ctx));
         assertEquals("Operands must be numbers", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$tuid >= $PI", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$tuid >= $PI", ctx));
         assertEquals("Operands must be numbers", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$tuid >= true", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$tuid >= true", ctx));
         assertEquals("Operands must be numbers", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$tuid >= $enabled", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$tuid >= $enabled", ctx));
         assertEquals("Operands must be numbers", runErr.getMessage());
     }
 
@@ -583,89 +583,89 @@ class ComparisonsTest extends EvaluatorTestBase {
     }
 
     @Test
-    void comparisonWithEnvTestsLess() {
-        final ExprEnvironmentImpl env = createEnvironment();
+    void comparisonWithContextTestsLess() {
+        final ExprContextImpl ctx = createContext();
 
         RuntimeError runErr;
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$enabled < true", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$enabled < true", ctx));
         assertEquals("Operands must be numbers", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("true < $tuid", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("true < $tuid", ctx));
         assertEquals("Operands must be numbers", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$tuid < false", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$tuid < false", ctx));
         assertEquals("Operands must be numbers", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$ric < false", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$ric < false", ctx));
         assertEquals("Operands must be numbers", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$productId < false", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$productId < false", ctx));
         assertEquals("Operands must be numbers", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$PI < false", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$PI < false", ctx));
         assertEquals("Operands must be numbers", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$enabled < $ric", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$enabled < $ric", ctx));
         assertEquals("Operands must be numbers", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$enabled < $tuid", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$enabled < $tuid", ctx));
         assertEquals("Operands must be numbers", runErr.getMessage());
         // long
-        assertFalse(evaluateBool("$productId < 123", env));
-        assertFalse(evaluateBool("$productId < 123.0", env));
-        assertFalse(evaluateBool("$productId < $PI", env));
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$productId < $ric", env));
+        assertFalse(evaluateBool("$productId < 123", ctx));
+        assertFalse(evaluateBool("$productId < 123.0", ctx));
+        assertFalse(evaluateBool("$productId < $PI", ctx));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$productId < $ric", ctx));
         assertEquals("Operands must be numbers", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("0 < $tuid", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("0 < $tuid", ctx));
         assertEquals("Operands must be numbers", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool(" $tuid < 0", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool(" $tuid < 0", ctx));
         assertEquals("Operands must be numbers", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$productId < $enabled", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$productId < $enabled", ctx));
         assertEquals("Operands must be numbers", runErr.getMessage());
         // double
-        assertFalse(evaluateBool("$PI < 3.14", env));
-        assertFalse(evaluateBool("$PI < 3", env));
-        assertTrue(evaluateBool("$PI < $productId", env));
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$PI < $ric", env));
+        assertFalse(evaluateBool("$PI < 3.14", ctx));
+        assertFalse(evaluateBool("$PI < 3", ctx));
+        assertTrue(evaluateBool("$PI < $productId", ctx));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$PI < $ric", ctx));
         assertEquals("Operands must be numbers", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("0.0 < $tuid", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("0.0 < $tuid", ctx));
         assertEquals("Operands must be numbers", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$tuid < 0.0", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$tuid < 0.0", ctx));
         assertEquals("Operands must be numbers", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$PI < $enabled", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$PI < $enabled", ctx));
         assertEquals("Operands must be numbers", runErr.getMessage());
         // String
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$ric < \"VOD.L\"", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$ric < \"VOD.L\"", ctx));
         assertEquals("Operands must be numbers", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$ric < $tuid", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$ric < $tuid", ctx));
         assertEquals("Operands must be numbers", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("\"CLIENT1\" < $tuid", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("\"CLIENT1\" < $tuid", ctx));
         assertEquals("Operands must be numbers", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$ric < $productId", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$ric < $productId", ctx));
         assertEquals("Operands must be numbers", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$ric < 123", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$ric < 123", ctx));
         assertEquals("Operands must be numbers", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$ric < 0.0", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$ric < 0.0", ctx));
         assertEquals("Operands must be numbers", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$ric < $PI", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$ric < $PI", ctx));
         assertEquals("Operands must be numbers", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$ric < true", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$ric < true", ctx));
         assertEquals("Operands must be numbers", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$ric < $enabled", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$ric < $enabled", ctx));
         assertEquals("Operands must be numbers", runErr.getMessage());
         // ByteBuffer
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("\"\" < $tuid", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("\"\" < $tuid", ctx));
         assertEquals("Operands must be numbers", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$tuid < \"A\"", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$tuid < \"A\"", ctx));
         assertEquals("Operands must be numbers", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$tuid < \"CLIENT1\"", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$tuid < \"CLIENT1\"", ctx));
         assertEquals("Operands must be numbers", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$ric < \"VOD.L\" and $ric < $tuid", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$ric < \"VOD.L\" and $ric < $tuid", ctx));
         assertEquals("Operands must be numbers", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$tuid < $productId", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$tuid < $productId", ctx));
         assertEquals("Operands must be numbers", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$tuid < 123", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$tuid < 123", ctx));
         assertEquals("Operands must be numbers", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$tuid < 0.0", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$tuid < 0.0", ctx));
         assertEquals("Operands must be numbers", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$tuid < $PI", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$tuid < $PI", ctx));
         assertEquals("Operands must be numbers", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$tuid < true", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$tuid < true", ctx));
         assertEquals("Operands must be numbers", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$tuid < $enabled", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$tuid < $enabled", ctx));
         assertEquals("Operands must be numbers", runErr.getMessage());
     }
 
@@ -718,89 +718,89 @@ class ComparisonsTest extends EvaluatorTestBase {
     }
 
     @Test
-    void comparisonWithEnvTestsLessOrEqual() {
-        final ExprEnvironmentImpl env = createEnvironment();
+    void comparisonWithContextTestsLessOrEqual() {
+        final ExprContextImpl ctx = createContext();
 
         RuntimeError runErr;
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$enabled <= true", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$enabled <= true", ctx));
         assertEquals("Operands must be numbers", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("true <= $tuid", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("true <= $tuid", ctx));
         assertEquals("Operands must be numbers", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$tuid <= false", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$tuid <= false", ctx));
         assertEquals("Operands must be numbers", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$ric <= false", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$ric <= false", ctx));
         assertEquals("Operands must be numbers", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$productId <= false", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$productId <= false", ctx));
         assertEquals("Operands must be numbers", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$PI <= false", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$PI <= false", ctx));
         assertEquals("Operands must be numbers", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$enabled <= $ric", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$enabled <= $ric", ctx));
         assertEquals("Operands must be numbers", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$enabled <= $tuid", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$enabled <= $tuid", ctx));
         assertEquals("Operands must be numbers", runErr.getMessage());
         // long
-        assertTrue(evaluateBool("$productId <= 123", env));
-        assertTrue(evaluateBool("$productId <= 123.0", env));
-        assertFalse(evaluateBool("$productId <= $PI", env));
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$productId <= $ric", env));
+        assertTrue(evaluateBool("$productId <= 123", ctx));
+        assertTrue(evaluateBool("$productId <= 123.0", ctx));
+        assertFalse(evaluateBool("$productId <= $PI", ctx));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$productId <= $ric", ctx));
         assertEquals("Operands must be numbers", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("0 <= $tuid", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("0 <= $tuid", ctx));
         assertEquals("Operands must be numbers", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool(" $tuid <= 0", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool(" $tuid <= 0", ctx));
         assertEquals("Operands must be numbers", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$productId <= $enabled", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$productId <= $enabled", ctx));
         assertEquals("Operands must be numbers", runErr.getMessage());
         // double
-        assertTrue(evaluateBool("$PI <= 3.14", env));
-        assertFalse(evaluateBool("$PI <= 3", env));
-        assertTrue(evaluateBool("$PI <= $productId", env));
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$PI <= $ric", env));
+        assertTrue(evaluateBool("$PI <= 3.14", ctx));
+        assertFalse(evaluateBool("$PI <= 3", ctx));
+        assertTrue(evaluateBool("$PI <= $productId", ctx));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$PI <= $ric", ctx));
         assertEquals("Operands must be numbers", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("0.0 <= $tuid", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("0.0 <= $tuid", ctx));
         assertEquals("Operands must be numbers", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$tuid <= 0.0", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$tuid <= 0.0", ctx));
         assertEquals("Operands must be numbers", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$PI <= $enabled", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$PI <= $enabled", ctx));
         assertEquals("Operands must be numbers", runErr.getMessage());
         // String
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$ric <= \"VOD.L\"", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$ric <= \"VOD.L\"", ctx));
         assertEquals("Operands must be numbers", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$ric <= $tuid", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$ric <= $tuid", ctx));
         assertEquals("Operands must be numbers", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("\"CLIENT1\" <= $tuid", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("\"CLIENT1\" <= $tuid", ctx));
         assertEquals("Operands must be numbers", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$ric <= $productId", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$ric <= $productId", ctx));
         assertEquals("Operands must be numbers", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$ric <= 123", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$ric <= 123", ctx));
         assertEquals("Operands must be numbers", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$ric <= 0.0", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$ric <= 0.0", ctx));
         assertEquals("Operands must be numbers", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$ric <= $PI", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$ric <= $PI", ctx));
         assertEquals("Operands must be numbers", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$ric <= true", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$ric <= true", ctx));
         assertEquals("Operands must be numbers", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$ric <= $enabled", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$ric <= $enabled", ctx));
         assertEquals("Operands must be numbers", runErr.getMessage());
         // ByteBuffer
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("\"\" <= $tuid", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("\"\" <= $tuid", ctx));
         assertEquals("Operands must be numbers", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$tuid <= \"A\"", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$tuid <= \"A\"", ctx));
         assertEquals("Operands must be numbers", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$tuid <= \"CLIENT1\"", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$tuid <= \"CLIENT1\"", ctx));
         assertEquals("Operands must be numbers", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$ric <= \"VOD.L\" and $ric <= $tuid", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$ric <= \"VOD.L\" and $ric <= $tuid", ctx));
         assertEquals("Operands must be numbers", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$tuid <= $productId", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$tuid <= $productId", ctx));
         assertEquals("Operands must be numbers", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$tuid <= 123", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$tuid <= 123", ctx));
         assertEquals("Operands must be numbers", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$tuid <= 0.0", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$tuid <= 0.0", ctx));
         assertEquals("Operands must be numbers", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$tuid <= $PI", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$tuid <= $PI", ctx));
         assertEquals("Operands must be numbers", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$tuid <= true", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$tuid <= true", ctx));
         assertEquals("Operands must be numbers", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$tuid <= $enabled", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("$tuid <= $enabled", ctx));
         assertEquals("Operands must be numbers", runErr.getMessage());
     }
 }

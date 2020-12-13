@@ -13,16 +13,16 @@ import static com.tereigo.atlas_expr.atlas.utils.AlgoUtils.epsilonEquals;
 final class Interpreter implements Expr.Visitor<Variant> {
 
   private final Expr expression;
-  private final ExprEnvironment env;
+  private final ExprContext ctx;
 
   Interpreter(final Expr expression) {
     this.expression = expression;
-    this.env = ExprEnvironment.EMPTY;
+    this.ctx = ExprContext.EMPTY;
   }
 
-  Interpreter(final Expr expression, final ExprEnvironment env) {
+  Interpreter(final Expr expression, final ExprContext ctx) {
     this.expression = expression;
-    this.env = env;
+    this.ctx = ctx;
   }
 
   Variant evaluate() {
@@ -46,28 +46,22 @@ final class Interpreter implements Expr.Visitor<Variant> {
         expr.result.accept(!isEqual(expr.operator, left, right));
         break;
       case GREATER:
-        checkNumberOperands(expr.operator, left, right);
-        expr.result.accept(isGreaterNumbers(left, right));
+        expr.result.accept(isGreaterNumbers(expr.operator, left, right));
         break;
       case GREATER_EQUAL:
-        checkNumberOperands(expr.operator, left, right);
-        expr.result.accept(isGreaterOrEqualNumbers(left, right));
+        expr.result.accept(isGreaterOrEqualNumbers(expr.operator, left, right));
         break;
       case LESS:
-        checkNumberOperands(expr.operator, left, right);
-        expr.result.accept(isLessNumbers(left, right));
+        expr.result.accept(isLessNumbers(expr.operator, left, right));
         break;
       case LESS_EQUAL:
-        checkNumberOperands(expr.operator, left, right);
-        expr.result.accept(isLessOrEqualNumbers(left, right));
+        expr.result.accept(isLessOrEqualNumbers(expr.operator, left, right));
         break;
       case MINUS:
-        checkNumberOperands(expr.operator, left, right);
-        subtractNumbers(expr.result, left, right);
+        subtractNumbers(expr.operator, expr.result, left, right);
         break;
       case PLUS:
-        checkNumberOperands(expr.operator, left, right);
-        addNumbers(expr.result, left, right);
+        addNumbers(expr.operator, expr.result, left, right);
         break;
         // NOTICE: We don't allow String concatenation because it produces garbage
 //        if (isString(left) && isString(right)) {
@@ -76,16 +70,13 @@ final class Interpreter implements Expr.Visitor<Variant> {
 //        }
 //        throw new RuntimeError(expr.operator, "Operands must be two numbers or two strings");
       case DIV:
-        checkNumberOperands(expr.operator, left, right);
-        divideNumbers(expr.result, left, right);
+        divideNumbers(expr.operator, expr.result, left, right);
         break;
       case MUL:
-        checkNumberOperands(expr.operator, left, right);
-        multiplyNumbers(expr.result, left, right);
+        multiplyNumbers(expr.operator, expr.result, left, right);
         break;
       case MODULUS:
-        checkLongOperands(expr.operator, left, right);
-        modulusNumbers(expr.result, left, right);
+        modulusNumbers(expr.operator, expr.result, left, right);
         break;
     }
     return expr.result;
@@ -149,8 +140,7 @@ final class Interpreter implements Expr.Visitor<Variant> {
         expr.result.accept(!result.getAsBoolean());
         break;
       case MINUS:
-        checkNumberOperand(expr.operator, result);
-        negateNumber(expr.result, result);
+        negateNumber(expr.operator, expr.result, result);
         break;
     }
     return expr.result;
@@ -158,7 +148,11 @@ final class Interpreter implements Expr.Visitor<Variant> {
 
   @Override
   public Variant visitIdentifierExpr(Expr.Identifier expr) {
-    return env.get(expr.name, expr.result);
+    MutableVariant res = ctx.get(expr.name, expr.result);
+    if (res == null) {
+      throw new RuntimeError(expr.name, "Unknown identifier '" + expr.name.lexeme + "'");
+    }
+    return res;
   }
 
   private boolean isEqual(Token token, Variant left, Variant right) {
@@ -194,7 +188,7 @@ final class Interpreter implements Expr.Visitor<Variant> {
     throw new RuntimeError(token, "Operands of different types cannot be compared: " + left.exprType() + " and " + right.exprType());
   }
 
-  private boolean isGreaterNumbers(Variant left, Variant right) {
+  private boolean isGreaterNumbers(Token token, Variant left, Variant right) {
     if (isDouble(left) && isDouble(right)) {
       return left.getAsDouble() > right.getAsDouble();
     }
@@ -207,10 +201,10 @@ final class Interpreter implements Expr.Visitor<Variant> {
     if (isLong(left) && isLong(right)) {
       return left.getAsLong() > right.getAsLong();
     }
-    throw new RuntimeException("Unreachable");
+    throw new RuntimeError(token, "Operands must be numbers");
   }
 
-  private boolean isGreaterOrEqualNumbers(Variant left, Variant right) {
+  private boolean isGreaterOrEqualNumbers(Token token, Variant left, Variant right) {
     if (isDouble(left) && isDouble(right)) {
       return left.getAsDouble() >= right.getAsDouble();
     }
@@ -223,10 +217,10 @@ final class Interpreter implements Expr.Visitor<Variant> {
     if (isLong(left) && isLong(right)) {
       return left.getAsLong() >= right.getAsLong();
     }
-    throw new RuntimeException("Unreachable");
+    throw new RuntimeError(token, "Operands must be numbers");
   }
 
-  private boolean isLessNumbers(Variant left, Variant right) {
+  private boolean isLessNumbers(Token token, Variant left, Variant right) {
     if (isDouble(left) && isDouble(right)) {
       return left.getAsDouble() < right.getAsDouble();
     }
@@ -239,10 +233,10 @@ final class Interpreter implements Expr.Visitor<Variant> {
     if (isLong(left) && isLong(right)) {
       return left.getAsLong() < right.getAsLong();
     }
-    throw new RuntimeException("Unreachable");
+    throw new RuntimeError(token, "Operands must be numbers");
   }
 
-  private boolean isLessOrEqualNumbers(Variant left, Variant right) {
+  private boolean isLessOrEqualNumbers(Token token, Variant left, Variant right) {
     if (isDouble(left) && isDouble(right)) {
       return left.getAsDouble() <= right.getAsDouble();
     }
@@ -255,10 +249,10 @@ final class Interpreter implements Expr.Visitor<Variant> {
     if (isLong(left) && isLong(right)) {
       return left.getAsLong() <= right.getAsLong();
     }
-    throw new RuntimeException("Unreachable");
+    throw new RuntimeError(token, "Operands must be numbers");
   }
 
-  private void addNumbers(MutableVariant result, Variant left, Variant right) {
+  private void addNumbers(Token token, MutableVariant result, Variant left, Variant right) {
     if (isDouble(left) && isDouble(right)) {
       result.accept(left.getAsDouble() + right.getAsDouble());
       return;
@@ -275,10 +269,10 @@ final class Interpreter implements Expr.Visitor<Variant> {
       result.accept(left.getAsLong() + right.getAsLong());
       return;
     }
-    throw new RuntimeException("Unreachable");
+    throw new RuntimeError(token, "Operands must be numbers");
   }
 
-  private void subtractNumbers(MutableVariant result, Variant left, Variant right) {
+  private void subtractNumbers(Token token, MutableVariant result, Variant left, Variant right) {
     if (isDouble(left) && isDouble(right)) {
       result.accept(left.getAsDouble() - right.getAsDouble());
       return;
@@ -295,10 +289,10 @@ final class Interpreter implements Expr.Visitor<Variant> {
       result.accept(left.getAsLong() - right.getAsLong());
       return;
     }
-    throw new RuntimeException("Unreachable");
+    throw new RuntimeError(token, "Operands must be numbers");
   }
 
-  private void divideNumbers(MutableVariant result, Variant left, Variant right) {
+  private void divideNumbers(Token token, MutableVariant result, Variant left, Variant right) {
     if (isDouble(left) && isDouble(right)) {
       result.accept(left.getAsDouble() / right.getAsDouble());
       return;
@@ -315,10 +309,10 @@ final class Interpreter implements Expr.Visitor<Variant> {
       result.accept(left.getAsLong() / right.getAsLong());
       return;
     }
-    throw new RuntimeException("Unreachable");
+    throw new RuntimeError(token, "Operands must be numbers");
   }
 
-  private void multiplyNumbers(MutableVariant result, Variant left, Variant right) {
+  private void multiplyNumbers(Token token, MutableVariant result, Variant left, Variant right) {
     if (isDouble(left) && isDouble(right)) {
       result.accept(left.getAsDouble() * right.getAsDouble());
       return;
@@ -335,18 +329,18 @@ final class Interpreter implements Expr.Visitor<Variant> {
       result.accept(left.getAsLong() * right.getAsLong());
       return;
     }
-    throw new RuntimeException("Unreachable");
+    throw new RuntimeError(token, "Operands must be numbers");
   }
 
-  private void modulusNumbers(MutableVariant result, Variant left, Variant right) {
+  private void modulusNumbers(Token token, MutableVariant result, Variant left, Variant right) {
     if (isLong(left) && isLong(right)) {
       result.accept(left.getAsLong() % right.getAsLong());
       return;
     }
-    throw new RuntimeException("Unreachable");
+    throw new RuntimeError(token, "Operands must be long numbers");
   }
 
-  private void negateNumber(MutableVariant result, Variant operand) {
+  private void negateNumber(Token token, MutableVariant result, Variant operand) {
     if (isDouble(operand)) {
       result.accept(-operand.getAsDouble());
       return;
@@ -355,7 +349,7 @@ final class Interpreter implements Expr.Visitor<Variant> {
       result.accept(-operand.getAsLong());
       return;
     }
-    throw new RuntimeException("Unreachable");
+    throw new RuntimeError(token, "Operand must be a number");
   }
 
   private void checkBoolOperand(Token operator, Variant operand) {
@@ -370,20 +364,6 @@ final class Interpreter implements Expr.Visitor<Variant> {
       return;
     }
     throw new RuntimeError(operator, "Operand must be a number");
-  }
-
-  private void checkNumberOperands(Token operator, Variant left, Variant right) {
-    if (isNumber(left) && isNumber(right)) {
-      return;
-    }
-    throw new RuntimeError(operator, "Operands must be numbers");
-  }
-
-  private void checkLongOperands(Token operator, Variant left, Variant right) {
-    if (isLong(left) && isLong(right)) {
-      return;
-    }
-    throw new RuntimeError(operator, "Operands must be long numbers");
   }
 
   private void checkOperandTypes(Token operator, Variant left, Variant right) {

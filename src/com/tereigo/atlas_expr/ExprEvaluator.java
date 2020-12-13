@@ -11,7 +11,7 @@ import com.tereigo.atlas_expr.variant.Variant;
 
     And for evaluation of the precompiled expression:
         Expr expr = ExprCompiler.compile("$ric == \"VOD.L\" and $productId == 123 or 5 != 2");
-        ExprEvaluator exprEvaluator = new ExprEvaluator(expr, env);
+        ExprEvaluator exprEvaluator = new ExprEvaluator(expr, ctx);
         exprEvaluator.evaluateBool();
  */
 public final class ExprEvaluator {
@@ -21,16 +21,16 @@ public final class ExprEvaluator {
         this(ExprCompiler.compile(source));
     }
 
-    public ExprEvaluator(final String source, final ExprEnvironment env) {
-        this(ExprCompiler.compile(source), env);
+    public ExprEvaluator(final String source, final ExprContext ctx) {
+        this(ExprCompiler.compile(source), ctx);
     }
 
     public ExprEvaluator(final Expr expression) {
         this.interpreter = new Interpreter(expression);
     }
 
-    public ExprEvaluator(final Expr expression, final ExprEnvironment env) {
-        this.interpreter = new Interpreter(expression, env);
+    public ExprEvaluator(final Expr expression, final ExprContext ctx) {
+        this.interpreter = new Interpreter(expression, ctx);
     }
 
     public boolean evaluateBool() {

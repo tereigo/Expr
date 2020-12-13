@@ -1,4 +1,8 @@
  TODO:
+1. may be introduce a new type: List
+  static class List extends Expr
+   in that case IN becomes a normal Binary operator
+   But it might require Variant to hold list which is undesirable :-/
 6. Add . for strings
 7. Add string operators:
  charAt

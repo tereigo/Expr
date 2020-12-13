@@ -10,14 +10,14 @@ import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 import java.util.function.LongSupplier;
 
-class ExprEnvironmentImpl implements ExprEnvironment {
+class ExprContextImpl implements ExprContext {
 
   private final Map<String, Entry> values = new HashMap<>();
 
   @Override
-  public MutableVariant get(Token name, MutableVariant result) {
-    if (values.containsKey(name.lexeme)) {
-      Entry entry = values.get(name.lexeme);
+  public MutableVariant get(Token token, MutableVariant result) {
+    if (values.containsKey(token.lexeme)) {
+      Entry entry = values.get(token.lexeme);
       switch (entry.type) {
         case DOUBLE:
           result.accept(((DoubleSupplier)entry.supplier).getAsDouble());
@@ -35,10 +35,10 @@ class ExprEnvironmentImpl implements ExprEnvironment {
           result.accept(((ByteBufferSupplier)entry.supplier).getAsByteBuffer());
           return result;
         default:
-          throw new RuntimeError(name, "Unknown type '" + entry.type + "' for identifier '" + name.lexeme + "'");
+          throw new RuntimeError(token, "Unknown type '" + entry.type + "' for identifier '" + token.lexeme + "'");
       }
     }
-    throw new RuntimeError(name, "Unknown identifier '" + name.lexeme + "'");
+    return null;
   }
 
   void defineLong(String name, LongSupplier supplier) {

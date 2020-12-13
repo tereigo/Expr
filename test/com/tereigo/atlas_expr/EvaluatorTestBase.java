@@ -5,14 +5,14 @@ import static com.tereigo.atlas_expr.atlas.utils.ByteBufferUtils.constant;
 class EvaluatorTestBase {
     protected static final double EPS = 0.00001;
 
-    protected ExprEnvironmentImpl createEnvironment() {
-        final ExprEnvironmentImpl env = new ExprEnvironmentImpl();
-        env.defineDouble("$PI", () -> 3.14);
-        env.defineLong("$productId", () -> 123L);
-        env.defineString("$ric", () -> "VOD.L");
-        env.defineBool("$enabled", () -> true);
-        env.defineByteBuffer("$tuid", () -> constant("CLIENT1"));
-        return env;
+    protected ExprContextImpl createContext() {
+        final ExprContextImpl ctx = new ExprContextImpl();
+        ctx.defineDouble("$PI", () -> 3.14);
+        ctx.defineLong("$productId", () -> 123L);
+        ctx.defineString("$ric", () -> "VOD.L");
+        ctx.defineBool("$enabled", () -> true);
+        ctx.defineByteBuffer("$tuid", () -> constant("CLIENT1"));
+        return ctx;
     }
 
     protected void evaluate(String text) {
@@ -20,8 +20,8 @@ class EvaluatorTestBase {
         evaluator.evaluateAsObject();
     }
 
-    protected void evaluate(String text, ExprEnvironmentImpl env) {
-        ExprEvaluator evaluator = new ExprEvaluator(text, env);
+    protected void evaluate(String text, ExprContext ctx) {
+        ExprEvaluator evaluator = new ExprEvaluator(text, ctx);
         evaluator.evaluateAsObject();
     }
 
@@ -30,8 +30,8 @@ class EvaluatorTestBase {
         return evaluator.evaluateLong();
     }
 
-    protected long evaluateLong(String text, ExprEnvironmentImpl env) {
-        ExprEvaluator evaluator = new ExprEvaluator(text, env);
+    protected long evaluateLong(String text, ExprContext ctx) {
+        ExprEvaluator evaluator = new ExprEvaluator(text, ctx);
         return evaluator.evaluateLong();
     }
 
@@ -40,8 +40,8 @@ class EvaluatorTestBase {
         return evaluator.evaluateDouble();
     }
 
-    protected double evaluateDouble(String text, ExprEnvironmentImpl env) {
-        ExprEvaluator evaluator = new ExprEvaluator(text, env);
+    protected double evaluateDouble(String text, ExprContext ctx) {
+        ExprEvaluator evaluator = new ExprEvaluator(text, ctx);
         return evaluator.evaluateDouble();
     }
 
@@ -50,8 +50,8 @@ class EvaluatorTestBase {
         return evaluator.evaluateBool();
     }
 
-    protected boolean evaluateBool(String text, ExprEnvironmentImpl env) {
-        ExprEvaluator evaluator = new ExprEvaluator(text, env);
+    protected boolean evaluateBool(String text, ExprContext ctx) {
+        ExprEvaluator evaluator = new ExprEvaluator(text, ctx);
         return evaluator.evaluateBool();
     }
 
@@ -60,8 +60,8 @@ class EvaluatorTestBase {
         return evaluator.evaluateString();
     }
 
-    protected String evaluateString(String text, ExprEnvironmentImpl env) {
-        ExprEvaluator evaluator = new ExprEvaluator(text, env);
+    protected String evaluateString(String text, ExprContext ctx) {
+        ExprEvaluator evaluator = new ExprEvaluator(text, ctx);
         return evaluator.evaluateString();
     }
 

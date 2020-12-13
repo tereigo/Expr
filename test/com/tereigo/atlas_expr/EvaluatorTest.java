@@ -203,28 +203,28 @@ class EvaluatorTest extends EvaluatorTestBase {
 
     @Test
     void byteBufferTests() {
-        final ExprEnvironmentImpl env = new ExprEnvironmentImpl();
+        final ExprContextImpl ctx = new ExprContextImpl();
         RuntimeError runErr;
 
-        env.defineByteBuffer("$tuid", () -> constant("CLIENT1"));
-        env.defineByteBuffer("$tuid2", () -> constant("CLIENT2"));
+        ctx.defineByteBuffer("$tuid", () -> constant("CLIENT1"));
+        ctx.defineByteBuffer("$tuid2", () -> constant("CLIENT2"));
 
-        assertTrue(evaluateBool("$tuid == \"CLIENT1\"", env));
-        assertTrue(evaluateBool("$tuid == $tuid", env));
-        assertFalse(evaluateBool("$tuid == $tuid2", env));
-        assertFalse(evaluateBool("$tuid2 == $tuid", env));
-        assertTrue(evaluateBool("$tuid != $tuid2", env));
-        assertTrue(evaluateBool("$tuid2 != $tuid", env));
-        runErr = assertThrows(RuntimeError.class, () -> evaluate("$tuid == \"CLIENT\" + \"1\"", env));
+        assertTrue(evaluateBool("$tuid == \"CLIENT1\"", ctx));
+        assertTrue(evaluateBool("$tuid == $tuid", ctx));
+        assertFalse(evaluateBool("$tuid == $tuid2", ctx));
+        assertFalse(evaluateBool("$tuid2 == $tuid", ctx));
+        assertTrue(evaluateBool("$tuid != $tuid2", ctx));
+        assertTrue(evaluateBool("$tuid2 != $tuid", ctx));
+        runErr = assertThrows(RuntimeError.class, () -> evaluate("$tuid == \"CLIENT\" + \"1\"", ctx));
         assertEquals("Operands must be numbers", runErr.getMessage());
-        assertTrue(evaluateBool("\"CLIENT1\" == $tuid", env));
-        assertTrue(evaluateBool("$tuid in [\"CLIENT0\", \"CLIENT1\"]", env));
-        assertFalse(evaluateBool("$tuid != \"CLIENT1\"", env));
-        assertFalse(evaluateBool("\"CLIENT1\" != $tuid", env));
-        assertFalse(evaluateBool("not ($tuid in [\"CLIENT0\", \"CLIENT1\"])", env));
-        assertFalse(evaluateBool("$tuid == \"CLIENT2\"", env));
-        assertFalse(evaluateBool("\"CLIENT2\" == $tuid", env));
-        assertFalse(evaluateBool("$tuid in [\"CLIENT0\", \"CLIENT2\"]", env));
+        assertTrue(evaluateBool("\"CLIENT1\" == $tuid", ctx));
+        assertTrue(evaluateBool("$tuid in [\"CLIENT0\", \"CLIENT1\"]", ctx));
+        assertFalse(evaluateBool("$tuid != \"CLIENT1\"", ctx));
+        assertFalse(evaluateBool("\"CLIENT1\" != $tuid", ctx));
+        assertFalse(evaluateBool("not ($tuid in [\"CLIENT0\", \"CLIENT1\"])", ctx));
+        assertFalse(evaluateBool("$tuid == \"CLIENT2\"", ctx));
+        assertFalse(evaluateBool("\"CLIENT2\" == $tuid", ctx));
+        assertFalse(evaluateBool("$tuid in [\"CLIENT0\", \"CLIENT2\"]", ctx));
     }
 
     @Test
@@ -277,27 +277,27 @@ class EvaluatorTest extends EvaluatorTestBase {
         err = assertThrows(ParseError.class, () -> evaluate("1 == 2 || 3==5"));
         assertEquals("[line 1] Error at pos 8: Unexpected character", err.getMessage());
 
-        final ExprEnvironmentImpl env = new ExprEnvironmentImpl();
-        env.defineString("$ric", () -> "VOD.L");
-        env.defineLong("$productId", () -> 123L);
-        env.defineByteBuffer("$tuid", () -> constant("CLIENT1"));
+        final ExprContextImpl ctx = new ExprContextImpl();
+        ctx.defineString("$ric", () -> "VOD.L");
+        ctx.defineLong("$productId", () -> 123L);
+        ctx.defineByteBuffer("$tuid", () -> constant("CLIENT1"));
 
-        runErr = assertThrows(RuntimeError.class, () -> evaluate("$ric == 1", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluate("$ric == 1", ctx));
         assertEquals("Operands of different types cannot be compared: STRING and LONG", runErr.getMessage());
 
-        runErr = assertThrows(RuntimeError.class, () -> evaluate("$productId in [123.0]", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluate("$productId in [123.0]", ctx));
         assertEquals("Operands of different types cannot be compared: LONG and DOUBLE", runErr.getMessage());
 
-        runErr = assertThrows(RuntimeError.class, () -> evaluate("$tuid + $tuid == \"CLIENT1CLIENT1\"", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluate("$tuid + $tuid == \"CLIENT1CLIENT1\"", ctx));
         assertEquals("Operands must be numbers", runErr.getMessage());
 
-        runErr = assertThrows(RuntimeError.class, () -> evaluate("$primary == \"XLON\"", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluate("$primary == \"XLON\"", ctx));
         assertEquals("Unknown identifier '$primary'", runErr.getMessage());
 
-        runErr = assertThrows(RuntimeError.class, () -> evaluate("$ + 1", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluate("$ + 1", ctx));
         assertEquals("Unknown identifier '$'", runErr.getMessage());
 
-        runErr = assertThrows(RuntimeError.class, () -> evaluate("123 == $", env));
+        runErr = assertThrows(RuntimeError.class, () -> evaluate("123 == $", ctx));
         assertEquals("Unknown identifier '$'", runErr.getMessage());
     }
 }

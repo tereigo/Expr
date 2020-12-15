@@ -1,6 +1,9 @@
 package com.tereigo.atlas_expr;
 
+import com.tereigo.atlas_expr.atlas.utils.ByteBufferUtils;
 import org.junit.jupiter.api.Test;
+
+import java.nio.ByteBuffer;
 
 import static com.tereigo.atlas_expr.atlas.utils.ByteBufferUtils.constant;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -260,7 +263,7 @@ class EvaluatorTest extends EvaluatorTestBase {
         assertEquals("[line 1] Error at pos 1: Expect expression", err.getMessage());
         err = assertThrows(ParseError.class, () -> evaluate("1 in [2, 3.0]"));
         assertEquals("[line 1] Error at pos 13 (']'): Different value types in IN operator list: LONG and DOUBLE", err.getMessage());
-        err= assertThrows(ParseError.class, () -> evaluate("\"B\" in [\"A\", 1]"));
+        err = assertThrows(ParseError.class, () -> evaluate("\"B\" in [\"A\", 1]"));
         assertEquals("[line 1] Error at pos 15 (']'): Different value types in IN operator list: STRING and LONG", err.getMessage());
         runErr = assertThrows(RuntimeError.class, () -> evaluate("!1 + 2"));
         assertEquals("Operand must be a boolean", runErr.getMessage());
@@ -281,6 +284,30 @@ class EvaluatorTest extends EvaluatorTestBase {
         ctx.defineString("$ric", () -> "VOD.L");
         ctx.defineLong("$productId", () -> 123L);
         ctx.defineByteBuffer("$tuid", () -> constant("CLIENT1"));
+        ctx.defineFunction("isEven", (result, arg1) -> {
+            long l = arg1.getAsLong();
+            result.accept(l % 2 == 0);
+        });
+
+        ctx.defineFunction("func1", (result, arg1) -> {
+            long l = arg1.getAsLong();
+            result.accept(l);
+        });
+
+        ctx.defineFunction("func2", (result, arg1, arg2) -> {
+            long l = arg1.getAsLong();
+            double d = arg2.getAsDouble();
+            result.accept(l + d);
+        });
+
+        ctx.defineFunction("func5", (result, arg1, arg2, arg3, arg4, arg5) -> {
+            long l = arg1.getAsLong();
+            double d = arg2.getAsDouble();
+            boolean bool = arg3.getAsBoolean();
+            String s = arg4.getAsString();
+            ByteBuffer bb = arg5.getAsByteBuffer();
+            result.accept(l > d && bool && !s.isEmpty() && ByteBufferUtils.startWith(bb,"CLIENT"));
+        });
 
         runErr = assertThrows(RuntimeError.class, () -> evaluate("$ric == 1", ctx));
         assertEquals("Operands of different types cannot be compared: STRING and LONG", runErr.getMessage());
@@ -299,5 +326,61 @@ class EvaluatorTest extends EvaluatorTestBase {
 
         runErr = assertThrows(RuntimeError.class, () -> evaluate("123 == $", ctx));
         assertEquals("Unknown identifier '$'", runErr.getMessage());
+
+        err = assertThrows(ParseError.class, () -> evaluate("isEven(", ctx));
+        assertEquals("[line 1] Error at pos 7: Expect expression", err.getMessage());
+
+        err = assertThrows(ParseError.class, () -> evaluate("isEven)", ctx));
+        assertEquals("[line 1] Error at pos 7 (')'): Malformed expression: parsing ended prematurely", err.getMessage());
+
+        err = assertThrows(ParseError.class, () -> evaluate("isEven(1", ctx));
+        assertEquals("[line 1] Error at pos 8: Expect ')' after arguments", err.getMessage());
+
+        err = assertThrows(ParseError.class, () -> evaluate("isEven(1, 2, 3, 4, 5, 6)", ctx));
+        assertEquals("[line 1] Error at pos 23 ('6'): Can't have more than 5 arguments", err.getMessage());
+
+        err = assertThrows(ParseError.class, () -> evaluate("1(1)", ctx));
+        assertEquals("[line 1] Error at pos 3 ('1'): Function name should be an identifier", err.getMessage());
+
+        err = assertThrows(ParseError.class, () -> evaluate("\"ABC\"()", ctx));
+        assertEquals("[line 1] Error at pos 7 (')'): Function name should be an identifier", err.getMessage());
+
+        // error: 0 parameters instead of 1
+        runErr = assertThrows(RuntimeError.class, () -> evaluate("isEven()", ctx));
+        assertTrue(runErr.getMessage().contains("ClassCastException for function 'isEven'"));
+        assertTrue(runErr.getMessage().contains("cannot be cast to com.tereigo.atlas_expr.function.Function0"));
+
+        // error: 2 parameters instead of 1
+        runErr = assertThrows(RuntimeError.class, () -> evaluate("isEven(1, 2)", ctx));
+        assertTrue(runErr.getMessage().contains("ClassCastException for function 'isEven'"));
+        assertTrue(runErr.getMessage().contains("cannot be cast to com.tereigo.atlas_expr.function.Function2"));
+
+        // error: func2(10, 1) it expects Double as a second parameter
+        runErr = assertThrows(RuntimeError.class, () -> evaluate("func5(func1(100), func2(func1(10), func2(10, 1)), not $enabled, $ric, $tuid)", ctx));
+        assertEquals("RuntimeException for function 'func5': RuntimeException for function 'func2': RuntimeException for function 'func2': Variant type mismatch: LONG, expected: DOUBLE", runErr.getMessage());
+
+        // error is: func2(10) - expected call with 2 args
+        runErr = assertThrows(RuntimeError.class, () -> evaluate("func5(func1(100), func2(func1(10), func2(10)), not $enabled, $ric, $tuid)", ctx));
+        assertTrue(runErr.getMessage().contains("RuntimeException for function 'func5': RuntimeException for function 'func2': ClassCastException for function 'func2'"));
+        assertTrue(runErr.getMessage().contains("cannot be cast to com.tereigo.atlas_expr.function.Function1"));
+
+        // error: Expects Long parameter instead of Double
+        runErr = assertThrows(RuntimeError.class, () -> evaluate("isEven(1.0)", ctx));
+        assertEquals("RuntimeException for function 'isEven': Variant type mismatch: DOUBLE, expected: LONG", runErr.getMessage());
+
+        runErr = assertThrows(RuntimeError.class, () -> evaluate("isEven(\"\")", ctx));
+        assertEquals("RuntimeException for function 'isEven': Variant type mismatch: STRING, expected: LONG", runErr.getMessage());
+
+        runErr = assertThrows(RuntimeError.class, () -> evaluate("isEven(true)", ctx));
+        assertEquals("RuntimeException for function 'isEven': Variant type mismatch: BOOL, expected: LONG", runErr.getMessage());
+
+        runErr = assertThrows(RuntimeError.class, () -> evaluate("isEven($ric)", ctx));
+        assertEquals("RuntimeException for function 'isEven': Variant type mismatch: STRING, expected: LONG", runErr.getMessage());
+
+        runErr = assertThrows(RuntimeError.class, () -> evaluate("isEven($tuid)", ctx));
+        assertEquals("RuntimeException for function 'isEven': Variant type mismatch: BYTE_BUFFER, expected: LONG", runErr.getMessage());
+
+        runErr = assertThrows(RuntimeError.class, () -> evaluate("unknownFunction($tuid)", ctx));
+        assertEquals("Unknown function 'unknownFunction'", runErr.getMessage());
     }
 }

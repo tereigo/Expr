@@ -1,8 +1,14 @@
 package com.tereigo.atlas_expr;
 
 import com.tereigo.atlas_expr.function.ByteBufferSupplier;
-import com.tereigo.atlas_expr.variant.MutableVariant;
+import com.tereigo.atlas_expr.function.Function0;
+import com.tereigo.atlas_expr.function.Function1;
+import com.tereigo.atlas_expr.function.Function2;
+import com.tereigo.atlas_expr.function.Function3;
+import com.tereigo.atlas_expr.function.Function4;
+import com.tereigo.atlas_expr.function.Function5;
 import com.tereigo.atlas_expr.function.StringSupplier;
+import com.tereigo.atlas_expr.variant.MutableVariant;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -13,6 +19,7 @@ import java.util.function.LongSupplier;
 class ExprContextImpl implements ExprContext {
 
   private final Map<String, Entry> values = new HashMap<>();
+  private final Map<String, Object> functions = new HashMap<>();
 
   @Override
   public MutableVariant get(Token token, MutableVariant result) {
@@ -41,6 +48,11 @@ class ExprContextImpl implements ExprContext {
     return null;
   }
 
+  @Override
+  public Object getFunction(Token token) {
+    return functions.get(token.lexeme);
+  }
+
   void defineLong(String name, LongSupplier supplier) {
     values.put(name, new Entry(supplier, ExprType.LONG));
   }
@@ -59,6 +71,30 @@ class ExprContextImpl implements ExprContext {
 
   void defineBool(String name, BooleanSupplier supplier) {
     values.put(name, new Entry(supplier, ExprType.BOOL));
+  }
+
+  void defineFunction(String name, Function0 func) {
+    functions.put(name, func);
+  }
+
+  void defineFunction(String name, Function1 func) {
+    functions.put(name, func);
+  }
+
+  void defineFunction(String name, Function2 func) {
+    functions.put(name, func);
+  }
+
+  void defineFunction(String name, Function3 func) {
+    functions.put(name, func);
+  }
+
+  void defineFunction(String name, Function4 func) {
+    functions.put(name, func);
+  }
+
+  void defineFunction(String name, Function5 func) {
+    functions.put(name, func);
   }
 
   @Override

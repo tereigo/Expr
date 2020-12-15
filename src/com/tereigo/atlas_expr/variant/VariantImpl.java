@@ -160,17 +160,6 @@ public class VariantImpl implements MutableVariant {
         return Objects.hash(longVal, doubleVal, strVal, bbVal, type);
     }
 
-//    @Override
-//    public void cloneFrom(Variant other) {
-//        VariantImpl o = (VariantImpl)other;
-//        this.longVal = o.longVal;
-//        this.doubleVal = o.doubleVal;
-//        this.boolVal = o.boolVal;
-//        this.strVal = o.strVal;
-//        this.bbVal = o.bbVal; // ???
-//        this.type = o.type;
-//    }
-
 //    void clear() {
 //        this.longVal = 0;
 //        this.doubleVal = 0.0;

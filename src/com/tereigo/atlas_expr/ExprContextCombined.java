@@ -18,6 +18,12 @@ public class ExprContextCombined implements ExprContext {
     }
 
     @Override
+    public Object getFunction(Token token) {
+        Object res = ctx1.getFunction(token);
+        return res != null ? res : ctx2.getFunction(token);
+    }
+
+    @Override
     public String toString() {
         return ctx1.toString() + "," + ctx2.toString();
     }

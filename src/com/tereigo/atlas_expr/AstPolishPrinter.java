@@ -1,5 +1,7 @@
 package com.tereigo.atlas_expr;
 
+import java.util.List;
+
 /*
   For expression "1.0 + 2" produces the following output: "(+ 1.0 2)"
  */
@@ -55,6 +57,24 @@ class AstPolishPrinter implements Expr.Visitor<String> {
   @Override
   public String visitIdentifierExpr(Expr.Identifier expr) {
     return expr.name.lexeme;
+  }
+
+  @Override
+  public String visitCallExpr(Expr.Call expr) {
+    return "call " + expr.name.lexeme + formatParams(expr.args);
+  }
+
+  private String formatParams(List<Expr> list) {
+    StringBuilder builder = new StringBuilder();
+    builder.append("(");
+    for (int i = 0; i < list.size(); i++) {
+      builder.append(list.get(i).accept(this));
+      if (i < list.size() - 1) {
+        builder.append(", ");
+      }
+    }
+    builder.append(")");
+    return builder.toString();
   }
 
   private String parenthesize(String name, Expr... exprs) {

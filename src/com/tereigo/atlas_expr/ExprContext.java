@@ -6,5 +6,17 @@ interface ExprContext {
 
   MutableVariant get(Token token, MutableVariant result);
 
-  ExprContext EMPTY = (name, result) -> null;
+  Object getFunction(Token token);
+
+  ExprContext EMPTY = new ExprContext() {
+    @Override
+    public MutableVariant get(Token token, MutableVariant result) {
+      return null;
+    }
+
+    @Override
+    public Object getFunction(Token token) {
+      return null;
+    }
+  };
 }

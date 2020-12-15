@@ -14,6 +14,11 @@ public class ExprContextChained implements ExprContext {
         return ctx.get(token, result);
     }
 
+    @Override
+    public Object getFunction(Token token) {
+        return ctx.getFunction(token);
+    }
+
     // Adding another context
     public ExprContext add(ExprContext ctx) {
         // New context has higher priority so it is "ctx1" in ExprContextCombined

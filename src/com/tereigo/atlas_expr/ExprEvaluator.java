@@ -2,6 +2,8 @@ package com.tereigo.atlas_expr;
 
 import com.tereigo.atlas_expr.variant.Variant;
 
+import java.nio.ByteBuffer;
+
 /*
    This is the main public class for clients
 
@@ -51,6 +53,11 @@ public final class ExprEvaluator {
     public String evaluateString() {
         Variant result = evaluateImpl();
         return result.getAsString();
+    }
+
+    public ByteBuffer evaluateByteBuffer() {
+        Variant result = evaluateImpl();
+        return result.getAsByteBuffer();
     }
 
     public Object evaluateAsObject() {

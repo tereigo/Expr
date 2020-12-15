@@ -51,6 +51,10 @@ public final class ByteBufferUtils {
         return bytes;
     }
 
+    public static boolean isEmpty(ByteBuffer buffer) {
+        return !buffer.hasRemaining();
+    }
+
     public static ByteBuffer toByteBuffer(CharSequence data, ByteBuffer target) {
         target.clear();
         for (int i = 0; i < data.length(); i++) {

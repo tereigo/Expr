@@ -3,6 +3,7 @@ package com.tereigo.atlas_expr;
 import com.tereigo.atlas_expr.variant.MutableVariant;
 import com.tereigo.atlas_expr.variant.Variant;
 import com.tereigo.atlas_expr.variant.VariantFactory;
+import com.tereigo.atlas_expr.variant.VariantImpl;
 
 import java.util.List;
 
@@ -18,6 +19,7 @@ abstract class Expr {
     R visitLogicalExpr(Logical expr);   // or, and
     R visitUnaryExpr(Unary expr);       // -, not
     R visitIdentifierExpr(Identifier expr);
+    R visitCallExpr(Expr.Call expr);
   }
 
   static class Binary extends Expr {
@@ -150,6 +152,22 @@ abstract class Expr {
     @Override
     <R> R accept(Visitor<R> visitor) {
       return visitor.visitIdentifierExpr(this);
+    }
+  }
+
+  static class Call extends Expr {
+    final Token name;
+    final List<Expr> args;
+    final VariantImpl result = VariantFactory.createEmpty();
+
+    Call(Token name, List<Expr> args) {
+      this.name = name;
+      this.args = args;
+    }
+
+    @Override
+    <R> R accept(Visitor<R> visitor) {
+      return visitor.visitCallExpr(this);
     }
   }
 

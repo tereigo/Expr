@@ -1,7 +1,13 @@
 package com.tereigo.atlas_expr;
 
-import com.tereigo.atlas_expr.variant.MutableVariant;
 import com.tereigo.atlas_expr.atlas.utils.ByteBufferUtils;
+import com.tereigo.atlas_expr.function.Function0;
+import com.tereigo.atlas_expr.function.Function1;
+import com.tereigo.atlas_expr.function.Function2;
+import com.tereigo.atlas_expr.function.Function3;
+import com.tereigo.atlas_expr.function.Function4;
+import com.tereigo.atlas_expr.function.Function5;
+import com.tereigo.atlas_expr.variant.MutableVariant;
 import com.tereigo.atlas_expr.variant.Variant;
 import com.tereigo.atlas_expr.variant.VariantUtils;
 
@@ -153,6 +159,32 @@ final class Interpreter implements Expr.Visitor<Variant> {
       throw new RuntimeError(expr.name, "Unknown identifier '" + expr.name.lexeme + "'");
     }
     return res;
+  }
+
+  @Override
+  public Variant visitCallExpr(Expr.Call expr) {
+    Object funcObj = ctx.getFunction(expr.name);
+    if (funcObj == null) {
+      throw new RuntimeError(expr.name, "Unknown function '" + expr.name.lexeme + "'");
+    }
+
+    // cast to the appropriate function type depending on the number of args, evaluate all arguments and call the function
+    try {
+      switch (expr.args.size()) {
+        case 0: ((Function0)funcObj).call(expr.result); break;
+        case 1: ((Function1)funcObj).call(expr.result, evaluate(expr.args.get(0))); break;
+        case 2: ((Function2)funcObj).call(expr.result, evaluate(expr.args.get(0)), evaluate(expr.args.get(1))); break;
+        case 3: ((Function3)funcObj).call(expr.result, evaluate(expr.args.get(0)), evaluate(expr.args.get(1)), evaluate(expr.args.get(2))); break;
+        case 4: ((Function4)funcObj).call(expr.result, evaluate(expr.args.get(0)), evaluate(expr.args.get(1)), evaluate(expr.args.get(2)), evaluate(expr.args.get(3))); break;
+        case 5: ((Function5)funcObj).call(expr.result, evaluate(expr.args.get(0)), evaluate(expr.args.get(1)), evaluate(expr.args.get(2)), evaluate(expr.args.get(3)), evaluate(expr.args.get(4))); break;
+      }
+    } catch (ClassCastException castEx) {
+      throw new RuntimeError(expr.name, "ClassCastException for function '" + expr.name.lexeme + "': " + castEx.getMessage());
+    }
+    catch (RuntimeException runtimeEx) {
+      throw new RuntimeError(expr.name, "RuntimeException for function '" + expr.name.lexeme + "': " + runtimeEx.getMessage());
+    }
+    return expr.result;
   }
 
   private boolean isEqual(Token token, Variant left, Variant right) {

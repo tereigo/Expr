@@ -64,6 +64,24 @@ class AstHierarchyPrinter implements Expr.Visitor<String> {
     return expr.name.lexeme;
   }
 
+  @Override
+  public String visitCallExpr(Expr.Call expr) {
+    return "call " + expr.name.lexeme + formatParams(expr.args);
+  }
+
+  private String formatParams(List<Expr> list) {
+    StringBuilder builder = new StringBuilder();
+    builder.append("(");
+    for (int i = 0; i < list.size(); i++) {
+      builder.append(list.get(i).accept(this));
+      if (i < list.size() - 1) {
+        builder.append(", ");
+      }
+    }
+    builder.append(")");
+    return builder.toString();
+  }
+
   private String formatExpr(Token token, Expr left, Expr right) {
     StringBuilder builder = new StringBuilder();
     String ident = generateIdent(level);

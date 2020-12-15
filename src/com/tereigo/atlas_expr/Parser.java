@@ -60,7 +60,9 @@ import static com.tereigo.atlas_expr.TokenType.TRUE;
     comparison : term ( ( ">" | ">=" | "<" | "<=" ) term )* ;
     term       : factor ( ( "-" | "+" ) factor )* ;
     factor     : unary ( ( "/" | "*" | "%" ) unary )* ;
-    unary      : ( "!" | "-" ) unary | primary ;
+    unary      : ( "!" | "-" ) unary | call ;
+    call       : primary ( "(" arguments? ")" )* ;
+    arguments  : expression ( "," expression )* ;
     primary    : BOOLEAN | DOUBLE_NUMBER | LONG_NUMBER | STRING | IDENTIFIER | "(" expression ")" ;
 
     Lexems:
@@ -216,7 +218,7 @@ class Parser {
     return expr;
   }
 
-  // unary      : ( "!" | "-" ) unary | primary ;
+  // unary      : ( "!" | "-" ) unary | call ;
   private Expr unary() {
     if (match(NOT, MINUS)) {
       Token operator = previous();
@@ -224,7 +226,36 @@ class Parser {
       return new Expr.Unary(operator, right);
     }
 
-    return primary();
+    return call();
+  }
+
+  // call       : primary ( "(" arguments? ")" )* ;
+  private Expr call() {
+    Expr expr = primary();
+    if (match(LEFT_PAREN)) {
+      if (!(expr instanceof Expr.Identifier)) {
+        throw error(peek(), "Function name should be an identifier");
+      }
+      expr = finishCall(((Expr.Identifier)expr).name);
+    }
+    return expr;
+  }
+
+  // arguments  : expression ( "," expression )* ;
+  private Expr finishCall(Token name) {
+    List<Expr> arguments = new ArrayList<>();
+    if (!check(RIGHT_PAREN)) {
+      do {
+        if (arguments.size() >= 5) {
+          throw error(peek(), "Can't have more than 5 arguments");
+        }
+        arguments.add(expression());
+      } while (match(COMMA));
+    }
+
+    consume(RIGHT_PAREN, "Expect ')' after arguments");
+
+    return new Expr.Call(name, arguments);
   }
 
   // primary    : BOOLEAN | DOUBLE_NUMBER | LONG_NUMBER | STRING | IDENTIFIER | "(" expression ")" ;

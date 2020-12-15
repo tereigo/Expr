@@ -1,8 +1,4 @@
  TODO:
-1. may be introduce a new type: List
-  static class List extends Expr
-   in that case IN becomes a normal Binary operator
-   But it might require Variant to hold list which is undesirable :-/
 6. Add . for strings
 7. Add string operators:
  charAt
@@ -55,13 +51,24 @@
 9. Do we NIL ?
 12.
 
+Potential syntax:
+ $tuid.contains("")
+ contains($tuid, "ABC")
 
+ Python:
+if substring in fullstring:
+if fullstring.find(substring) != -1:
+if search(substring, fullstring):   - regexp
 
 
 
 
 
 Done:
+1. may be introduce a new type: List
+  static class List extends Expr
+   in that case IN becomes a normal Binary operator
+   But it might require Variant to hold list which is undesirable :-/
 1. It would be nice to have % operator for reminders
 4. Generate the concrete types if we know all expr types during compilation to avoid type checking when evaluate
    I'm not sure it's possible because we don't know the exact type of the expression evaluation especially if we retrieve a value from the environment

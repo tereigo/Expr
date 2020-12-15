@@ -115,7 +115,7 @@ class Scanner {
         // Ignore whitespace.
         break;
 
-      case '\n': // tereni: TODO: do we need EOL?
+      case '\n':
         line++;
         break;
 
@@ -217,22 +217,16 @@ class Scanner {
     return source.charAt(current + 1);
   }
 
-  // tereni: TODO: may be switch to Character.
   private boolean isAlpha(char c) {
-    //Character.isLetter()
-    return (c >= 'a' && c <= 'z') ||
-           (c >= 'A' && c <= 'Z') ||
-            c == '_' || c == '$';           // tereni: TODO: do we need '_'?
+    return Character.isLetter(c) || c == '_' || c == '$';
   }
 
-  // tereni: TODO: Character.isLetterOrDigit()
   private boolean isAlphaNumeric(char c) {
-    return isAlpha(c) || isDigit(c);
+    return Character.isLetterOrDigit(c);
   }
 
-  // tereni: TODO: Character.isDigit()
   private boolean isDigit(char c) {
-    return c >= '0' && c <= '9';
+    return Character.isDigit(c);
   }
 
   private boolean isAtEnd() {

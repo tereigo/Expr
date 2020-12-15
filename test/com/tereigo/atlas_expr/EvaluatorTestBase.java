@@ -1,5 +1,7 @@
 package com.tereigo.atlas_expr;
 
+import java.nio.ByteBuffer;
+
 import static com.tereigo.atlas_expr.atlas.utils.ByteBufferUtils.constant;
 
 class EvaluatorTestBase {
@@ -63,6 +65,11 @@ class EvaluatorTestBase {
     protected String evaluateString(String text, ExprContext ctx) {
         ExprEvaluator evaluator = new ExprEvaluator(text, ctx);
         return evaluator.evaluateString();
+    }
+
+    protected ByteBuffer evaluateByteBuffer(String text, ExprContext ctx) {
+        ExprEvaluator evaluator = new ExprEvaluator(text, ctx);
+        return evaluator.evaluateByteBuffer();
     }
 
     protected double evaluateDouble(Expr expr) {

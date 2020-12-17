@@ -4,7 +4,7 @@ import java.nio.ByteBuffer;
 
 import static com.tereigo.atlas_expr.atlas.utils.ByteBufferUtils.constant;
 
-class EvaluatorTestBase {
+class ExprEvaluatorTestBase {
     protected static final double EPS = 0.00001;
 
     protected ExprContextImpl createContext() {

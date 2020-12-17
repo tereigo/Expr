@@ -9,7 +9,6 @@ import com.tereigo.atlas_expr.function.Function4;
 import com.tereigo.atlas_expr.function.Function5;
 import com.tereigo.atlas_expr.variant.MutableVariant;
 import com.tereigo.atlas_expr.variant.Variant;
-import com.tereigo.atlas_expr.variant.VariantUtils;
 
 import static com.tereigo.atlas_expr.atlas.utils.AlgoUtils.epsilonEquals;
 import static com.tereigo.atlas_expr.variant.VariantUtils.isBoolean;
@@ -28,12 +27,12 @@ final class Interpreter implements Expr.Visitor<Variant> {
 
   Interpreter(final Expr expression) {
     this.expression = expression;
-    this.ctx.init(NativeExprContext.INSTANCE);
+    this.ctx.init(ExprContextNative.INSTANCE);
   }
 
   Interpreter(final Expr expression, final ExprContext ctx) {
     this.expression = expression;
-    this.ctx.init(NativeExprContext.INSTANCE, ctx);
+    this.ctx.init(ExprContextNative.INSTANCE, ctx);
   }
 
   Variant evaluate() {
@@ -97,8 +96,7 @@ final class Interpreter implements Expr.Visitor<Variant> {
   public Variant visitInOperator(Expr.InOperator expr) {
     Variant operand = evaluate(expr.operand);
     for (int i = 0; i < expr.values.size(); i++) {
-      checkOperandTypes(expr.operator, operand, expr.values.get(i));
-      if (operand.equals(expr.values.get(i))) {
+      if (isEqual(expr.operator, operand, expr.values.get(i))) {
         expr.result.accept(true);
         return expr.result;
       }
@@ -401,13 +399,6 @@ final class Interpreter implements Expr.Visitor<Variant> {
       return;
     }
     throw new RuntimeError(operator, "Operand must be a number");
-  }
-
-  private void checkOperandTypes(Token operator, Variant left, Variant right) {
-    if (VariantUtils.canCompare(left, right)) {
-      return;
-    }
-    throw new RuntimeError(operator, "Operands of different types cannot be compared: " + left.exprType() + " and " + right.exprType());
   }
 
 }

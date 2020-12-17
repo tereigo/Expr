@@ -150,7 +150,7 @@ public class VariantImpl implements MutableVariant {
         }
         return type == variant.type &&
                 longVal == variant.longVal &&
-                Double.compare(variant.doubleVal, doubleVal) == 0 &&
+                Double.compare(doubleVal, variant.doubleVal) == 0 &&
                 Objects.equals(strVal, variant.strVal) &&
                 Objects.equals(bbVal, variant.bbVal);
     }

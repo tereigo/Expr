@@ -11,7 +11,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-class EvaluatorTest extends EvaluatorTestBase {
+class ExprEvaluatorTest extends ExprEvaluatorTestBase {
 
     @Test
     void simpleLongTest() {
@@ -252,6 +252,8 @@ class EvaluatorTest extends EvaluatorTestBase {
         assertTrue(evaluateBool("((1 in [2, 3, 4]) or (2.0 in [1.0, 2.0]))"));
         assertTrue(evaluateBool("((1<=2 and 1 in [2, 3, 4]) or (2.0 in [1.0, 2.0]))"));
         assertTrue(evaluateBool("((1==1 and 4 in [1, 2, 3, 4]) and 5.0 == 5.0) and (2.0 in [1.0, 2.0] or \"A\" == \"B\")"));
+        assertTrue(evaluateBool("123 in [1.0, 2.0, 3.0, 123.0]"));
+        assertTrue(evaluateBool("123.0 in [1, 2, 3, 123]"));
     }
 
     @Test
@@ -312,8 +314,10 @@ class EvaluatorTest extends EvaluatorTestBase {
         runErr = assertThrows(RuntimeError.class, () -> evaluate("$ric == 1", ctx));
         assertEquals("Operands of different types cannot be compared: STRING and LONG", runErr.getMessage());
 
-        runErr = assertThrows(RuntimeError.class, () -> evaluate("$productId in [123.0]", ctx));
-        assertEquals("Operands of different types cannot be compared: LONG and DOUBLE", runErr.getMessage());
+        // comparison for IN operator works the same way as for usual "==" operator
+        // it means we can compare LONG and DOUBLE
+//        runErr = assertThrows(RuntimeError.class, () -> evaluate("$productId in [123.0]", ctx));
+//        assertEquals("Operands of different types cannot be compared: LONG and DOUBLE", runErr.getMessage());
 
         runErr = assertThrows(RuntimeError.class, () -> evaluate("$tuid + $tuid == \"CLIENT1CLIENT1\"", ctx));
         assertEquals("Operands must be numbers", runErr.getMessage());

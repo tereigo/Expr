@@ -22,7 +22,7 @@ public class ExprContextChained implements ExprContext {
     // Adding another context
     public ExprContext add(ExprContext ctx) {
         // New context has higher priority so it is "ctx1" in ExprContextCombined
-        this.ctx = new ExprContextCombined(ctx, this.ctx);
+        this.ctx = ExprContextCombined.create(ctx, this.ctx);
         return this;
     }
 }

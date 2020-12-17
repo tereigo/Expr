@@ -8,15 +8,4 @@ interface ExprContext {
 
   Object getFunction(Token token);
 
-  ExprContext EMPTY = new ExprContext() {
-    @Override
-    public MutableVariant get(Token token, MutableVariant result) {
-      return null;
-    }
-
-    @Override
-    public Object getFunction(Token token) {
-      return null;
-    }
-  };
 }

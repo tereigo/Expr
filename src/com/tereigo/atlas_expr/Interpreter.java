@@ -12,23 +12,28 @@ import com.tereigo.atlas_expr.variant.Variant;
 import com.tereigo.atlas_expr.variant.VariantUtils;
 
 import static com.tereigo.atlas_expr.atlas.utils.AlgoUtils.epsilonEquals;
+import static com.tereigo.atlas_expr.variant.VariantUtils.isBoolean;
+import static com.tereigo.atlas_expr.variant.VariantUtils.isByteBuffer;
+import static com.tereigo.atlas_expr.variant.VariantUtils.isDouble;
+import static com.tereigo.atlas_expr.variant.VariantUtils.isLong;
+import static com.tereigo.atlas_expr.variant.VariantUtils.isNumber;
+import static com.tereigo.atlas_expr.variant.VariantUtils.isString;
 
 /*
-  Evaluates the expressions defined in Expr class using the provided ExprEnvironment
+  Evaluates the expressions defined in Expr class using the provided ExprContext
  */
 final class Interpreter implements Expr.Visitor<Variant> {
-
   private final Expr expression;
-  private final ExprContext ctx;
+  private final ExprContextCombined ctx = new ExprContextCombined();
 
   Interpreter(final Expr expression) {
     this.expression = expression;
-    this.ctx = ExprContext.EMPTY;
+    this.ctx.init(NativeExprContext.INSTANCE);
   }
 
   Interpreter(final Expr expression, final ExprContext ctx) {
     this.expression = expression;
-    this.ctx = ctx;
+    this.ctx.init(NativeExprContext.INSTANCE, ctx);
   }
 
   Variant evaluate() {
@@ -179,10 +184,10 @@ final class Interpreter implements Expr.Visitor<Variant> {
         case 5: ((Function5)funcObj).call(expr.result, evaluate(expr.args.get(0)), evaluate(expr.args.get(1)), evaluate(expr.args.get(2)), evaluate(expr.args.get(3)), evaluate(expr.args.get(4))); break;
       }
     } catch (ClassCastException castEx) {
-      throw new RuntimeError(expr.name, "ClassCastException for function '" + expr.name.lexeme + "': " + castEx.getMessage());
+      throw new RuntimeError(expr.name, "ClassCastException in function '" + expr.name.lexeme + "': " + castEx.getMessage());
     }
     catch (RuntimeException runtimeEx) {
-      throw new RuntimeError(expr.name, "RuntimeException for function '" + expr.name.lexeme + "': " + runtimeEx.getMessage());
+      throw new RuntimeError(expr.name, "RuntimeException in function '" + expr.name.lexeme + "': " + runtimeEx.getMessage());
     }
     return expr.result;
   }
@@ -403,30 +408,6 @@ final class Interpreter implements Expr.Visitor<Variant> {
       return;
     }
     throw new RuntimeError(operator, "Operands of different types cannot be compared: " + left.exprType() + " and " + right.exprType());
-  }
-
-  private static boolean isNumber(Variant operand) {
-    return isDouble(operand) || isLong(operand);
-  }
-
-  private static boolean isLong(Variant operand) {
-    return operand.exprType() == ExprType.LONG;
-  }
-
-  private static boolean isDouble(Variant operand) {
-    return operand.exprType() == ExprType.DOUBLE;
-  }
-
-  private static boolean isString(Variant operand) {
-    return operand.exprType() == ExprType.STRING;
-  }
-
-  private static boolean isByteBuffer(Variant operand) {
-    return operand.exprType() == ExprType.BYTE_BUFFER;
-  }
-
-  private static boolean isBoolean(Variant operand) {
-    return operand.exprType() == ExprType.BOOL;
   }
 
 }

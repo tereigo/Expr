@@ -57,16 +57,20 @@ class Scanner {
 
   Scanner(String source) {
     this.source = source;
+    tokenize();
   }
 
   List<Token> tokens() {
+    return tokens;
+  }
+
+  private void tokenize() {
     while (!isAtEnd()) {
       // We are at the beginning of the next lexeme.
       start = current;
       scanToken();
     }
     tokens.add(new Token(EOF, "", null, line, start));
-    return tokens;
   }
 
   private void scanToken() {
@@ -164,10 +168,18 @@ class Scanner {
     String literal = source.substring(start, current);
     double asDouble = Double.parseDouble(literal);
     if (isDouble || asDouble > Long.MAX_VALUE || asDouble < Long.MIN_VALUE) {
-      addToken(DOUBLE_NUMBER, asDouble);
+      addToken(DOUBLE_NUMBER, asDouble, literal);
     } else {
-      long asLong = Long.parseLong(literal);
-      addToken(LONG_NUMBER, asLong);
+      // this is a special case to be able to parse Long.MIN_VALUE ("-9223372036854775808")
+      // this is because Long.parseLong("9223372036854775808") fails because 9223372036854775808 > Long.MAX_VALUE (9223372036854775807)
+      if (literal.equals("9223372036854775808") && tokens.size() > 0 && tokens.get(tokens.size() - 1).type == MINUS) {
+        // remove previous "minus"
+        tokens.remove(tokens.size() - 1);
+        addToken(LONG_NUMBER, Long.MIN_VALUE, "-9223372036854775808");
+      } else {
+        long asLong = Long.parseLong(literal);
+        addToken(LONG_NUMBER, asLong, literal);
+      }
     }
   }
 
@@ -244,6 +256,10 @@ class Scanner {
 
   private void addToken(TokenType type, Object literal) {
     String text = source.substring(start, current);
+    addToken(type, literal, text);
+  }
+
+  private void addToken(TokenType type, Object literal, String text) {
     tokens.add(new Token(type, text, literal, line, start));
   }
 

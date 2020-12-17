@@ -347,38 +347,38 @@ class EvaluatorTest extends EvaluatorTestBase {
 
         // error: 0 parameters instead of 1
         runErr = assertThrows(RuntimeError.class, () -> evaluate("isEven()", ctx));
-        assertTrue(runErr.getMessage().contains("ClassCastException for function 'isEven'"));
+        assertTrue(runErr.getMessage().contains("ClassCastException in function 'isEven'"));
         assertTrue(runErr.getMessage().contains("cannot be cast to com.tereigo.atlas_expr.function.Function0"));
 
         // error: 2 parameters instead of 1
         runErr = assertThrows(RuntimeError.class, () -> evaluate("isEven(1, 2)", ctx));
-        assertTrue(runErr.getMessage().contains("ClassCastException for function 'isEven'"));
+        assertTrue(runErr.getMessage().contains("ClassCastException in function 'isEven'"));
         assertTrue(runErr.getMessage().contains("cannot be cast to com.tereigo.atlas_expr.function.Function2"));
 
         // error: func2(10, 1) it expects Double as a second parameter
         runErr = assertThrows(RuntimeError.class, () -> evaluate("func5(func1(100), func2(func1(10), func2(10, 1)), not $enabled, $ric, $tuid)", ctx));
-        assertEquals("RuntimeException for function 'func5': RuntimeException for function 'func2': RuntimeException for function 'func2': Variant type mismatch: LONG, expected: DOUBLE", runErr.getMessage());
+        assertEquals("RuntimeException in function 'func5': RuntimeException in function 'func2': RuntimeException in function 'func2': Variant type mismatch: LONG, expected: DOUBLE", runErr.getMessage());
 
         // error is: func2(10) - expected call with 2 args
         runErr = assertThrows(RuntimeError.class, () -> evaluate("func5(func1(100), func2(func1(10), func2(10)), not $enabled, $ric, $tuid)", ctx));
-        assertTrue(runErr.getMessage().contains("RuntimeException for function 'func5': RuntimeException for function 'func2': ClassCastException for function 'func2'"));
+        assertTrue(runErr.getMessage().contains("RuntimeException in function 'func5': RuntimeException in function 'func2': ClassCastException in function 'func2'"));
         assertTrue(runErr.getMessage().contains("cannot be cast to com.tereigo.atlas_expr.function.Function1"));
 
         // error: Expects Long parameter instead of Double
         runErr = assertThrows(RuntimeError.class, () -> evaluate("isEven(1.0)", ctx));
-        assertEquals("RuntimeException for function 'isEven': Variant type mismatch: DOUBLE, expected: LONG", runErr.getMessage());
+        assertEquals("RuntimeException in function 'isEven': Variant type mismatch: DOUBLE, expected: LONG", runErr.getMessage());
 
         runErr = assertThrows(RuntimeError.class, () -> evaluate("isEven(\"\")", ctx));
-        assertEquals("RuntimeException for function 'isEven': Variant type mismatch: STRING, expected: LONG", runErr.getMessage());
+        assertEquals("RuntimeException in function 'isEven': Variant type mismatch: STRING, expected: LONG", runErr.getMessage());
 
         runErr = assertThrows(RuntimeError.class, () -> evaluate("isEven(true)", ctx));
-        assertEquals("RuntimeException for function 'isEven': Variant type mismatch: BOOL, expected: LONG", runErr.getMessage());
+        assertEquals("RuntimeException in function 'isEven': Variant type mismatch: BOOL, expected: LONG", runErr.getMessage());
 
         runErr = assertThrows(RuntimeError.class, () -> evaluate("isEven($ric)", ctx));
-        assertEquals("RuntimeException for function 'isEven': Variant type mismatch: STRING, expected: LONG", runErr.getMessage());
+        assertEquals("RuntimeException in function 'isEven': Variant type mismatch: STRING, expected: LONG", runErr.getMessage());
 
         runErr = assertThrows(RuntimeError.class, () -> evaluate("isEven($tuid)", ctx));
-        assertEquals("RuntimeException for function 'isEven': Variant type mismatch: BYTE_BUFFER, expected: LONG", runErr.getMessage());
+        assertEquals("RuntimeException in function 'isEven': Variant type mismatch: BYTE_BUFFER, expected: LONG", runErr.getMessage());
 
         runErr = assertThrows(RuntimeError.class, () -> evaluate("unknownFunction($tuid)", ctx));
         assertEquals("Unknown function 'unknownFunction'", runErr.getMessage());

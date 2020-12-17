@@ -17,8 +17,9 @@
  regexp
 11. Dump the original expression in the exceptions
 5. Add more malformed expression tests and make better error handling (see testMalformedExpressions)
-10. Type conversion functions and rounding: longToDouble, doubleToLong, toLong, round, dtol/priceToLong, ltod, toNanos, nanoToSec
-13. May be add function aliases: len / length / size, $tuid / $clientTuid
+10. Type conversion functions and rounding: toNanos, nanoToSec
+12. May be add function aliases: len / length / size, $tuid / $clientTuid
+13. May be use one Variant.objVal which can be used for both String and ByteBuffer and for any other object that the use can expose?
 14. Do we need to add Int type? we can re-use Variant.longVal
 15. May be we don't need Operator Tokens in Expr classes because Tokens are from parsing
     We really need just type of operation and may be the location of that token in the string to report an error if it happens during evaluation
@@ -30,7 +31,6 @@
 16. Other functions to add:
   random
   rnd
-  round
   date
   day
   month
@@ -65,6 +65,16 @@ if search(substring, fullstring):   - regexp
 
 
 Done:
+1. Native functions: min/max/abs
+  round
+  roundUp
+  roundDown
+  roundToNearest
+  toLong,
+  toDouble,
+  dtol,
+  ltod,
+
 1. may be introduce a new type: List
   static class List extends Expr
    in that case IN becomes a normal Binary operator

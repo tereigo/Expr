@@ -12,5 +12,4 @@ import java.util.function.LongSupplier;
 // This is immutable interface
 public interface Variant extends LongSupplier, DoubleSupplier, BooleanSupplier, StringSupplier, ByteBufferSupplier, ObjectSupplier {
     ExprType exprType();
-//    void cloneFrom(Variant other);
 }

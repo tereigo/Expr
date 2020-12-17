@@ -7,7 +7,7 @@ enum TokenType {
   LEFT_BRACKET,      // '['
   RIGHT_BRACKET,     // ']'
   COMMA,             // ','
-  DOT,               // '.'  tereni: TODO: may be needed for String operators: $tuid.contains("abc"),  "ABC".length()
+  DOT,               // '.'
   MINUS,             // '-'
   PLUS,              // '+'
   DIV,               // '/'

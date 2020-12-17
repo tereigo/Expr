@@ -99,7 +99,7 @@ class ExprContextImpl implements ExprContext {
 
   @Override
   public String toString() {
-    return values.toString();
+    return "values: " + values.toString() + ", functions: " + functions.keySet();
   }
 
   private static class Entry {

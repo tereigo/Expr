@@ -1,15 +1,13 @@
 package com.tereigo.atlas_expr;
 
+import com.tereigo.atlas_expr.atlas.utils.ByteBufferUtils;
 import com.tereigo.atlas_expr.atlas.utils.OrderPrice;
 import com.tereigo.atlas_expr.atlas.utils.PriceUtils;
 import com.tereigo.atlas_expr.variant.MutableVariant;
 import com.tereigo.atlas_expr.variant.VariantUtils;
 
 /*
-  Provides Expr native functions:
-  1. min(arg1, arg2)
-  2. max(arg1, arg2)
-  3. abs(arg1)
+  Provides Expr native functions
  */
 class ExprContextNative implements ExprContext {
   static final ExprContext INSTANCE = new ExprContextNative();
@@ -155,6 +153,99 @@ class ExprContextNative implements ExprContext {
         throw new RuntimeException("Operand must be a LONG number");
       }
     });
+
+    // String functions
+    ctx.defineFunction("isEmpty", (result, arg1) -> {
+      if (VariantUtils.isString(arg1)) {
+        result.accept(arg1.getAsString().isEmpty());
+      } else if (VariantUtils.isByteBuffer(arg1)) {
+          result.accept(ByteBufferUtils.isEmpty(arg1.getAsByteBuffer()));
+      } else {
+        throw new RuntimeException("Operand must be a STRING or BYTE_BUFFER");
+      }
+    });
+
+    ctx.defineFunction("length", (result, arg1) -> {
+      if (VariantUtils.isString(arg1)) {
+        result.accept(arg1.getAsString().length());
+      } else if (VariantUtils.isByteBuffer(arg1)) {
+        result.accept(arg1.getAsByteBuffer().remaining());
+      } else {
+        throw new RuntimeException("Operand must be a STRING or BYTE_BUFFER");
+      }
+    });
+
+    // TODO: finish it
+//    ctx.defineFunction("equalsIgnoreCase", (result, arg1, arg2) -> {
+//      if (VariantUtils.isString(arg1) && VariantUtils.isString(arg2)) {
+//        result.accept(arg1.getAsString().equalsIgnoreCase(arg2.getAsString()));
+//      } else if (VariantUtils.isString(arg1) && VariantUtils.isByteBuffer(arg2)) {
+//        // TODO: reimplement - generates garbage
+//        result.accept(arg1.getAsString().equalsIgnoreCase(ByteBufferUtils.parseString(arg2.getAsByteBuffer())));
+//      } else if (VariantUtils.isByteBuffer(arg1) && VariantUtils.isString(arg2)) {
+//        result.accept(ByteBufferUtils.equalsCaseInsensitive(arg1.getAsByteBuffer(), arg2.getAsString()));
+//      } else if (VariantUtils.isByteBuffer(arg1) && VariantUtils.isByteBuffer(arg2)) {
+//        result.accept(ByteBufferUtils.equalsCaseInsensitive(arg1.getAsByteBuffer(), arg2.getAsByteBuffer()));
+//      } else {
+//        throw new RuntimeException("Operand must be a STRING or BYTE_BUFFER");
+//      }
+//    });
+
+    ctx.defineFunction("contains", (result, arg1, arg2) -> {
+      if (VariantUtils.isString(arg1) && VariantUtils.isString(arg2)) {
+        result.accept(arg1.getAsString().contains(arg2.getAsString()));
+      } else {
+        throw new RuntimeException("Operand must be a STRING");
+      }
+    });
+
+    // TODO: finish it
+//    ctx.defineFunction("contains", (result, arg1, arg2) -> {
+//      if (VariantUtils.isString(arg1) && VariantUtils.isString(arg2)) {
+//        result.accept(arg1.getAsString().contains(arg2.getAsString()));
+//      } else if (VariantUtils.isString(arg1) && VariantUtils.isByteBuffer(arg2)) {
+//        // TODO: reimplement - generates garbage
+//        result.accept(arg1.getAsString().contains(arg2.getAsByteBuffer().asCharBuffer()));
+//      } else if (VariantUtils.isByteBuffer(arg1) && VariantUtils.isString(arg2)) {
+//        throw new RuntimeException("contains() not implemented for ByteBuffer");
+//      } else if (VariantUtils.isByteBuffer(arg1) && VariantUtils.isByteBuffer(arg2)) {
+//        throw new RuntimeException("contains() not implemented for ByteBuffer");
+//      } else {
+//        throw new RuntimeException("Operand must be a STRING or BYTE_BUFFER");
+//      }
+//    });
+
+    // TODO: finish it
+//    ctx.defineFunction("startsWith", (result, arg1, arg2) -> {
+//      if (VariantUtils.isString(arg1) && VariantUtils.isString(arg2)) {
+//        result.accept(arg1.getAsString().startsWith(arg2.getAsString()));
+//      } else if (VariantUtils.isString(arg1) && VariantUtils.isByteBuffer(arg2)) {
+//        // TODO: reimplement - generates garbage
+//        result.accept(arg1.getAsString().startsWith(ByteBufferUtils.parseString(arg2.getAsByteBuffer())));
+//      } else if (VariantUtils.isByteBuffer(arg1) && VariantUtils.isString(arg2)) {
+//        result.accept(ByteBufferUtils.startWith(arg1.getAsByteBuffer(), arg2.getAsString()));
+//      } else if (VariantUtils.isByteBuffer(arg1) && VariantUtils.isByteBuffer(arg2)) {
+//        result.accept(ByteBufferUtils.startWith(arg1.getAsByteBuffer(), arg2.getAsByteBuffer()));
+//      } else {
+//        throw new RuntimeException("Operand must be a STRING or BYTE_BUFFER");
+//      }
+//    });
+
+    // TODO: finish it
+//    ctx.defineFunction("endsWith", (result, arg1, arg2) -> {
+//      if (VariantUtils.isString(arg1) && VariantUtils.isString(arg2)) {
+//        result.accept(arg1.getAsString().endsWith(arg2.getAsString()));
+//      } else if (VariantUtils.isString(arg1) && VariantUtils.isByteBuffer(arg2)) {
+//        // TODO: reimplement - generates garbage
+//        result.accept(arg1.getAsString().endsWith(ByteBufferUtils.parseString(arg2.getAsByteBuffer())));
+//      } else if (VariantUtils.isByteBuffer(arg1) && VariantUtils.isString(arg2)) {
+//        result.accept(ByteBufferUtils.endWith(arg1.getAsByteBuffer(), arg2.getAsString()));
+//      } else if (VariantUtils.isByteBuffer(arg1) && VariantUtils.isByteBuffer(arg2)) {
+//        result.accept(ByteBufferUtils.endWith(arg1.getAsByteBuffer(), arg2.getAsByteBuffer()));
+//      } else {
+//        throw new RuntimeException("Operand must be a STRING or BYTE_BUFFER");
+//      }
+//    });
   }
 
   @Override
@@ -165,5 +256,10 @@ class ExprContextNative implements ExprContext {
   @Override
   public Object getFunction(Token token) {
     return ctx.getFunction(token);
+  }
+
+  @Override
+  public String toString() {
+    return ctx.toString();
   }
 }

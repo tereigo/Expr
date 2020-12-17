@@ -3,6 +3,7 @@ package com.tereigo.atlas_expr;
 import com.tereigo.atlas_expr.atlas.utils.OrderPrice;
 import org.junit.jupiter.api.Test;
 
+import static com.tereigo.atlas_expr.atlas.utils.ByteBufferUtils.constant;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -230,8 +231,8 @@ class ExprNativeFunctionsTest extends ExprEvaluatorTestBase {
         runErr = assertThrows(RuntimeError.class, () -> evaluate("dtol(true)"));
         assertEquals("RuntimeException in function 'dtol': Operand must be a DOUBLE number", runErr.getMessage());
         // isMarketPrice
-        assertTrue(evaluateBool("isMarketPrice(" +  OrderPrice.NO_LIMIT_PRICE + ")"));
-        assertFalse(evaluateBool("isMarketPrice(" +  OrderPrice.INVALID_PRICE + ")"));
+        assertTrue(evaluateBool("isMarketPrice(" + OrderPrice.NO_LIMIT_PRICE + ")"));
+        assertFalse(evaluateBool("isMarketPrice(" + OrderPrice.INVALID_PRICE + ")"));
         assertFalse(evaluateBool("isMarketPrice(1000000)"));
         runErr = assertThrows(RuntimeError.class, () -> evaluate("isMarketPrice(1000000.0)"));
         assertEquals("RuntimeException in function 'isMarketPrice': Operand must be a LONG number", runErr.getMessage());
@@ -240,8 +241,8 @@ class ExprNativeFunctionsTest extends ExprEvaluatorTestBase {
         runErr = assertThrows(RuntimeError.class, () -> evaluate("isMarketPrice(true)"));
         assertEquals("RuntimeException in function 'isMarketPrice': Operand must be a LONG number", runErr.getMessage());
         // isLimitPrice
-        assertFalse(evaluateBool("isLimitPrice(" +  OrderPrice.NO_LIMIT_PRICE + ")"));
-        assertFalse(evaluateBool("isLimitPrice(" +  OrderPrice.INVALID_PRICE + ")"));
+        assertFalse(evaluateBool("isLimitPrice(" + OrderPrice.NO_LIMIT_PRICE + ")"));
+        assertFalse(evaluateBool("isLimitPrice(" + OrderPrice.INVALID_PRICE + ")"));
         assertTrue(evaluateBool("isLimitPrice(1000000)"));
         runErr = assertThrows(RuntimeError.class, () -> evaluate("isLimitPrice(1000000.0)"));
         assertEquals("RuntimeException in function 'isLimitPrice': Operand must be a LONG number", runErr.getMessage());
@@ -250,8 +251,8 @@ class ExprNativeFunctionsTest extends ExprEvaluatorTestBase {
         runErr = assertThrows(RuntimeError.class, () -> evaluate("isLimitPrice(true)"));
         assertEquals("RuntimeException in function 'isLimitPrice': Operand must be a LONG number", runErr.getMessage());
         // isValidPrice
-        assertTrue(evaluateBool("isValidPrice(" +  OrderPrice.NO_LIMIT_PRICE + ")"));
-        assertFalse(evaluateBool("isValidPrice(" +  OrderPrice.INVALID_PRICE + ")"));
+        assertTrue(evaluateBool("isValidPrice(" + OrderPrice.NO_LIMIT_PRICE + ")"));
+        assertFalse(evaluateBool("isValidPrice(" + OrderPrice.INVALID_PRICE + ")"));
         assertTrue(evaluateBool("isValidPrice(1000000)"));
         runErr = assertThrows(RuntimeError.class, () -> evaluate("isValidPrice(1000000.0)"));
         assertEquals("RuntimeException in function 'isValidPrice': Operand must be a LONG number", runErr.getMessage());
@@ -298,5 +299,81 @@ class ExprNativeFunctionsTest extends ExprEvaluatorTestBase {
         assertTrue(evaluateBool("isLimitPrice(dtol(PI()))", ctx));
         assertFalse(evaluateBool("isMarketPrice(dtol(PI()))", ctx));
         assertTrue(evaluateBool("isValidPrice(dtol(PI()))", ctx));
+        assertEquals(3, evaluateLong("PI().toLong()", ctx));
+        assertEquals(3, evaluateLong("PI().round()", ctx));
+        assertEquals(4, evaluateLong("PI().roundUp()", ctx));
+        assertEquals(3, evaluateLong("3.14.toLong()", ctx));
+        assertEquals(5.0, evaluateDouble("5.toDouble()", ctx), EPS);
+    }
+
+    @Test
+    void stringFunctionsTest() {
+        RuntimeError runErr;
+
+        assertTrue(evaluateBool("\"\".isEmpty()"));
+        assertFalse(evaluateBool("not \"\".isEmpty()"));
+        assertFalse(evaluateBool("\"A\".isEmpty()"));
+        assertTrue(evaluateBool("not \"A\".isEmpty()"));
+
+        assertTrue(evaluateBool("\"\".length() == 0"));
+        assertEquals(0, evaluateLong("\"\".length()"));
+
+        assertTrue(evaluateBool("\"ABC\".length() == 3"));
+        assertEquals(3, evaluateLong("\"ABC\".length()"));
+
+        assertTrue(evaluateBool("\"ABC\".contains(\"ABC\")"));
+        assertFalse(evaluateBool("\"ABC\".contains(\"abc\")"));
+        assertFalse(evaluateBool("\"abc\".contains(\"ABC\")"));
+        assertTrue(evaluateBool("\"ABC\".contains(\"\")"));
+        assertTrue(evaluateBool("\"abc\".contains(\"\")"));
+        assertFalse(evaluateBool("\"\".contains(\"abc\")"));
+        assertFalse(evaluateBool("\"\".contains(\"ABC\")"));
+
+        runErr = assertThrows(RuntimeError.class, () -> evaluate("\"ABC\".contains(1)"));
+        assertEquals("RuntimeException in function 'contains': Operand must be a STRING", runErr.getMessage());
+        runErr = assertThrows(RuntimeError.class, () -> evaluate("\"ABC\".contains(1.0)"));
+        assertEquals("RuntimeException in function 'contains': Operand must be a STRING", runErr.getMessage());
+        runErr = assertThrows(RuntimeError.class, () -> evaluate("\"ABC\".contains(true)"));
+        assertEquals("RuntimeException in function 'contains': Operand must be a STRING", runErr.getMessage());
+        runErr = assertThrows(RuntimeError.class, () -> evaluate("1.contains(\"A\")"));
+        assertEquals("RuntimeException in function 'contains': Operand must be a STRING", runErr.getMessage());
+        runErr = assertThrows(RuntimeError.class, () -> evaluate("true.contains(\"A\")"));
+        assertEquals("RuntimeException in function 'contains': Operand must be a STRING", runErr.getMessage());
+
+        final ExprContextImpl ctx = new ExprContextImpl();
+        ctx.defineString("region", () -> "EMEA");
+        ctx.defineFunction("algoType", result -> result.accept("Algo1"));
+
+        assertFalse(evaluateBool("algoType().isEmpty()", ctx));
+        assertFalse(evaluateBool("region.isEmpty()", ctx));
+        assertTrue(evaluateBool("algoType().length() == 5", ctx));
+        assertTrue(evaluateBool("region.length() == 4", ctx));
+
+        final ExprContextImpl ctx2 = new ExprContextImpl();
+        ctx2.defineByteBuffer("region", () -> constant("EMEA"));
+        ctx2.defineFunction("algoType", result -> result.accept(constant("Algo1")));
+
+        assertFalse(evaluateBool("algoType().isEmpty()", ctx2));
+        assertFalse(evaluateBool("region.isEmpty()", ctx2));
+        assertTrue(evaluateBool("algoType().length() == 5", ctx2));
+        assertTrue(evaluateBool("region.length() == 4", ctx2));
+
+        runErr = assertThrows(RuntimeError.class, () -> evaluate("\"ABC\".contains(region)", ctx2));
+        assertEquals("RuntimeException in function 'contains': Operand must be a STRING", runErr.getMessage());
+        runErr = assertThrows(RuntimeError.class, () -> evaluate("\"ABC\".contains(algoType())", ctx2));
+        assertEquals("RuntimeException in function 'contains': Operand must be a STRING", runErr.getMessage());
+        runErr = assertThrows(RuntimeError.class, () -> evaluate("region.contains(\"A\")", ctx2));
+        assertEquals("RuntimeException in function 'contains': Operand must be a STRING", runErr.getMessage());
+        runErr = assertThrows(RuntimeError.class, () -> evaluate("algoType().contains(\"A\")", ctx2));
+        assertEquals("RuntimeException in function 'contains': Operand must be a STRING", runErr.getMessage());
+
+        final ExprContextImpl ctx3 = new ExprContextImpl();
+        ctx3.defineString("region", () -> "EMEA");
+        ctx3.defineFunction("algoType", result -> result.accept(constant("Algo1")));
+
+        assertFalse(evaluateBool("algoType().isEmpty()", ctx3));
+        assertFalse(evaluateBool("region.isEmpty()", ctx3));
+        assertTrue(evaluateBool("algoType().length() == 5", ctx3));
+        assertTrue(evaluateBool("region.length() == 4", ctx3));
     }
 }

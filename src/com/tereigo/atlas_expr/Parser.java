@@ -9,6 +9,7 @@ import java.util.List;
 import static com.tereigo.atlas_expr.TokenType.AND;
 import static com.tereigo.atlas_expr.TokenType.COMMA;
 import static com.tereigo.atlas_expr.TokenType.DIV;
+import static com.tereigo.atlas_expr.TokenType.DOT;
 import static com.tereigo.atlas_expr.TokenType.DOUBLE_NUMBER;
 import static com.tereigo.atlas_expr.TokenType.EOF;
 import static com.tereigo.atlas_expr.TokenType.EQUAL_EQUAL;
@@ -61,7 +62,7 @@ import static com.tereigo.atlas_expr.TokenType.TRUE;
     term       : factor ( ( "-" | "+" ) factor )* ;
     factor     : unary ( ( "/" | "*" | "%" ) unary )* ;
     unary      : ( "!" | "-" ) unary | call ;
-    call       : primary ( "(" arguments? ")" )* ;
+    call       : primary ( "(" arguments? ")" | "." IDENTIFIER "(" arguments? ")" )* ;
     arguments  : expression ( "," expression )* ;
     primary    : BOOLEAN | DOUBLE_NUMBER | LONG_NUMBER | STRING | IDENTIFIER | "(" expression ")" ;
 
@@ -229,33 +230,43 @@ class Parser {
     return call();
   }
 
-  // call       : primary ( "(" arguments? ")" )* ;
+  // call       : primary ( "(" arguments? ")" | "." IDENTIFIER "(" arguments? ")" )* ;
   private Expr call() {
     Expr expr = primary();
-    if (match(LEFT_PAREN)) {
-      if (!(expr instanceof Expr.Identifier)) {
-        throw error(peek(), "Function name should be an identifier");
+    while (true) {
+      if (match(LEFT_PAREN)) {
+        if (!(expr instanceof Expr.Identifier)) {
+          throw error(peek(), "Function name should be an identifier");
+        }
+        List<Expr> args = arguments(5);
+        expr = new Expr.Call(((Expr.Identifier) expr).name, args);
+      } else if (match(DOT)) {
+        Token name = consume(IDENTIFIER, "Expect function name after '.'");
+        consume(LEFT_PAREN, "Expect '(' after '.'function_name");
+        List<Expr> args = arguments(4);
+        expr = new Expr.ObjectCall(expr, name, args);
+      } else {
+        break;
       }
-      expr = finishCall(((Expr.Identifier)expr).name);
     }
     return expr;
   }
 
   // arguments  : expression ( "," expression )* ;
-  private Expr finishCall(Token name) {
-    List<Expr> arguments = new ArrayList<>();
+  private List<Expr> arguments(int maxArgs) {
+    List<Expr> args = new ArrayList<>();
     if (!check(RIGHT_PAREN)) {
       do {
-        if (arguments.size() >= 5) {
-          throw error(peek(), "Can't have more than 5 arguments");
+        if (args.size() >= maxArgs) {
+          throw error(peek(), "Can't have more than " + maxArgs + " arguments");
         }
-        arguments.add(expression());
+        args.add(expression());
       } while (match(COMMA));
     }
 
     consume(RIGHT_PAREN, "Expect ')' after arguments");
 
-    return new Expr.Call(name, arguments);
+    return args;
   }
 
   // primary    : BOOLEAN | DOUBLE_NUMBER | LONG_NUMBER | STRING | IDENTIFIER | "(" expression ")" ;

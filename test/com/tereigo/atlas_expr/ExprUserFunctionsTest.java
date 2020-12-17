@@ -15,7 +15,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class ExprUserFunctionsTest extends ExprEvaluatorTestBase {
 
     @Test
-    void functionTests() {
+    void userFunctionTests() {
         OrderFieldSupplier orderSupplier = new OrderFieldSupplier();
         Order order1 = new Order("VOD.L", 123L, true, constant("CLIENT1"));
         orderSupplier.setOrder(order1);
@@ -74,7 +74,7 @@ class ExprUserFunctionsTest extends ExprEvaluatorTestBase {
             boolean bool = arg3.getAsBoolean();
             String s = arg4.getAsString();
             ByteBuffer bb = arg5.getAsByteBuffer();
-            result.accept(l > d && bool && !s.isEmpty() && ByteBufferUtils.startWith(bb,"CLIENT"));
+            result.accept(l > d && bool && !s.isEmpty() && ByteBufferUtils.startWith(bb, "CLIENT"));
         });
 
         final ExprContextImpl orderCtx = new ExprContextImpl();
@@ -108,6 +108,11 @@ class ExprUserFunctionsTest extends ExprEvaluatorTestBase {
         assertTrue(evaluateBool("isEven(2)", ctx));
         assertTrue(evaluateBool("isEven($productId)", ctx));
         assertFalse(evaluateBool("not isEven($productId)", ctx));
+        // let's try the alternative syntax
+        assertTrue(evaluateBool("0.isEven()", ctx));
+        assertFalse(evaluateBool("1.isEven()", ctx));
+        assertTrue(evaluateBool("2.isEven()", ctx));
+        assertTrue(evaluateBool("$productId.isEven()", ctx));
 
         assertEquals("func0", evaluateString("func0()", ctx));
         assertTrue(evaluateBool("func0() == \"func0\"", ctx));
@@ -131,8 +136,15 @@ class ExprUserFunctionsTest extends ExprEvaluatorTestBase {
         assertTrue(evaluateBool("func2(2, 2.0) == 4.0", ctx));
         assertTrue(evaluateBool("3.0 == func2(1, 2.0)", ctx));
         assertTrue(evaluateBool("5 == func2(2, 3.0)", ctx));
+        // let's try the alternative syntax
+        assertEquals(3.0, evaluateDouble("1.func2(2.0)", ctx), EPS);
+        assertEquals(5.0, evaluateDouble("2.func2(3.0)", ctx), EPS);
 
         assertEquals(459.14, evaluateDouble("func2($productId, PI())", ctx), EPS);
+        // let's try the alternative syntax
+        assertEquals(459.14, evaluateDouble("$productId.func2(PI())", ctx), EPS);
+        // the following syntax is not allowed because we add only the first parameter as "this" and func2() expects 2 params
+        //assertEquals(459.14, evaluateDouble("$productId.PI().func2()", ctx), EPS);
 
         assertTrue(evaluateBool("func3(10, 1.0, true)", ctx));
         assertFalse(evaluateBool("func3(10, 1.0, false)", ctx));
@@ -177,5 +189,18 @@ class ExprUserFunctionsTest extends ExprEvaluatorTestBase {
         assertTrue(evaluateBool("func5(func1(100), func2(func1(10), PI()), not $enabled, $ric, $tuid)", ctx));
         assertTrue(evaluateBool("func5(func1(100), func2(func1(10), func2(10, 1.0)), not $enabled, $ric, $tuid)", ctx));
         assertTrue(evaluateBool("func5(func1(100), func2(func1(10), func2(10, 1)), not $enabled, $ric, $tuid)", ctx));
+    }
+
+    @Test
+    void userFunctionWithStringTests() {
+        final ExprContextImpl ctx = new ExprContextImpl();
+        ctx.defineString("region", () -> "EMEA");
+        ctx.defineFunction("algoType", result -> result.accept(constant("Algo1")));
+        ctx.defineFunction("stringFunc", (result, arg1) -> result.accept(arg1.getAsString()));
+        ctx.defineFunction("byteBufferFunc", (result, arg1) -> result.accept(arg1.getAsByteBuffer()));
+
+        assertFalse(evaluateBool("stringFunc(stringFunc(stringFunc(region))).isEmpty()", ctx));
+        assertFalse(evaluateBool("stringFunc(stringFunc(stringFunc(\"ABC\"))).isEmpty()", ctx));
+        assertFalse(evaluateBool("byteBufferFunc(byteBufferFunc(algoType())).isEmpty()", ctx));
     }
 }

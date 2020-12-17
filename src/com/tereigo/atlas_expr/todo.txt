@@ -1,20 +1,25 @@
  TODO:
-6. Add . for strings
 7. Add string operators:
- charAt
- concatenate
- contains
+ startsWith
  endsWith
  equalsIgnoreCase
+ charAt
  indexOf
- isEmpty
- length
+ contains
+
  matches
- startsWith
+ concatenate
  substring
  toLowerCase
  toUpperCase
  regexp
+
+7. May be rename "defineLong/defineDouble/defineFunction" to "bindLong/bindFunction"
+8. Should we expose objects? It may be easier than introducing individual functions
+and instead of: orderQty, orderPrice, orderRic, orderTif, ...
+we will expose: order() as an Object
+and all other functions well be available via reflection
+
 11. Dump the original expression in the exceptions
 5. Add more malformed expression tests and make better error handling (see testMalformedExpressions)
 10. Type conversion functions and rounding: toNanos, nanoToSec
@@ -52,8 +57,9 @@
 12.
 
 Potential syntax:
- $tuid.contains("")
- contains($tuid, "ABC")
+ $tuid.contains("ABC")
+ contains($tuid,"ABC")
+ "abc".contains($tuid)
 
  Python:
 if substring in fullstring:
@@ -65,6 +71,11 @@ if search(substring, fullstring):   - regexp
 
 
 Done:
+6. Add . for strings
+7. Add string operators:
+ isEmpty
+ length
+ contains
 1. Native functions: min/max/abs
   round
   roundUp

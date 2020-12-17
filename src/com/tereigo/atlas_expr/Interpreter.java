@@ -15,7 +15,6 @@ import static com.tereigo.atlas_expr.variant.VariantUtils.isBoolean;
 import static com.tereigo.atlas_expr.variant.VariantUtils.isByteBuffer;
 import static com.tereigo.atlas_expr.variant.VariantUtils.isDouble;
 import static com.tereigo.atlas_expr.variant.VariantUtils.isLong;
-import static com.tereigo.atlas_expr.variant.VariantUtils.isNumber;
 import static com.tereigo.atlas_expr.variant.VariantUtils.isString;
 
 /*
@@ -180,6 +179,31 @@ final class Interpreter implements Expr.Visitor<Variant> {
         case 3: ((Function3)funcObj).call(expr.result, evaluate(expr.args.get(0)), evaluate(expr.args.get(1)), evaluate(expr.args.get(2))); break;
         case 4: ((Function4)funcObj).call(expr.result, evaluate(expr.args.get(0)), evaluate(expr.args.get(1)), evaluate(expr.args.get(2)), evaluate(expr.args.get(3))); break;
         case 5: ((Function5)funcObj).call(expr.result, evaluate(expr.args.get(0)), evaluate(expr.args.get(1)), evaluate(expr.args.get(2)), evaluate(expr.args.get(3)), evaluate(expr.args.get(4))); break;
+      }
+    } catch (ClassCastException castEx) {
+      throw new RuntimeError(expr.name, "ClassCastException in function '" + expr.name.lexeme + "': " + castEx.getMessage());
+    }
+    catch (RuntimeException runtimeEx) {
+      throw new RuntimeError(expr.name, "RuntimeException in function '" + expr.name.lexeme + "': " + runtimeEx.getMessage());
+    }
+    return expr.result;
+  }
+
+  @Override
+  public Variant visitObjectCallExpr(Expr.ObjectCall expr) {
+    Object funcObj = ctx.getFunction(expr.name);
+    if (funcObj == null) {
+      throw new RuntimeError(expr.name, "Unknown function '" + expr.name.lexeme + "'");
+    }
+
+    try {
+      // expr.args.size()+1 - because we add the resolved "this" as a second parameter (evaluate(expr.object)))
+      switch (expr.args.size() + 1) {
+        case 1: ((Function1)funcObj).call(expr.result, evaluate(expr.object)); break;
+        case 2: ((Function2)funcObj).call(expr.result, evaluate(expr.object), evaluate(expr.args.get(0))); break;
+        case 3: ((Function3)funcObj).call(expr.result, evaluate(expr.object), evaluate(expr.args.get(0)), evaluate(expr.args.get(1))); break;
+        case 4: ((Function4)funcObj).call(expr.result, evaluate(expr.object), evaluate(expr.args.get(0)), evaluate(expr.args.get(1)), evaluate(expr.args.get(2))); break;
+        case 5: ((Function5)funcObj).call(expr.result, evaluate(expr.object), evaluate(expr.args.get(0)), evaluate(expr.args.get(1)), evaluate(expr.args.get(2)), evaluate(expr.args.get(3))); break;
       }
     } catch (ClassCastException castEx) {
       throw new RuntimeError(expr.name, "ClassCastException in function '" + expr.name.lexeme + "': " + castEx.getMessage());
@@ -392,13 +416,6 @@ final class Interpreter implements Expr.Visitor<Variant> {
       return;
     }
     throw new RuntimeError(operator, "Operand must be a boolean");
-  }
-
-  private void checkNumberOperand(Token operator, Variant operand) {
-    if (isNumber(operand)) {
-      return;
-    }
-    throw new RuntimeError(operator, "Operand must be a number");
   }
 
 }

@@ -64,11 +64,6 @@ class AstPolishPrinter implements Expr.Visitor<String> {
     return "call " + expr.name.lexeme + formatParams(expr.args);
   }
 
-  @Override
-  public String visitObjectCallExpr(Expr.ObjectCall expr) {
-    return "obj call " + expr.object.accept(this) + "." + expr.name.lexeme + formatParams(expr.args);
-  }
-
   private String formatParams(List<Expr> list) {
     StringBuilder builder = new StringBuilder();
     builder.append("(");

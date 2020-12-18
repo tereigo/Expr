@@ -106,7 +106,7 @@ class ExprPrinterTest extends ExprEvaluatorTestBase {
                 "│\n" +
                 "├── $curTime", printer.print(ExprCompiler.compile("func($id, isEven(rnd())) == $curTime")));
 
-        assertEquals("obj call ABC.contains($id)", printer.print(ExprCompiler.compile("\"ABC\".contains($id)")));
+        assertEquals("call contains(ABC, $id)", printer.print(ExprCompiler.compile("\"ABC\".contains($id)")));
     }
 
     @Test
@@ -131,7 +131,7 @@ class ExprPrinterTest extends ExprEvaluatorTestBase {
         assertEquals("(in A [A, B])", printer.print(ExprCompiler.compile("\"A\" in [\"A\", \"B\"]")));
         assertEquals("(== call func($id, 1) $curTime)", printer.print(ExprCompiler.compile("func($id, 1) == $curTime")));
         assertEquals("(== call func($id, call isEven(call rnd())) $curTime)", printer.print(ExprCompiler.compile("func($id, isEven(rnd())) == $curTime")));
-        assertEquals("obj call ABC.contains($id)", printer.print(ExprCompiler.compile("\"ABC\".contains($id)")));
+        assertEquals("call contains(ABC, $id)", printer.print(ExprCompiler.compile("\"ABC\".contains($id)")));
     }
 
     @Test

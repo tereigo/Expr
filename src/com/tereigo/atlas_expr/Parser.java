@@ -1,5 +1,6 @@
 package com.tereigo.atlas_expr;
 
+import com.google.common.collect.Lists;
 import com.tereigo.atlas_expr.variant.Variant;
 import com.tereigo.atlas_expr.variant.VariantFactory;
 
@@ -243,8 +244,10 @@ class Parser {
       } else if (match(DOT)) {
         Token name = consume(IDENTIFIER, "Expect function name after '.'");
         consume(LEFT_PAREN, "Expect '(' after '.'function_name");
-        List<Expr> args = arguments(4);
-        expr = new Expr.ObjectCall(expr, name, args);
+        // we convert "object call" into the normal call where the first parameter is recalculatable Expr representing "this"
+        List<Expr> args = Lists.newArrayList(expr);
+        args.addAll(arguments(4));
+        expr = new Expr.Call(name, args);
       } else {
         break;
       }
@@ -254,7 +257,7 @@ class Parser {
 
   // arguments  : expression ( "," expression )* ;
   private List<Expr> arguments(int maxArgs) {
-    List<Expr> args = new ArrayList<>();
+    List<Expr> args = Lists.newArrayListWithCapacity(maxArgs);
     if (!check(RIGHT_PAREN)) {
       do {
         if (args.size() >= maxArgs) {

@@ -56,7 +56,7 @@ public final class ExprShell {
       System.out.println("AST view: \n" + graphView);
       System.out.println("\nResult: \n" + evaluateString(source));
     } catch (RuntimeError error) {
-      printToError(error.getMessage() + "\n[line " + error.token.line + ", pos " + (error.token.pos + 1) + "]");
+      printToError(error.getMessage() + " [line " + error.token.line + ", pos " + (error.token.pos + 1) + "]");
     }
   }
 

@@ -189,31 +189,6 @@ final class Interpreter implements Expr.Visitor<Variant> {
     return expr.result;
   }
 
-  @Override
-  public Variant visitObjectCallExpr(Expr.ObjectCall expr) {
-    Object funcObj = ctx.getFunction(expr.name);
-    if (funcObj == null) {
-      throw new RuntimeError(expr.name, "Unknown function '" + expr.name.lexeme + "'");
-    }
-
-    try {
-      // expr.args.size()+1 - because we add the resolved "this" as a second parameter (evaluate(expr.object)))
-      switch (expr.args.size() + 1) {
-        case 1: ((Function1)funcObj).call(expr.result, evaluate(expr.object)); break;
-        case 2: ((Function2)funcObj).call(expr.result, evaluate(expr.object), evaluate(expr.args.get(0))); break;
-        case 3: ((Function3)funcObj).call(expr.result, evaluate(expr.object), evaluate(expr.args.get(0)), evaluate(expr.args.get(1))); break;
-        case 4: ((Function4)funcObj).call(expr.result, evaluate(expr.object), evaluate(expr.args.get(0)), evaluate(expr.args.get(1)), evaluate(expr.args.get(2))); break;
-        case 5: ((Function5)funcObj).call(expr.result, evaluate(expr.object), evaluate(expr.args.get(0)), evaluate(expr.args.get(1)), evaluate(expr.args.get(2)), evaluate(expr.args.get(3))); break;
-      }
-    } catch (ClassCastException castEx) {
-      throw new RuntimeError(expr.name, "ClassCastException in function '" + expr.name.lexeme + "': " + castEx.getMessage());
-    }
-    catch (RuntimeException runtimeEx) {
-      throw new RuntimeError(expr.name, "RuntimeException in function '" + expr.name.lexeme + "': " + runtimeEx.getMessage());
-    }
-    return expr.result;
-  }
-
   private boolean isEqual(Token token, Variant left, Variant right) {
     if (isString(left) && isString(right)) {
       return left.equals(right);

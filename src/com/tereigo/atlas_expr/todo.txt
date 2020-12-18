@@ -1,4 +1,5 @@
  TODO:
+1. Support scientific input for Doubles: 1e6
 7. Add string operators:
  startsWith
  endsWith

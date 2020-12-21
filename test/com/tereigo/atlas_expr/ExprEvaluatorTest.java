@@ -31,7 +31,7 @@ class ExprEvaluatorTest extends ExprEvaluatorTestBase {
 
     @Test
     void rerunningTheSameExpressionDouble() {
-        Expr expr = ExprCompiler.compile("(1.0+2.0)");
+        ASTRoot expr = ExprCompiler.compile("(1.0+2.0)");
         assertEquals(3.0, evaluateDouble(expr), EPS);
         assertEquals(3.0, evaluateDouble(expr), EPS);
         assertEquals(3.0, evaluateDouble(expr), EPS);
@@ -39,7 +39,7 @@ class ExprEvaluatorTest extends ExprEvaluatorTestBase {
 
     @Test
     void rerunningTheSameExpressionLong() {
-        Expr expr = ExprCompiler.compile("(1+2)-(5)+(8+5)");
+        ASTRoot expr = ExprCompiler.compile("(1+2)-(5)+(8+5)");
         assertEquals(11, evaluateLong(expr));
         assertEquals(11, evaluateLong(expr));
         assertEquals(11, evaluateLong(expr));
@@ -47,7 +47,7 @@ class ExprEvaluatorTest extends ExprEvaluatorTestBase {
 
     @Test
     void rerunningTheSameExpressionBool() {
-        Expr expr = ExprCompiler.compile("not(true) or not false and ((true and not false) or 5 != 2)");
+        ASTRoot expr = ExprCompiler.compile("not(true) or not false and ((true and not false) or 5 != 2)");
         assertTrue(evaluateBool(expr));
         assertTrue(evaluateBool(expr));
         assertTrue(evaluateBool(expr));
@@ -55,7 +55,7 @@ class ExprEvaluatorTest extends ExprEvaluatorTestBase {
 
     @Test
     void rerunningTheSameExpressionString() {
-        Expr expr = ExprCompiler.compile("\"A\" != \"BC\" and \"C\" != \"D\"");
+        ASTRoot expr = ExprCompiler.compile("\"A\" != \"BC\" and \"C\" != \"D\"");
         assertTrue(evaluateBool(expr));
         assertTrue(evaluateBool(expr));
         assertTrue(evaluateBool(expr));
@@ -193,20 +193,20 @@ class ExprEvaluatorTest extends ExprEvaluatorTestBase {
         assertEquals("A", evaluateString("\"A\""));
         assertEquals("A", evaluateString("(\"A\")"));
         runErr = assertThrows(RuntimeError.class, () -> evaluate("\"A\" + \"B\""));
-        assertEquals("Operands must be numbers", runErr.getMessage());
+        assertEquals("Expression evaluation error [line 1, pos 5]: Operands must be numbers in expression '\"A\" + \"B\"'", runErr.getMessage());
         runErr = assertThrows(RuntimeError.class, () -> evaluate("(\"A\") + \"B\""));
-        assertEquals("Operands must be numbers", runErr.getMessage());
+        assertEquals("Expression evaluation error [line 1, pos 7]: Operands must be numbers in expression '(\"A\") + \"B\"'", runErr.getMessage());
         runErr = assertThrows(RuntimeError.class, () -> evaluate("(\"A\") + (\"B\")"));
-        assertEquals("Operands must be numbers", runErr.getMessage());
+        assertEquals("Expression evaluation error [line 1, pos 7]: Operands must be numbers in expression '(\"A\") + (\"B\")'", runErr.getMessage());
         runErr = assertThrows(RuntimeError.class, () -> evaluate("((\"A\") + (\"B\"))"));
-        assertEquals("Operands must be numbers", runErr.getMessage());
+        assertEquals("Expression evaluation error [line 1, pos 8]: Operands must be numbers in expression '((\"A\") + (\"B\"))'", runErr.getMessage());
         runErr = assertThrows(RuntimeError.class, () -> evaluate("\"ABC\"+\"DE\""));
-        assertEquals("Operands must be numbers", runErr.getMessage());
+        assertEquals("Expression evaluation error [line 1, pos 6]: Operands must be numbers in expression '\"ABC\"+\"DE\"'", runErr.getMessage());
     }
 
     @Test
     void byteBufferTests() {
-        final ExprContextImpl ctx = new ExprContextImpl();
+        final MutableExprContext ctx = ExprContextFactory.create();
         RuntimeError runErr;
 
         ctx.defineByteBuffer("$tuid", () -> constant("CLIENT1"));
@@ -219,7 +219,7 @@ class ExprEvaluatorTest extends ExprEvaluatorTestBase {
         assertTrue(evaluateBool("$tuid != $tuid2", ctx));
         assertTrue(evaluateBool("$tuid2 != $tuid", ctx));
         runErr = assertThrows(RuntimeError.class, () -> evaluate("$tuid == \"CLIENT\" + \"1\"", ctx));
-        assertEquals("Operands must be numbers", runErr.getMessage());
+        assertEquals("Expression evaluation error [line 1, pos 19]: Operands must be numbers in expression '$tuid == \"CLIENT\" + \"1\"'", runErr.getMessage());
         assertTrue(evaluateBool("\"CLIENT1\" == $tuid", ctx));
         assertTrue(evaluateBool("$tuid in [\"CLIENT0\", \"CLIENT1\"]", ctx));
         assertFalse(evaluateBool("$tuid != \"CLIENT1\"", ctx));
@@ -258,31 +258,64 @@ class ExprEvaluatorTest extends ExprEvaluatorTestBase {
 
     @Test
     void testMalformedExpressions() {
+        ParseError err;
         RuntimeError runErr;
-        // TODO: decide what type of exception is the most appropriate
-        ParseError err = assertThrows(ParseError.class, () -> evaluate(""));
-//        assertThrows(IllegalArgumentException.class, () -> evaluate(""));
-        assertEquals("[line 1] Error at pos 1: Expect expression", err.getMessage());
+        err = assertThrows(ParseError.class, () -> evaluate(""));
+         assertEquals("Expression parsing error [line 1, pos 1]: Expect expression in expression ''", err.getMessage());
         err = assertThrows(ParseError.class, () -> evaluate("1 in [2, 3.0]"));
-        assertEquals("[line 1] Error at pos 13 (']'): Different value types in IN operator list: LONG and DOUBLE", err.getMessage());
+        assertEquals("Expression parsing error [line 1, pos 13]: Different value types in IN operator list: LONG and DOUBLE in expression '1 in [2, 3.0]'", err.getMessage());
         err = assertThrows(ParseError.class, () -> evaluate("\"B\" in [\"A\", 1]"));
-        assertEquals("[line 1] Error at pos 15 (']'): Different value types in IN operator list: STRING and LONG", err.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluate("!1 + 2"));
-        assertEquals("Operand must be a boolean", runErr.getMessage());
+        assertEquals("Expression parsing error [line 1, pos 15]: Different value types in IN operator list: STRING and LONG in expression '\"B\" in [\"A\", 1]'", err.getMessage());
+        err = assertThrows(ParseError.class, () -> evaluate("1 in [2"));
+        assertEquals("Expression parsing error [line 1, pos 7]: Expect ']' after '[' in expression '1 in [2'", err.getMessage());
+        err = assertThrows(ParseError.class, () -> evaluate("1 in [2,"));
+        assertEquals("Expression parsing error [line 1, pos 8]: Expect number/string list entry inside '[]' in expression '1 in [2,'", err.getMessage());
+        err = assertThrows(ParseError.class, () -> evaluate("1 in [2,]"));
+        assertEquals("Expression parsing error [line 1, pos 9]: Expect number/string list entry inside '[]' in expression '1 in [2,]'", err.getMessage());
+        err = assertThrows(ParseError.class, () -> evaluate("1 in []"));
+        assertEquals("Expression parsing error [line 1, pos 7]: Expect number/string list entry inside '[]' in expression '1 in []'", err.getMessage());
+        err = assertThrows(ParseError.class, () -> evaluate("1 in 2]"));
+        assertEquals("Expression parsing error [line 1, pos 6]: Expect '[' after IN operator in expression '1 in 2]'", err.getMessage());
         err = assertThrows(ParseError.class, () -> evaluate("(5+2"));
-        assertEquals("[line 1] Error at pos 4: Expect ')' after expression", err.getMessage());
+        assertEquals("Expression parsing error [line 1, pos 4]: Expect ')' after expression in expression '(5+2'", err.getMessage());
         err = assertThrows(ParseError.class, () -> evaluate("4-5)"));
-        assertEquals("[line 1] Error at pos 4 (')'): Malformed expression: parsing ended prematurely", err.getMessage());
+        assertEquals("Expression parsing error [line 1, pos 4]: Malformed expression: parsing ended prematurely in expression '4-5)'", err.getMessage());
         err = assertThrows(ParseError.class, () -> evaluate("1 in [2, 3"));
-        assertEquals("[line 1] Error at pos 10: Expect ']' after '['", err.getMessage());
+        assertEquals("Expression parsing error [line 1, pos 10]: Expect ']' after '[' in expression '1 in [2, 3'", err.getMessage());
         err = assertThrows(ParseError.class, () -> evaluate("1 == 2 3.0"));
-        assertEquals("[line 1] Error at pos 8 ('3.0'): Malformed expression: parsing ended prematurely", err.getMessage());
+        assertEquals("Expression parsing error [line 1, pos 8]: Malformed expression: parsing ended prematurely in expression '1 == 2 3.0'", err.getMessage());
         err = assertThrows(ParseError.class, () -> evaluate("1 == 2 && 3==5"));
-        assertEquals("[line 1] Error at pos 8: Unexpected character", err.getMessage());
+        assertEquals("Expression parsing error [line 1, pos 8]: Unexpected character in expression '1 == 2 && 3==5'", err.getMessage());
         err = assertThrows(ParseError.class, () -> evaluate("1 == 2 || 3==5"));
-        assertEquals("[line 1] Error at pos 8: Unexpected character", err.getMessage());
+        assertEquals("Expression parsing error [line 1, pos 8]: Unexpected character in expression '1 == 2 || 3==5'", err.getMessage());
+        err = assertThrows(ParseError.class, () -> evaluate("1 = 2"));
+        assertEquals("Expression parsing error [line 1, pos 3]: Expected '==' comparison not found in expression '1 = 2'", err.getMessage());
+        err = assertThrows(ParseError.class, () -> evaluate("1 =A"));
+        assertEquals("Expression parsing error [line 1, pos 3]: Expected '==' comparison not found in expression '1 =A'", err.getMessage());
+        err = assertThrows(ParseError.class, () -> evaluate("\"A"));
+        assertEquals("Expression parsing error [line 1, pos 1]: Unterminated string in expression '\"A'", err.getMessage());
+        err = assertThrows(ParseError.class, () -> evaluate("\"A == \"A\""));
+        assertEquals("Expression parsing error [line 1, pos 9]: Unterminated string in expression '\"A == \"A\"'", err.getMessage());
+        err = assertThrows(ParseError.class, () -> evaluate("\"A\" == \"A"));
+        assertEquals("Expression parsing error [line 1, pos 8]: Unterminated string in expression '\"A\" == \"A'", err.getMessage());
+        err = assertThrows(ParseError.class, () -> evaluate("\"A\" == \"A or 5 == 4"));
+        assertEquals("Expression parsing error [line 1, pos 8]: Unterminated string in expression '\"A\" == \"A or 5 == 4'", err.getMessage());
+        err = assertThrows(ParseError.class, () -> evaluate("\"A == \"A\" or 5 == 4"));
+        assertEquals("Expression parsing error [line 1, pos 9]: Unterminated string in expression '\"A == \"A\" or 5 == 4'", err.getMessage());
+        err = assertThrows(ParseError.class, () -> evaluate("\"A == \"A\" or 5 == 4\""));
+        assertEquals("Expression parsing error [line 1, pos 8]: Malformed expression: parsing ended prematurely in expression '\"A == \"A\" or 5 == 4\"'", err.getMessage());
+        err = assertThrows(ParseError.class, () -> evaluate("abc.1 == 2"));
+        assertEquals("Expression parsing error [line 1, pos 5]: Expect function name after '.' in expression 'abc.1 == 2'", err.getMessage());
+        err = assertThrows(ParseError.class, () -> evaluate("abc.1() == 2"));
+        assertEquals("Expression parsing error [line 1, pos 5]: Expect function name after '.' in expression 'abc.1() == 2'", err.getMessage());
+        err = assertThrows(ParseError.class, () -> evaluate("abc.cde == 2"));
+        assertEquals("Expression parsing error [line 1, pos 9]: Expect '(' after '.'function_name in expression 'abc.cde == 2'", err.getMessage());
 
-        final ExprContextImpl ctx = new ExprContextImpl();
+        // Evaluation errors
+        runErr = assertThrows(RuntimeError.class, () -> evaluate("!1 + 2"));
+        assertEquals("Expression evaluation error [line 1, pos 1]: Operand must be a boolean in expression '!1 + 2'", runErr.getMessage());
+
+        final MutableExprContext ctx = ExprContextFactory.create();
         ctx.defineString("$ric", () -> "VOD.L");
         ctx.defineLong("$productId", () -> 123L);
         ctx.defineByteBuffer("$tuid", () -> constant("CLIENT1"));
@@ -312,7 +345,7 @@ class ExprEvaluatorTest extends ExprEvaluatorTestBase {
         });
 
         runErr = assertThrows(RuntimeError.class, () -> evaluate("$ric == 1", ctx));
-        assertEquals("Operands of different types cannot be compared: STRING and LONG", runErr.getMessage());
+        assertEquals("Expression evaluation error [line 1, pos 6]: Operands of different types cannot be compared: STRING and LONG in expression '$ric == 1'", runErr.getMessage());
 
         // comparison for IN operator works the same way as for usual "==" operator
         // it means we can compare LONG and DOUBLE
@@ -320,34 +353,55 @@ class ExprEvaluatorTest extends ExprEvaluatorTestBase {
 //        assertEquals("Operands of different types cannot be compared: LONG and DOUBLE", runErr.getMessage());
 
         runErr = assertThrows(RuntimeError.class, () -> evaluate("$tuid + $tuid == \"CLIENT1CLIENT1\"", ctx));
-        assertEquals("Operands must be numbers", runErr.getMessage());
+        assertEquals("Expression evaluation error [line 1, pos 7]: Operands must be numbers in expression '$tuid + $tuid == \"CLIENT1CLIENT1\"'", runErr.getMessage());
 
         runErr = assertThrows(RuntimeError.class, () -> evaluate("$primary == \"XLON\"", ctx));
-        assertEquals("Unknown identifier '$primary'", runErr.getMessage());
+        assertEquals("Expression evaluation error [line 1, pos 1]: Unknown identifier '$primary' in expression '$primary == \"XLON\"'", runErr.getMessage());
 
         runErr = assertThrows(RuntimeError.class, () -> evaluate("$ + 1", ctx));
-        assertEquals("Unknown identifier '$'", runErr.getMessage());
+        assertEquals("Expression evaluation error [line 1, pos 1]: Unknown identifier '$' in expression '$ + 1'", runErr.getMessage());
+
+        runErr = assertThrows(RuntimeError.class, () -> evaluate("1 == 2 in [2]", ctx));
+        assertEquals("Expression evaluation error [line 1, pos 8]: Operands of different types cannot be compared: BOOL and LONG in expression '1 == 2 in [2]'", runErr.getMessage());
+
+        runErr = assertThrows(RuntimeError.class, () -> evaluate("1+2 or 1 == 2", ctx));
+        assertEquals("Expression evaluation error [line 1, pos 5]: Operand must be a boolean in expression '1+2 or 1 == 2'", runErr.getMessage());
+
+        runErr = assertThrows(RuntimeError.class, () -> evaluate("1 == 2 or 1+2", ctx));
+        assertEquals("Expression evaluation error [line 1, pos 8]: Operand must be a boolean in expression '1 == 2 or 1+2'", runErr.getMessage());
+
+        // This one is ok because only left operand of "==" is evaluated
+        assertTrue(evaluateBool("1 == 1 or 1+2"));
+
+        // This one is ok because only left operand of "==" is evaluated
+        assertFalse(evaluateBool("1 == 2 and 1+2"));
+
+        runErr = assertThrows(RuntimeError.class, () -> evaluate("1+2 and 1 == 2", ctx));
+        assertEquals("Expression evaluation error [line 1, pos 5]: Operand must be a boolean in expression '1+2 and 1 == 2'", runErr.getMessage());
 
         runErr = assertThrows(RuntimeError.class, () -> evaluate("123 == $", ctx));
-        assertEquals("Unknown identifier '$'", runErr.getMessage());
+        assertEquals("Expression evaluation error [line 1, pos 8]: Unknown identifier '$' in expression '123 == $'", runErr.getMessage());
 
         err = assertThrows(ParseError.class, () -> evaluate("isEven(", ctx));
-        assertEquals("[line 1] Error at pos 7: Expect expression", err.getMessage());
+        assertEquals("Expression parsing error [line 1, pos 7]: Expect expression in expression 'isEven('", err.getMessage());
 
         err = assertThrows(ParseError.class, () -> evaluate("isEven)", ctx));
-        assertEquals("[line 1] Error at pos 7 (')'): Malformed expression: parsing ended prematurely", err.getMessage());
+        assertEquals("Expression parsing error [line 1, pos 7]: Malformed expression: parsing ended prematurely in expression 'isEven)'", err.getMessage());
 
         err = assertThrows(ParseError.class, () -> evaluate("isEven(1", ctx));
-        assertEquals("[line 1] Error at pos 8: Expect ')' after arguments", err.getMessage());
+        assertEquals("Expression parsing error [line 1, pos 8]: Expect ')' after arguments in expression 'isEven(1'", err.getMessage());
 
         err = assertThrows(ParseError.class, () -> evaluate("isEven(1, 2, 3, 4, 5, 6)", ctx));
-        assertEquals("[line 1] Error at pos 23 ('6'): Can't have more than 5 arguments", err.getMessage());
+        assertEquals("Expression parsing error [line 1, pos 23]: Can't have more than 5 arguments in expression 'isEven(1, 2, 3, 4, 5, 6)'", err.getMessage());
+
+        err = assertThrows(ParseError.class, () -> evaluate("1.isEven(2, 3, 4, 5, 6)", ctx));
+        assertEquals("Expression parsing error [line 1, pos 22]: Can't have more than 4 arguments in expression '1.isEven(2, 3, 4, 5, 6)'", err.getMessage());
 
         err = assertThrows(ParseError.class, () -> evaluate("1(1)", ctx));
-        assertEquals("[line 1] Error at pos 3 ('1'): Function name should be an identifier", err.getMessage());
+        assertEquals("Expression parsing error [line 1, pos 1]: Function name should be an identifier in expression '1(1)'", err.getMessage());
 
         err = assertThrows(ParseError.class, () -> evaluate("\"ABC\"()", ctx));
-        assertEquals("[line 1] Error at pos 7 (')'): Function name should be an identifier", err.getMessage());
+        assertEquals("Expression parsing error [line 1, pos 1]: Function name should be an identifier in expression '\"ABC\"()'", err.getMessage());
 
         // error: 0 parameters instead of 1
         runErr = assertThrows(RuntimeError.class, () -> evaluate("isEven()", ctx));
@@ -361,7 +415,7 @@ class ExprEvaluatorTest extends ExprEvaluatorTestBase {
 
         // error: func2(10, 1) it expects Double as a second parameter
         runErr = assertThrows(RuntimeError.class, () -> evaluate("func5(func1(100), func2(func1(10), func2(10, 1)), not $enabled, $ric, $tuid)", ctx));
-        assertEquals("RuntimeException in function 'func5': RuntimeException in function 'func2': RuntimeException in function 'func2': Variant type mismatch: LONG, expected: DOUBLE", runErr.getMessage());
+        assertEquals("Expression evaluation error [line 1, pos 1]: RuntimeException in function 'func5': RuntimeException in function 'func2': RuntimeException in function 'func2': Variant type mismatch: LONG, expected: DOUBLE in expression 'func5(func1(100), func2(func1(10), func2(10, 1)), not $enabled, $ric, $tuid)'", runErr.getMessage());
 
         // error is: func2(10) - expected call with 2 args
         runErr = assertThrows(RuntimeError.class, () -> evaluate("func5(func1(100), func2(func1(10), func2(10)), not $enabled, $ric, $tuid)", ctx));
@@ -370,21 +424,29 @@ class ExprEvaluatorTest extends ExprEvaluatorTestBase {
 
         // error: Expects Long parameter instead of Double
         runErr = assertThrows(RuntimeError.class, () -> evaluate("isEven(1.0)", ctx));
-        assertEquals("RuntimeException in function 'isEven': Variant type mismatch: DOUBLE, expected: LONG", runErr.getMessage());
+        assertEquals("Expression evaluation error [line 1, pos 1]: RuntimeException in function 'isEven': Variant type mismatch: DOUBLE, expected: LONG in expression 'isEven(1.0)'", runErr.getMessage());
 
         runErr = assertThrows(RuntimeError.class, () -> evaluate("isEven(\"\")", ctx));
-        assertEquals("RuntimeException in function 'isEven': Variant type mismatch: STRING, expected: LONG", runErr.getMessage());
+        assertEquals("Expression evaluation error [line 1, pos 1]: RuntimeException in function 'isEven': Variant type mismatch: STRING, expected: LONG in expression 'isEven(\"\")'", runErr.getMessage());
 
         runErr = assertThrows(RuntimeError.class, () -> evaluate("isEven(true)", ctx));
-        assertEquals("RuntimeException in function 'isEven': Variant type mismatch: BOOL, expected: LONG", runErr.getMessage());
+        assertEquals("Expression evaluation error [line 1, pos 1]: RuntimeException in function 'isEven': Variant type mismatch: BOOL, expected: LONG in expression 'isEven(true)'", runErr.getMessage());
 
         runErr = assertThrows(RuntimeError.class, () -> evaluate("isEven($ric)", ctx));
-        assertEquals("RuntimeException in function 'isEven': Variant type mismatch: STRING, expected: LONG", runErr.getMessage());
+        assertEquals("Expression evaluation error [line 1, pos 1]: RuntimeException in function 'isEven': Variant type mismatch: STRING, expected: LONG in expression 'isEven($ric)'", runErr.getMessage());
 
         runErr = assertThrows(RuntimeError.class, () -> evaluate("isEven($tuid)", ctx));
-        assertEquals("RuntimeException in function 'isEven': Variant type mismatch: BYTE_BUFFER, expected: LONG", runErr.getMessage());
+        assertEquals("Expression evaluation error [line 1, pos 1]: RuntimeException in function 'isEven': Variant type mismatch: BYTE_BUFFER, expected: LONG in expression 'isEven($tuid)'", runErr.getMessage());
 
         runErr = assertThrows(RuntimeError.class, () -> evaluate("unknownFunction($tuid)", ctx));
-        assertEquals("Unknown function 'unknownFunction'", runErr.getMessage());
+        assertEquals("Expression evaluation error [line 1, pos 1]: Unknown function 'unknownFunction' in expression 'unknownFunction($tuid)'", runErr.getMessage());
+
+        // running pre-compiled malformed expression
+        ASTRoot root = ExprCompiler.compile("$primary == 123");
+        runErr = assertThrows(RuntimeError.class, () -> evaluate(root, ctx));
+        assertEquals("Expression evaluation error [line 1, pos 1]: Unknown identifier '$primary' in expression '$primary == 123'", runErr.getMessage());
+
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool(root, ctx));
+        assertEquals("Expression evaluation error [line 1, pos 1]: Unknown identifier '$primary' in expression '$primary == 123'", runErr.getMessage());
     }
 }

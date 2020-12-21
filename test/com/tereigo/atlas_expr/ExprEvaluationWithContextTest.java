@@ -15,7 +15,7 @@ class ExprEvaluationWithContextTest extends ExprEvaluatorTestBase {
 
     @Test
     void contextTestsWithSuppliers() {
-        final ExprContextImpl ctx = new ExprContextImpl();
+        final MutableExprContext ctx = ExprContextFactory.create();
         ctx.defineDouble("PI", () -> 3.14);
         ctx.defineDouble("$PI", () -> 3.14);
         ctx.defineLong("$productId", () -> 123L);
@@ -30,7 +30,7 @@ class ExprEvaluationWithContextTest extends ExprEvaluatorTestBase {
     @Test
     void contextTestsWithSuppliersForOrder() {
         Order order = new Order("VOD.L", 123L, true, constant("CLIENT1"));
-        final ExprContextImpl ctx = new ExprContextImpl();
+        final MutableExprContext ctx = ExprContextFactory.create();
         ctx.defineDouble("PI", () -> 3.14);
         ctx.defineDouble("$PI", () -> 3.14);
         ctx.defineString("$nodeAlgoType", () -> "Axis");
@@ -47,7 +47,7 @@ class ExprEvaluationWithContextTest extends ExprEvaluatorTestBase {
         OrderFieldSupplier orderSupplier = new OrderFieldSupplier();
         Order order1 = new Order("VOD.L", 123L, true, constant("CLIENT1"));
         orderSupplier.setOrder(order1);
-        final ExprContextImpl ctx = new ExprContextImpl();
+        final MutableExprContext ctx = ExprContextFactory.create();
         ctx.defineDouble("PI", () -> 3.14);
         ctx.defineDouble("$PI", () -> 3.14);
         ctx.defineString("$nodeAlgoType", () -> "Axis");
@@ -86,7 +86,7 @@ class ExprEvaluationWithContextTest extends ExprEvaluatorTestBase {
         Order order1 = new Order("VOD.L", 123L, true, constant("CLIENT1"));
         orderSupplier.setOrder(order1);
 
-        final ExprContextImpl globalCtx = new ExprContextImpl();
+        final MutableExprContext globalCtx = ExprContextFactory.create();
         globalCtx.defineDouble("PI", () -> 3.14);
         globalCtx.defineDouble("$PI", () -> 3.14);
         globalCtx.defineString("$nodeAlgoType", () -> "Axis");
@@ -94,7 +94,7 @@ class ExprEvaluationWithContextTest extends ExprEvaluatorTestBase {
         globalCtx.defineByteBuffer("$atlasEnv", () -> constant("PROD"));
         globalCtx.defineLong("$timeNs", System::nanoTime);
 
-        final ExprContextImpl orderCtx = new ExprContextImpl();
+        final MutableExprContext orderCtx = ExprContextFactory.create();
         orderCtx.defineLong("$productId", orderSupplier::productId);
         orderCtx.defineString("$ric", orderSupplier::ric);
         orderCtx.defineBool("$enabled", orderSupplier::enabled);
@@ -111,7 +111,7 @@ class ExprEvaluationWithContextTest extends ExprEvaluatorTestBase {
         assertTrue(evaluateBool("$atlasEnv == \"PROD\" and $tuid == \"CLIENT1\"", ctx));
 
         RuntimeError runErr = assertThrows(RuntimeError.class, () -> evaluate("$curTime > 0", ctx));
-        assertEquals("Unknown identifier '$curTime'", runErr.getMessage());
+        assertEquals("Expression evaluation error [line 1, pos 1]: Unknown identifier '$curTime' in expression '$curTime > 0'", runErr.getMessage());
 
         // Change the order
         Order order2 = new Order("BT.L", 456L, false, constant("CLIENT2"));

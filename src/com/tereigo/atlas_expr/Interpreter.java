@@ -26,15 +26,15 @@ final class Interpreter implements Expr.Visitor<Variant> {
 
   Interpreter(final Expr expression) {
     this.expression = expression;
-    this.ctx.init(ExprContextNative.INSTANCE);
-  }
-
-  Interpreter(final Expr expression, final ExprContext ctx) {
-    this.expression = expression;
-    this.ctx.init(ExprContextNative.INSTANCE, ctx);
   }
 
   Variant evaluate() {
+    this.ctx.init(ExprContextNative.INSTANCE);
+    return evaluate(expression);
+  }
+
+  Variant evaluate(final ExprContext ctx) {
+    this.ctx.init(ExprContextNative.INSTANCE, ctx);
     return evaluate(expression);
   }
 
@@ -130,7 +130,7 @@ final class Interpreter implements Expr.Visitor<Variant> {
         return expr.result;
       }
     } else {
-      throw new ParseError("Unexpected logical expression type: " + expr.operator.type);
+      throw new RuntimeError(expr.operator, "Unexpected logical expression type: " + expr.operator.type);
     }
     Variant rightVar = evaluate(expr.right);
     checkBoolOperand(expr.operator, rightVar);
@@ -156,7 +156,7 @@ final class Interpreter implements Expr.Visitor<Variant> {
 
   @Override
   public Variant visitIdentifierExpr(Expr.Identifier expr) {
-    MutableVariant res = ctx.get(expr.name, expr.result);
+    MutableVariant res = ctx.get(expr.name.lexeme, expr.result);
     if (res == null) {
       throw new RuntimeError(expr.name, "Unknown identifier '" + expr.name.lexeme + "'");
     }
@@ -165,7 +165,7 @@ final class Interpreter implements Expr.Visitor<Variant> {
 
   @Override
   public Variant visitCallExpr(Expr.Call expr) {
-    Object funcObj = ctx.getFunction(expr.name);
+    Object funcObj = ctx.getFunction(expr.name.lexeme);
     if (funcObj == null) {
       throw new RuntimeError(expr.name, "Unknown function '" + expr.name.lexeme + "'");
     }
@@ -340,6 +340,9 @@ final class Interpreter implements Expr.Visitor<Variant> {
       return;
     }
     if (isLong(left) && isLong(right)) {
+      if (right.getAsLong() == 0) {
+        throw new RuntimeError(token, "Division by zero");
+      }
       result.accept(left.getAsLong() / right.getAsLong());
       return;
     }

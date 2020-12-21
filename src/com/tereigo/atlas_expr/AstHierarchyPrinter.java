@@ -12,12 +12,12 @@ import java.util.List;
   │
   ├── 2"
  */
-class AstHierarchyPrinter implements Expr.Visitor<String> {
+final class AstHierarchyPrinter implements Expr.Visitor<String> {
   private int level = 0;
 
-  String print(Expr expr) {
+  String print(ASTRoot root) {
     level = 0;
-    return expr.accept(this);
+    return root.expr().accept(this);
   }
 
   @Override

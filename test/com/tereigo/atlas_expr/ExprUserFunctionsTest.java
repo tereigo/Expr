@@ -20,7 +20,7 @@ class ExprUserFunctionsTest extends ExprEvaluatorTestBase {
         Order order1 = new Order("VOD.L", 123L, true, constant("CLIENT1"));
         orderSupplier.setOrder(order1);
 
-        final ExprContextImpl globalCtx = new ExprContextImpl();
+        final MutableExprContext globalCtx = ExprContextFactory.create();
         globalCtx.defineFunction("PI", result -> result.accept(3.14));
         globalCtx.defineFunction("nodeAlgoType", result -> result.accept("Axis"));
         globalCtx.defineFunction("region", result -> result.accept("EMEA"));
@@ -77,7 +77,7 @@ class ExprUserFunctionsTest extends ExprEvaluatorTestBase {
             result.accept(l > d && bool && !s.isEmpty() && ByteBufferUtils.startWith(bb, "CLIENT"));
         });
 
-        final ExprContextImpl orderCtx = new ExprContextImpl();
+        final MutableExprContext orderCtx = ExprContextFactory.create();
         orderCtx.defineLong("$productId", orderSupplier::productId);
         orderCtx.defineString("$ric", orderSupplier::ric);
         orderCtx.defineBool("$enabled", orderSupplier::enabled);
@@ -193,7 +193,7 @@ class ExprUserFunctionsTest extends ExprEvaluatorTestBase {
 
     @Test
     void userFunctionWithStringTests() {
-        final ExprContextImpl ctx = new ExprContextImpl();
+        final MutableExprContext ctx = ExprContextFactory.create();
         ctx.defineString("region", () -> "EMEA");
         ctx.defineFunction("algoType", result -> result.accept(constant("Algo1")));
         ctx.defineFunction("stringFunc", (result, arg1) -> result.accept(arg1.getAsString()));

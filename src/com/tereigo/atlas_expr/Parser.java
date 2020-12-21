@@ -56,8 +56,8 @@ import static com.tereigo.atlas_expr.TokenType.TRUE;
 
     expression : logic_or
     logic_or   : logic_and ( "or" logic_and )* ;
-    logic_and  : logic_in ( "and" logic_in )* ;
-    logic_in   : equality ( "in" "[" LIST_ENTRY ( "," LIST_ENTRY )* "]" ) ;
+    logic_and  : in_operator ( "and" in_operator )* ;
+    in_operator: equality ( "in" "[" LIST_ENTRY ( "," LIST_ENTRY )* "]" ) ;
     equality   : comparison ( ( "!=" | "==" ) comparison )* ;
     comparison : term ( ( ">" | ">=" | "<" | "<=" ) term )* ;
     term       : factor ( ( "-" | "+" ) factor )* ;
@@ -74,7 +74,7 @@ import static com.tereigo.atlas_expr.TokenType.TRUE;
     You can find plenty of the expression examples in the tests
 */
 
-class Parser {
+final class Parser {
 
   private final List<Token> tokens;
   private int current = 0;
@@ -109,37 +109,33 @@ class Parser {
     return expr;
   }
 
-  // logic_and  : logic_in ( "and" logic_in )* ;
+  // logic_and  : in_operator ( "and" in_operator )* ;
   private Expr logic_and() {
-    Expr expr = logic_in();
+    Expr expr = in_operator();
 
     while (match(AND)) {
       Token operator = previous();
-      Expr right = logic_in();
+      Expr right = in_operator();
       expr = new Expr.Logical(expr, operator, right);
     }
 
     return expr;
   }
 
-  // logic_in   : equality ("in" [ LIST_ENTRY ("," LIST_ENTRY)* ]) ;
-  private Expr logic_in() {
-    Expr expr = equality();
-    if (match(IN)) {
-      return in_operator(expr);
+  // in_operator : equality ("in" [ LIST_ENTRY ("," LIST_ENTRY)* ]) ;
+  private Expr in_operator() {
+      Expr expr = equality();
+      if (match(IN)) {
+          Token operator = previous();
+          if (match(LEFT_BRACKET)) {
+              List<Variant> values = list();
+              consume(RIGHT_BRACKET, "Expect ']' after '['");
+              return new Expr.InOperator(expr, operator, values);
+          } else {
+              throw error(peek(), "Expect '[' after IN operator");
+          }
     }
     return expr;
-  }
-
-  private Expr in_operator(Expr expr) {
-    Token operator = previous();
-    if (match(LEFT_BRACKET)) {
-      List<Variant> values = list();
-      consume(RIGHT_BRACKET, "Expect ']' after '['");
-      return new Expr.InOperator(expr, operator, values);
-    } else {
-      throw error(peek(), "Expect '[' after IN operator");
-    }
   }
 
   private List<Variant> list() {
@@ -237,7 +233,7 @@ class Parser {
     while (true) {
       if (match(LEFT_PAREN)) {
         if (!(expr instanceof Expr.Identifier)) {
-          throw error(peek(), "Function name should be an identifier");
+          throw error(previous(2), "Function name should be an identifier");
         }
         List<Expr> args = arguments(5);
         expr = new Expr.Call(((Expr.Identifier) expr).name, args);
@@ -342,23 +338,15 @@ class Parser {
   }
 
   private Token previous() {
-    return tokens.get(current - 1);
+    return previous(1);
+  }
+
+  private Token previous(int back) {
+    return tokens.get(current - back);
   }
 
   private ParseError error(Token token, String message) {
-    return new ParseError(errorMsg(token, message));
-  }
-
-  private static String errorMsg(int line, String where, String message) {
-    return "[line " + line + "] Error " + where + ": " + message;
-  }
-
-  private static String errorMsg(Token token, String message) {
-    if (token.type == TokenType.EOF) {
-      return errorMsg(token.line, "at pos " + (token.pos + 1), message);
-    } else {
-      return errorMsg(token.line, "at pos " + (token.pos + 1) + " ('" + token.lexeme + "')", message);
-    }
+    return new ParseError(token.line, token.pos + 1, message);
   }
 
 }

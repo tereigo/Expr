@@ -15,11 +15,11 @@ abstract class Expr {
     R visitBinaryExpr(Binary expr);     // ==, !=, >, >=, <, <=, +, -, *, /
     R visitInOperator(InOperator expr); // in [...]
     R visitGroupingExpr(Grouping expr); // ()
-    R visitLiteralExpr(Literal expr);   // long, double, string, boolean values
+    R visitLiteralExpr(Literal expr);   // long, double, string, boolean, ByteBuffer values
     R visitLogicalExpr(Logical expr);   // or, and
     R visitUnaryExpr(Unary expr);       // -, not
-    R visitIdentifierExpr(Identifier expr);
-    R visitCallExpr(Expr.Call expr);
+    R visitIdentifierExpr(Identifier expr); // external value
+    R visitCallExpr(Expr.Call expr);    // function
   }
 
   static class Binary extends Expr {

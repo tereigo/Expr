@@ -2,7 +2,7 @@ package com.tereigo.atlas_expr;
 
 import com.tereigo.atlas_expr.variant.MutableVariant;
 
-public class ExprContextChained implements ExprContext {
+final class ExprContextChained implements ExprContext {
     ExprContext ctx;
 
     public ExprContextChained(ExprContext ctx) {
@@ -10,13 +10,13 @@ public class ExprContextChained implements ExprContext {
     }
 
     @Override
-    public MutableVariant get(Token token, MutableVariant result) {
-        return ctx.get(token, result);
+    public MutableVariant get(String name, MutableVariant result) {
+        return ctx.get(name, result);
     }
 
     @Override
-    public Object getFunction(Token token) {
-        return ctx.getFunction(token);
+    public Object getFunction(String name) {
+        return ctx.getFunction(name);
     }
 
     // Adding another context

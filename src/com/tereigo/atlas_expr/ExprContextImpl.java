@@ -16,99 +16,92 @@ import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 import java.util.function.LongSupplier;
 
-class ExprContextImpl implements ExprContext {
+final class ExprContextImpl implements ExprContext, MutableExprContext {
 
-  private final Map<String, Entry> values = new HashMap<>();
+  // Map of "name" -> Function0/1/2/3/4/5 objects
   private final Map<String, Object> functions = new HashMap<>();
 
   @Override
-  public MutableVariant get(Token token, MutableVariant result) {
-    if (values.containsKey(token.lexeme)) {
-      Entry entry = values.get(token.lexeme);
-      switch (entry.type) {
-        case DOUBLE:
-          result.accept(((DoubleSupplier)entry.supplier).getAsDouble());
-          return result;
-        case LONG:
-          result.accept(((LongSupplier)entry.supplier).getAsLong());
-          return result;
-        case BOOL:
-          result.accept(((BooleanSupplier)entry.supplier).getAsBoolean());
-          return result;
-        case STRING:
-          result.accept(((StringSupplier)entry.supplier).getAsString());
-          return result;
-        case BYTE_BUFFER:
-          result.accept(((ByteBufferSupplier)entry.supplier).getAsByteBuffer());
-          return result;
-        default:
-          throw new RuntimeError(token, "Unknown type '" + entry.type + "' for identifier '" + token.lexeme + "'");
-      }
+  public MutableVariant get(String name, MutableVariant result) {
+    Object funcObj = getFunction(name);
+    if (funcObj == null) {
+      return null;
     }
-    return null;
+    ((Function0)funcObj).call(result);
+    return result;
   }
 
   @Override
-  public Object getFunction(Token token) {
-    return functions.get(token.lexeme);
+  public Object getFunction(String name) {
+    return functions.get(name);
   }
 
-  void defineLong(String name, LongSupplier supplier) {
-    values.put(name, new Entry(supplier, ExprType.LONG));
+  @Override
+  public void defineLong(String name, LongSupplier supplier) {
+    // we wrap all value providers into a function from 0 parameters (Function0)
+    functions.put(name, (Function0) result -> result.accept(supplier.getAsLong()));
   }
 
-  void defineDouble(String name, DoubleSupplier supplier) {
-    values.put(name, new Entry(supplier, ExprType.DOUBLE));
+  @Override
+  public void defineDouble(String name, DoubleSupplier supplier) {
+    functions.put(name, (Function0) result -> result.accept(supplier.getAsDouble()));
   }
 
-  void defineString(String name, StringSupplier supplier) {
-    values.put(name, new Entry(supplier, ExprType.STRING));
+  @Override
+  public void defineString(String name, StringSupplier supplier) {
+    functions.put(name, (Function0) result -> result.accept(supplier.getAsString()));
   }
 
-  void defineByteBuffer(String name, ByteBufferSupplier supplier) {
-    values.put(name, new Entry(supplier, ExprType.BYTE_BUFFER));
+  @Override
+  public void defineByteBuffer(String name, ByteBufferSupplier supplier) {
+    functions.put(name, (Function0) result -> result.accept(supplier.getAsByteBuffer()));
   }
 
-  void defineBool(String name, BooleanSupplier supplier) {
-    values.put(name, new Entry(supplier, ExprType.BOOL));
+  @Override
+  public void defineBool(String name, BooleanSupplier supplier) {
+    functions.put(name, (Function0) result -> result.accept(supplier.getAsBoolean()));
   }
 
-  void defineFunction(String name, Function0 func) {
+  @Override
+  public void defineFunction(String name, Function0 func) {
     functions.put(name, func);
   }
 
-  void defineFunction(String name, Function1 func) {
+  @Override
+  public void defineFunction(String name, Function1 func) {
     functions.put(name, func);
   }
 
-  void defineFunction(String name, Function2 func) {
+  @Override
+  public void defineFunction(String name, Function2 func) {
     functions.put(name, func);
   }
 
-  void defineFunction(String name, Function3 func) {
+  @Override
+  public void defineFunction(String name, Function3 func) {
     functions.put(name, func);
   }
 
-  void defineFunction(String name, Function4 func) {
+  @Override
+  public void defineFunction(String name, Function4 func) {
     functions.put(name, func);
   }
 
-  void defineFunction(String name, Function5 func) {
+  @Override
+  public void defineFunction(String name, Function5 func) {
     functions.put(name, func);
+  }
+
+  @Override
+  public void enrich(ExprContextEnricher... enrichers) {
+    for (ExprContextEnricher enricher : enrichers) {
+      enricher.enrich(this);
+    }
   }
 
   @Override
   public String toString() {
-    return "values: " + values.toString() + ", functions: " + functions.keySet();
+    return "functions: " + functions.keySet();
   }
 
-  private static class Entry {
-    final Object supplier;
-    final ExprType type;
-
-    private Entry(Object supplier, ExprType type) {
-      this.supplier = supplier;
-      this.type = type;
-    }
-  }
 }

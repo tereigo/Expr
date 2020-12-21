@@ -22,9 +22,9 @@ class ExprNativeFunctionsTest extends ExprEvaluatorTestBase {
         assertEquals(1.0, evaluateDouble("min(2.0, 1.0)"), EPS);
         assertEquals(1.0, evaluateDouble("min(1.0, 2.0)"), EPS);
         runErr = assertThrows(RuntimeError.class, () -> evaluate("min(1, \"A\")"));
-        assertEquals("RuntimeException in function 'min': Operands must be numbers", runErr.getMessage());
+        assertEquals("Expression evaluation error [line 1, pos 1]: RuntimeException in function 'min': Operands must be numbers in expression 'min(1, \"A\")'", runErr.getMessage());
         runErr = assertThrows(RuntimeError.class, () -> evaluate("min(true, 1.0)"));
-        assertEquals("RuntimeException in function 'min': Operands must be numbers", runErr.getMessage());
+        assertEquals("Expression evaluation error [line 1, pos 1]: RuntimeException in function 'min': Operands must be numbers in expression 'min(true, 1.0)'", runErr.getMessage());
         // max
         assertEquals(2, evaluateLong("max(1, 2)"));
         assertEquals(2, evaluateLong("max(2, 1)"));
@@ -33,9 +33,9 @@ class ExprNativeFunctionsTest extends ExprEvaluatorTestBase {
         assertEquals(2.0, evaluateDouble("max(2.0, 1.0)"), EPS);
         assertEquals(2.0, evaluateDouble("max(1.0, 2.0)"), EPS);
         runErr = assertThrows(RuntimeError.class, () -> evaluate("max(1, \"A\")"));
-        assertEquals("RuntimeException in function 'max': Operands must be numbers", runErr.getMessage());
+        assertEquals("Expression evaluation error [line 1, pos 1]: RuntimeException in function 'max': Operands must be numbers in expression 'max(1, \"A\")'", runErr.getMessage());
         runErr = assertThrows(RuntimeError.class, () -> evaluate("max(true, 1.0)"));
-        assertEquals("RuntimeException in function 'max': Operands must be numbers", runErr.getMessage());
+        assertEquals("Expression evaluation error [line 1, pos 1]: RuntimeException in function 'max': Operands must be numbers in expression 'max(true, 1.0)'", runErr.getMessage());
         // abs
         assertEquals(0, evaluateLong("abs(0)"));
         assertEquals(1, evaluateLong("abs(1)"));
@@ -43,9 +43,9 @@ class ExprNativeFunctionsTest extends ExprEvaluatorTestBase {
         assertEquals(1.0, evaluateDouble("abs(1.0)"), EPS);
         assertEquals(1.0, evaluateDouble("abs(-1.0)"), EPS);
         runErr = assertThrows(RuntimeError.class, () -> evaluate("abs(\"A\")"));
-        assertEquals("RuntimeException in function 'abs': Operand must be a number", runErr.getMessage());
+        assertEquals("Expression evaluation error [line 1, pos 1]: RuntimeException in function 'abs': Operand must be a number in expression 'abs(\"A\")'", runErr.getMessage());
         runErr = assertThrows(RuntimeError.class, () -> evaluate("abs(true)"));
-        assertEquals("RuntimeException in function 'abs': Operand must be a number", runErr.getMessage());
+        assertEquals("Expression evaluation error [line 1, pos 1]: RuntimeException in function 'abs': Operand must be a number in expression 'abs(true)'", runErr.getMessage());
         // round
         assertEquals(0, evaluateLong("round(0)"));
         assertEquals(1, evaluateLong("round(1)"));
@@ -70,9 +70,9 @@ class ExprNativeFunctionsTest extends ExprEvaluatorTestBase {
         assertEquals(-2, evaluateLong("round(-1.9)"));
         assertEquals(-2, evaluateLong("round(-2.1)"));
         runErr = assertThrows(RuntimeError.class, () -> evaluate("round(\"A\")"));
-        assertEquals("RuntimeException in function 'round': Operand must be a number", runErr.getMessage());
+        assertEquals("Expression evaluation error [line 1, pos 1]: RuntimeException in function 'round': Operand must be a number in expression 'round(\"A\")'", runErr.getMessage());
         runErr = assertThrows(RuntimeError.class, () -> evaluate("round(true)"));
-        assertEquals("RuntimeException in function 'round': Operand must be a number", runErr.getMessage());
+        assertEquals("Expression evaluation error [line 1, pos 1]: RuntimeException in function 'round': Operand must be a number in expression 'round(true)'", runErr.getMessage());
         // roundToNearest
         assertEquals(0, evaluateLong("roundToNearest(0)"));
         assertEquals(1, evaluateLong("roundToNearest(1)"));
@@ -97,9 +97,9 @@ class ExprNativeFunctionsTest extends ExprEvaluatorTestBase {
         assertEquals(-2, evaluateLong("roundToNearest(-1.9)"));
         assertEquals(-2, evaluateLong("roundToNearest(-2.1)"));
         runErr = assertThrows(RuntimeError.class, () -> evaluate("roundToNearest(\"A\")"));
-        assertEquals("RuntimeException in function 'roundToNearest': Operand must be a number", runErr.getMessage());
+        assertEquals("Expression evaluation error [line 1, pos 1]: RuntimeException in function 'roundToNearest': Operand must be a number in expression 'roundToNearest(\"A\")'", runErr.getMessage());
         runErr = assertThrows(RuntimeError.class, () -> evaluate("roundToNearest(true)"));
-        assertEquals("RuntimeException in function 'roundToNearest': Operand must be a number", runErr.getMessage());
+        assertEquals("Expression evaluation error [line 1, pos 1]: RuntimeException in function 'roundToNearest': Operand must be a number in expression 'roundToNearest(true)'", runErr.getMessage());
         // roundUp
         assertEquals(0, evaluateLong("roundUp(0)"));
         assertEquals(1, evaluateLong("roundUp(1)"));
@@ -124,9 +124,9 @@ class ExprNativeFunctionsTest extends ExprEvaluatorTestBase {
         assertEquals(-1, evaluateLong("roundUp(-1.9)"));
         assertEquals(-2, evaluateLong("roundUp(-2.1)"));
         runErr = assertThrows(RuntimeError.class, () -> evaluate("roundUp(\"A\")"));
-        assertEquals("RuntimeException in function 'roundUp': Operand must be a number", runErr.getMessage());
+        assertEquals("Expression evaluation error [line 1, pos 1]: RuntimeException in function 'roundUp': Operand must be a number in expression 'roundUp(\"A\")'", runErr.getMessage());
         runErr = assertThrows(RuntimeError.class, () -> evaluate("roundUp(true)"));
-        assertEquals("RuntimeException in function 'roundUp': Operand must be a number", runErr.getMessage());
+        assertEquals("Expression evaluation error [line 1, pos 1]: RuntimeException in function 'roundUp': Operand must be a number in expression 'roundUp(true)'", runErr.getMessage());
         // roundDown
         assertEquals(0, evaluateLong("roundDown(0)"));
         assertEquals(1, evaluateLong("roundDown(1)"));
@@ -151,9 +151,9 @@ class ExprNativeFunctionsTest extends ExprEvaluatorTestBase {
         assertEquals(-2, evaluateLong("roundDown(-1.9)"));
         assertEquals(-3, evaluateLong("roundDown(-2.1)"));
         runErr = assertThrows(RuntimeError.class, () -> evaluate("roundDown(\"A\")"));
-        assertEquals("RuntimeException in function 'roundDown': Operand must be a number", runErr.getMessage());
+        assertEquals("Expression evaluation error [line 1, pos 1]: RuntimeException in function 'roundDown': Operand must be a number in expression 'roundDown(\"A\")'", runErr.getMessage());
         runErr = assertThrows(RuntimeError.class, () -> evaluate("roundDown(true)"));
-        assertEquals("RuntimeException in function 'roundDown': Operand must be a number", runErr.getMessage());
+        assertEquals("Expression evaluation error [line 1, pos 1]: RuntimeException in function 'roundDown': Operand must be a number in expression 'roundDown(true)'", runErr.getMessage());
         // toLong
         assertEquals(0, evaluateLong("toLong(0)"));
         assertEquals(1, evaluateLong("toLong(1)"));
@@ -178,9 +178,9 @@ class ExprNativeFunctionsTest extends ExprEvaluatorTestBase {
         assertEquals(-1, evaluateLong("toLong(-1.9)"));
         assertEquals(-2, evaluateLong("toLong(-2.1)"));
         runErr = assertThrows(RuntimeError.class, () -> evaluate("toLong(\"A\")"));
-        assertEquals("RuntimeException in function 'toLong': Operand must be a number", runErr.getMessage());
+        assertEquals("Expression evaluation error [line 1, pos 1]: RuntimeException in function 'toLong': Operand must be a number in expression 'toLong(\"A\")'", runErr.getMessage());
         runErr = assertThrows(RuntimeError.class, () -> evaluate("toLong(true)"));
-        assertEquals("RuntimeException in function 'toLong': Operand must be a number", runErr.getMessage());
+        assertEquals("Expression evaluation error [line 1, pos 1]: RuntimeException in function 'toLong': Operand must be a number in expression 'toLong(true)'", runErr.getMessage());
         // toDouble
         assertEquals(0.0, evaluateDouble("toDouble(0)"), EPS);
         assertEquals(1.0, evaluateDouble("toDouble(1)"), EPS);
@@ -205,63 +205,63 @@ class ExprNativeFunctionsTest extends ExprEvaluatorTestBase {
         assertEquals(-1.9, evaluateDouble("toDouble(-1.9)"), EPS);
         assertEquals(-2.1, evaluateDouble("toDouble(-2.1)"), EPS);
         runErr = assertThrows(RuntimeError.class, () -> evaluate("toDouble(\"A\")"));
-        assertEquals("RuntimeException in function 'toDouble': Operand must be a number", runErr.getMessage());
+        assertEquals("Expression evaluation error [line 1, pos 1]: RuntimeException in function 'toDouble': Operand must be a number in expression 'toDouble(\"A\")'", runErr.getMessage());
         runErr = assertThrows(RuntimeError.class, () -> evaluate("toDouble(true)"));
-        assertEquals("RuntimeException in function 'toDouble': Operand must be a number", runErr.getMessage());
+        assertEquals("Expression evaluation error [line 1, pos 1]: RuntimeException in function 'toDouble': Operand must be a number in expression 'toDouble(true)'", runErr.getMessage());
         // ltod
         assertEquals(0.0, evaluateDouble("ltod(0)"), EPS);
         assertEquals(1.0, evaluateDouble("ltod(1000000)"), EPS);
         assertEquals(-1.0, evaluateDouble("ltod(-1000000)"), EPS);
         assertEquals(2.0, evaluateDouble("ltod(2000000)"), EPS);
         runErr = assertThrows(RuntimeError.class, () -> evaluate("ltod(1000000.0)"));
-        assertEquals("RuntimeException in function 'ltod': Operand must be a LONG number", runErr.getMessage());
+        assertEquals("Expression evaluation error [line 1, pos 1]: RuntimeException in function 'ltod': Operand must be a LONG number in expression 'ltod(1000000.0)'", runErr.getMessage());
         runErr = assertThrows(RuntimeError.class, () -> evaluate("ltod(\"A\")"));
-        assertEquals("RuntimeException in function 'ltod': Operand must be a LONG number", runErr.getMessage());
+        assertEquals("Expression evaluation error [line 1, pos 1]: RuntimeException in function 'ltod': Operand must be a LONG number in expression 'ltod(\"A\")'", runErr.getMessage());
         runErr = assertThrows(RuntimeError.class, () -> evaluate("ltod(true)"));
-        assertEquals("RuntimeException in function 'ltod': Operand must be a LONG number", runErr.getMessage());
+        assertEquals("Expression evaluation error [line 1, pos 1]: RuntimeException in function 'ltod': Operand must be a LONG number in expression 'ltod(true)'", runErr.getMessage());
         // dtol
         assertEquals(0L, evaluateLong("dtol(0.0)"));
         assertEquals(100_000_000L, evaluateLong("dtol(100.0)"));
         assertEquals(-100_000_000L, evaluateLong("dtol(-100.0)"));
         assertEquals(123_456_000L, evaluateLong("dtol(123.456)"));
         runErr = assertThrows(RuntimeError.class, () -> evaluate("dtol(1000000)"));
-        assertEquals("RuntimeException in function 'dtol': Operand must be a DOUBLE number", runErr.getMessage());
+        assertEquals("Expression evaluation error [line 1, pos 1]: RuntimeException in function 'dtol': Operand must be a DOUBLE number in expression 'dtol(1000000)'", runErr.getMessage());
         runErr = assertThrows(RuntimeError.class, () -> evaluate("dtol(\"A\")"));
-        assertEquals("RuntimeException in function 'dtol': Operand must be a DOUBLE number", runErr.getMessage());
+        assertEquals("Expression evaluation error [line 1, pos 1]: RuntimeException in function 'dtol': Operand must be a DOUBLE number in expression 'dtol(\"A\")'", runErr.getMessage());
         runErr = assertThrows(RuntimeError.class, () -> evaluate("dtol(true)"));
-        assertEquals("RuntimeException in function 'dtol': Operand must be a DOUBLE number", runErr.getMessage());
+        assertEquals("Expression evaluation error [line 1, pos 1]: RuntimeException in function 'dtol': Operand must be a DOUBLE number in expression 'dtol(true)'", runErr.getMessage());
         // isMarketPrice
         assertTrue(evaluateBool("isMarketPrice(" + OrderPrice.NO_LIMIT_PRICE + ")"));
         assertFalse(evaluateBool("isMarketPrice(" + OrderPrice.INVALID_PRICE + ")"));
         assertFalse(evaluateBool("isMarketPrice(1000000)"));
         runErr = assertThrows(RuntimeError.class, () -> evaluate("isMarketPrice(1000000.0)"));
-        assertEquals("RuntimeException in function 'isMarketPrice': Operand must be a LONG number", runErr.getMessage());
+        assertEquals("Expression evaluation error [line 1, pos 1]: RuntimeException in function 'isMarketPrice': Operand must be a LONG number in expression 'isMarketPrice(1000000.0)'", runErr.getMessage());
         runErr = assertThrows(RuntimeError.class, () -> evaluate("isMarketPrice(\"A\")"));
-        assertEquals("RuntimeException in function 'isMarketPrice': Operand must be a LONG number", runErr.getMessage());
+        assertEquals("Expression evaluation error [line 1, pos 1]: RuntimeException in function 'isMarketPrice': Operand must be a LONG number in expression 'isMarketPrice(\"A\")'", runErr.getMessage());
         runErr = assertThrows(RuntimeError.class, () -> evaluate("isMarketPrice(true)"));
-        assertEquals("RuntimeException in function 'isMarketPrice': Operand must be a LONG number", runErr.getMessage());
+        assertEquals("Expression evaluation error [line 1, pos 1]: RuntimeException in function 'isMarketPrice': Operand must be a LONG number in expression 'isMarketPrice(true)'", runErr.getMessage());
         // isLimitPrice
         assertFalse(evaluateBool("isLimitPrice(" + OrderPrice.NO_LIMIT_PRICE + ")"));
         assertFalse(evaluateBool("isLimitPrice(" + OrderPrice.INVALID_PRICE + ")"));
         assertTrue(evaluateBool("isLimitPrice(1000000)"));
         runErr = assertThrows(RuntimeError.class, () -> evaluate("isLimitPrice(1000000.0)"));
-        assertEquals("RuntimeException in function 'isLimitPrice': Operand must be a LONG number", runErr.getMessage());
+        assertEquals("Expression evaluation error [line 1, pos 1]: RuntimeException in function 'isLimitPrice': Operand must be a LONG number in expression 'isLimitPrice(1000000.0)'", runErr.getMessage());
         runErr = assertThrows(RuntimeError.class, () -> evaluate("isLimitPrice(\"A\")"));
-        assertEquals("RuntimeException in function 'isLimitPrice': Operand must be a LONG number", runErr.getMessage());
+        assertEquals("Expression evaluation error [line 1, pos 1]: RuntimeException in function 'isLimitPrice': Operand must be a LONG number in expression 'isLimitPrice(\"A\")'", runErr.getMessage());
         runErr = assertThrows(RuntimeError.class, () -> evaluate("isLimitPrice(true)"));
-        assertEquals("RuntimeException in function 'isLimitPrice': Operand must be a LONG number", runErr.getMessage());
+        assertEquals("Expression evaluation error [line 1, pos 1]: RuntimeException in function 'isLimitPrice': Operand must be a LONG number in expression 'isLimitPrice(true)'", runErr.getMessage());
         // isValidPrice
         assertTrue(evaluateBool("isValidPrice(" + OrderPrice.NO_LIMIT_PRICE + ")"));
         assertFalse(evaluateBool("isValidPrice(" + OrderPrice.INVALID_PRICE + ")"));
         assertTrue(evaluateBool("isValidPrice(1000000)"));
         runErr = assertThrows(RuntimeError.class, () -> evaluate("isValidPrice(1000000.0)"));
-        assertEquals("RuntimeException in function 'isValidPrice': Operand must be a LONG number", runErr.getMessage());
+        assertEquals("Expression evaluation error [line 1, pos 1]: RuntimeException in function 'isValidPrice': Operand must be a LONG number in expression 'isValidPrice(1000000.0)'", runErr.getMessage());
         runErr = assertThrows(RuntimeError.class, () -> evaluate("isValidPrice(\"A\")"));
-        assertEquals("RuntimeException in function 'isValidPrice': Operand must be a LONG number", runErr.getMessage());
+        assertEquals("Expression evaluation error [line 1, pos 1]: RuntimeException in function 'isValidPrice': Operand must be a LONG number in expression 'isValidPrice(\"A\")'", runErr.getMessage());
         runErr = assertThrows(RuntimeError.class, () -> evaluate("isValidPrice(true)"));
-        assertEquals("RuntimeException in function 'isValidPrice': Operand must be a LONG number", runErr.getMessage());
+        assertEquals("Expression evaluation error [line 1, pos 1]: RuntimeException in function 'isValidPrice': Operand must be a LONG number in expression 'isValidPrice(true)'", runErr.getMessage());
 
-        final ExprContextImpl ctx = new ExprContextImpl();
+        final MutableExprContext ctx = ExprContextFactory.create();
         ctx.defineFunction("PI", result -> result.accept(3.14));
 
         assertEquals(1.0, evaluateDouble("min(1, PI())", ctx), EPS);
@@ -330,17 +330,17 @@ class ExprNativeFunctionsTest extends ExprEvaluatorTestBase {
         assertFalse(evaluateBool("\"\".contains(\"ABC\")"));
 
         runErr = assertThrows(RuntimeError.class, () -> evaluate("\"ABC\".contains(1)"));
-        assertEquals("RuntimeException in function 'contains': Operand must be a STRING", runErr.getMessage());
+        assertEquals("Expression evaluation error [line 1, pos 7]: RuntimeException in function 'contains': Operand must be a STRING in expression '\"ABC\".contains(1)'", runErr.getMessage());
         runErr = assertThrows(RuntimeError.class, () -> evaluate("\"ABC\".contains(1.0)"));
-        assertEquals("RuntimeException in function 'contains': Operand must be a STRING", runErr.getMessage());
+        assertEquals("Expression evaluation error [line 1, pos 7]: RuntimeException in function 'contains': Operand must be a STRING in expression '\"ABC\".contains(1.0)'", runErr.getMessage());
         runErr = assertThrows(RuntimeError.class, () -> evaluate("\"ABC\".contains(true)"));
-        assertEquals("RuntimeException in function 'contains': Operand must be a STRING", runErr.getMessage());
+        assertEquals("Expression evaluation error [line 1, pos 7]: RuntimeException in function 'contains': Operand must be a STRING in expression '\"ABC\".contains(true)'", runErr.getMessage());
         runErr = assertThrows(RuntimeError.class, () -> evaluate("1.contains(\"A\")"));
-        assertEquals("RuntimeException in function 'contains': Operand must be a STRING", runErr.getMessage());
+        assertEquals("Expression evaluation error [line 1, pos 3]: RuntimeException in function 'contains': Operand must be a STRING in expression '1.contains(\"A\")'", runErr.getMessage());
         runErr = assertThrows(RuntimeError.class, () -> evaluate("true.contains(\"A\")"));
-        assertEquals("RuntimeException in function 'contains': Operand must be a STRING", runErr.getMessage());
+        assertEquals("Expression evaluation error [line 1, pos 6]: RuntimeException in function 'contains': Operand must be a STRING in expression 'true.contains(\"A\")'", runErr.getMessage());
 
-        final ExprContextImpl ctx = new ExprContextImpl();
+        final MutableExprContext ctx = ExprContextFactory.create();
         ctx.defineString("region", () -> "EMEA");
         ctx.defineFunction("algoType", result -> result.accept("Algo1"));
 
@@ -349,7 +349,7 @@ class ExprNativeFunctionsTest extends ExprEvaluatorTestBase {
         assertTrue(evaluateBool("algoType().length() == 5", ctx));
         assertTrue(evaluateBool("region.length() == 4", ctx));
 
-        final ExprContextImpl ctx2 = new ExprContextImpl();
+        final MutableExprContext ctx2 = ExprContextFactory.create();
         ctx2.defineByteBuffer("region", () -> constant("EMEA"));
         ctx2.defineFunction("algoType", result -> result.accept(constant("Algo1")));
 
@@ -359,15 +359,15 @@ class ExprNativeFunctionsTest extends ExprEvaluatorTestBase {
         assertTrue(evaluateBool("region.length() == 4", ctx2));
 
         runErr = assertThrows(RuntimeError.class, () -> evaluate("\"ABC\".contains(region)", ctx2));
-        assertEquals("RuntimeException in function 'contains': Operand must be a STRING", runErr.getMessage());
+        assertEquals("Expression evaluation error [line 1, pos 7]: RuntimeException in function 'contains': Operand must be a STRING in expression '\"ABC\".contains(region)'", runErr.getMessage());
         runErr = assertThrows(RuntimeError.class, () -> evaluate("\"ABC\".contains(algoType())", ctx2));
-        assertEquals("RuntimeException in function 'contains': Operand must be a STRING", runErr.getMessage());
+        assertEquals("Expression evaluation error [line 1, pos 7]: RuntimeException in function 'contains': Operand must be a STRING in expression '\"ABC\".contains(algoType())'", runErr.getMessage());
         runErr = assertThrows(RuntimeError.class, () -> evaluate("region.contains(\"A\")", ctx2));
-        assertEquals("RuntimeException in function 'contains': Operand must be a STRING", runErr.getMessage());
+        assertEquals("Expression evaluation error [line 1, pos 8]: RuntimeException in function 'contains': Operand must be a STRING in expression 'region.contains(\"A\")'", runErr.getMessage());
         runErr = assertThrows(RuntimeError.class, () -> evaluate("algoType().contains(\"A\")", ctx2));
-        assertEquals("RuntimeException in function 'contains': Operand must be a STRING", runErr.getMessage());
+        assertEquals("Expression evaluation error [line 1, pos 12]: RuntimeException in function 'contains': Operand must be a STRING in expression 'algoType().contains(\"A\")'", runErr.getMessage());
 
-        final ExprContextImpl ctx3 = new ExprContextImpl();
+        final MutableExprContext ctx3 = ExprContextFactory.create();
         ctx3.defineString("region", () -> "EMEA");
         ctx3.defineFunction("algoType", result -> result.accept(constant("Algo1")));
 

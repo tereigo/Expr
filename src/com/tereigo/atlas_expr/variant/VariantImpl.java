@@ -46,7 +46,7 @@ public class VariantImpl implements MutableVariant {
         accept(value);
     }
 
-    // We don't provide the constructor from ByteBuffer to highlight that ByteBuffer is not supposed to be stored in Variant
+    // We don't provide the constructor from ByteBuffer to highlight the fact that ByteBuffer is not supposed to be stored in Variant
     // The only way to put it into Variant is:
     // v = new VariantImpl();
     // v.accept(byteBuffer);
@@ -139,8 +139,12 @@ public class VariantImpl implements MutableVariant {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         VariantImpl variant = (VariantImpl) o;
         // see "IMPORTANT NOTE" above
         if (type == ExprType.STRING && variant.type == ExprType.BYTE_BUFFER) {
@@ -159,36 +163,5 @@ public class VariantImpl implements MutableVariant {
     public int hashCode() {
         return Objects.hash(longVal, doubleVal, strVal, bbVal, type);
     }
-
-//    void clear() {
-//        this.longVal = 0;
-//        this.doubleVal = 0.0;
-//        this.boolVal = false;
-//        this.strVal = null;
-//        this.bbVal = null;
-//        this.type = null;
-//    }
-
-//    public static Variant create(Object value, ExprType type) {
-//        VariantImpl result = new VariantImpl();
-//        switch (type) {
-//            case DOUBLE:
-//                result.accept((double)value);
-//                break;
-//            case LONG:
-//                result.accept((long)value);
-//                break;
-//            case BOOL:
-//                result.accept((boolean)value);
-//                break;
-//            case STRING:
-//                result.accept((String)value);
-//                break;
-//            case BYTE_BUFFER:
-//                result.accept((ByteBuffer)value);
-//                break;
-//        }
-//        return result;
-//    }
 
 }

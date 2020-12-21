@@ -5,9 +5,10 @@ import java.util.List;
 /*
   For expression "1.0 + 2" produces the following output: "(+ 1.0 2)"
  */
-class AstPolishPrinter implements Expr.Visitor<String> {
-  String print(Expr expr) {
-    return expr.accept(this);
+final class AstPolishPrinter implements Expr.Visitor<String> {
+
+  String print(ASTRoot root) {
+      return root.expr().accept(this);
   }
 
   @Override

@@ -137,7 +137,7 @@ class ExprPrinterTest extends ExprEvaluatorTestBase {
     @Test
     void testAstPrinterTheSameExpression() {
         AstPolishPrinter printer = new AstPolishPrinter();
-        Expr expr = ExprCompiler.compile("(1.0+2.0)");
+        ASTRoot expr = ExprCompiler.compile("(1.0+2.0)");
         assertEquals("(group (+ 1.0 2.0))", printer.print(expr));
         ExprEvaluator exprEvaluator = new ExprEvaluator(expr);
         assertEquals(3.0, exprEvaluator.evaluateDouble(), EPS);

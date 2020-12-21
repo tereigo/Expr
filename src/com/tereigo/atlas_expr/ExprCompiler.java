@@ -8,11 +8,16 @@ public final class ExprCompiler {
 
     // Convert Expression into AST
     @SuppressWarnings("UnnecessaryLocalVariable")
-    public static Expr compile(String source) {
-        final Scanner scanner = new Scanner(source);
-        final List<Token> tokens = scanner.tokens();
-        final Parser parser = new Parser(tokens);
-        final Expr expression = parser.parse();
-        return expression;
+    public static ASTRoot compile(String source) {
+        try {
+            final Scanner scanner = new Scanner(source);
+            final List<Token> tokens = scanner.tokens();
+            final Parser parser = new Parser(tokens);
+            final Expr expression = parser.parse();
+            return new ASTRoot(source, expression);
+        } catch (ParseError err) {
+            // Let's enhance the error with the relevant context info
+            throw new ParseError("Expression parsing error " + err.getMessage() + " in expression '" + source + "'");
+        }
     }
 }

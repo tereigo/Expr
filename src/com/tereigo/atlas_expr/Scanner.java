@@ -37,7 +37,7 @@ import static com.tereigo.atlas_expr.TokenType.TRUE;
 /*
   Converts a given String into a list of Tokens
  */
-class Scanner {
+final class Scanner {
   private static final Map<String, TokenType> keywords;
 
   static {
@@ -184,6 +184,7 @@ class Scanner {
   }
 
   private void string() {
+    int stringStartPos = current - 1;
     while (peek() != '"' && !isAtEnd()) {
       if (peek() == '\n') {
         line++;
@@ -192,7 +193,7 @@ class Scanner {
     }
 
     if (isAtEnd()) {
-      error(line, start, "Unterminated string");
+      error(line, stringStartPos, "Unterminated string");
       return;
     }
 
@@ -264,11 +265,7 @@ class Scanner {
   }
 
   static void error(int line, int start, String message) {
-    throw new ParseError(errorMsg(line, "at pos " + (start + 1), message));
-  }
-
-  private static String errorMsg(int line, String where, String message) {
-    return "[line " + line + "] Error " + where + ": " + message;
+    throw new ParseError(line, start + 1, message);
   }
 
 }

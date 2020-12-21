@@ -1,5 +1,6 @@
  TODO:
-1. Support scientific input for Doubles: 1e6
+3. Add tests for VariantImpl equals / hashCode
+2. Support scientific input for Doubles: 1e6
 7. Add string operators:
  startsWith
  endsWith
@@ -16,13 +17,12 @@
  regexp
 
 7. May be rename "defineLong/defineDouble/defineFunction" to "bindLong/bindFunction"
+
 8. Should we expose objects? It may be easier than introducing individual functions
 and instead of: orderQty, orderPrice, orderRic, orderTif, ...
 we will expose: order() as an Object
 and all other functions well be available via reflection
 
-11. Dump the original expression in the exceptions
-5. Add more malformed expression tests and make better error handling (see testMalformedExpressions)
 10. Type conversion functions and rounding: toNanos, nanoToSec
 12. May be add function aliases: len / length / size, $tuid / $clientTuid
 13. May be use one Variant.objVal which can be used for both String and ByteBuffer and for any other object that the use can expose?
@@ -44,16 +44,16 @@ and all other functions well be available via reflection
   time
   timeMs
   nanoTime
-  env (PROD, UAT, QA)
-  deployment ALGO/GSX/ACM/MOMIC/...
-  region
-  nodeAlgoType
-  nodeName
+  atlasEngineTime
+  atlasRnd
+  atlasRandom
+  atlasEnv (PROD, UAT, QA)
+  atlasDeployment ALGO/GSX/ACM/MOMIC/...
+  atlasRegion
+  atlasNodeAlgoType
+  atlasNodeName
+  atlasReleaseVersion
 
-4. Do we need Parser.equality and Parser.comparison separate?
-4. Do we need Parser.logic_or and Parser.logic_and separate?
-10. Doublecheck that: Remove all foreach in evaluations
-11. Make sure initialization of Environment is gc-free! We should not add entries every time for a new evaluation
 9. Do we NIL ?
 12.
 
@@ -72,6 +72,14 @@ if search(substring, fullstring):   - regexp
 
 
 Done:
+10. Doublecheck that: Remove all foreach in evaluations
+11. Make sure initialization of Environment is gc-free! We should not add entries every time for a new evaluation
+5. Add more malformed expression tests and make better error handling (see testMalformedExpressions)
+1. Enhance error reporting
+   Cover Scanner errors with tests: see Scanner.errorMsg()
+   Add the original expression to Scanner errors
+   Add the original expression to Parser errors
+11. Dump the original expression in the exceptions
 6. Add . for strings
 7. Add string operators:
  isEmpty

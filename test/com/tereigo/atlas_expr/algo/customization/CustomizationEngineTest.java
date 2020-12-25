@@ -3,8 +3,10 @@ package com.tereigo.atlas_expr.algo.customization;
 import com.google.common.collect.Lists;
 import com.tereigo.atlas_expr.atlas.AddRuleMsg;
 import com.tereigo.atlas_expr.atlas.AlgoDataProvider;
+import com.tereigo.atlas_expr.atlas.AlgoExprContext;
 import com.tereigo.atlas_expr.atlas.AlgoExprContextEnricher;
 import com.tereigo.atlas_expr.atlas.AtlasDataProvider;
+import com.tereigo.atlas_expr.atlas.AtlasExprContext;
 import com.tereigo.atlas_expr.atlas.AtlasExprContextEnricher;
 import com.tereigo.atlas_expr.atlas.CustomizationAction;
 import com.tereigo.atlas_expr.atlas.Order;
@@ -48,20 +50,40 @@ class CustomizationEngineTest {
 
         AtlasDataProvider atlas = new AtlasDataProvider(timeProvider, randomProvider, refData, "ATLAS_ALGO_NODE1");
 
+        AtlasExprContext.init(atlas);
+        AlgoExprContext.init(algo);
+
+        AtlasExprContextEnricher.init(atlas);
+        AlgoExprContextEnricher.init(algo);
+
         engine = new CustomizationEngine();
         errorHandler = new TestCustomizationErrorHandler();
-        AtlasExprContextEnricher atlasEnricher = new AtlasExprContextEnricher(atlas);
-        AlgoExprContextEnricher algoEnricher = new AlgoExprContextEnricher(algo);
+        AtlasExprContextEnricher atlasEnricher = AtlasExprContextEnricher.get();
+        AlgoExprContextEnricher algoEnricher = AlgoExprContextEnricher.get();
         engine.init(refData, atlasEnricher, algoEnricher, errorHandler);
     }
 
     @Test
-    void testFromAxisNode() {
-        when(algo.getAlgoType()).thenReturn("AXIS");
+    void testFromVWAPNode() {
+        when(algo.getAlgoType()).thenReturn("VWAP");
 
         initRules();
-        assertEquals(13, engine.getRulesCount());
+        assertEquals(14, engine.getRulesCount());
 
+        vwapNodeTests();
+    }
+
+    @Test
+    void testFromVWAPNodeUsingObjects() {
+        when(algo.getAlgoType()).thenReturn("VWAP");
+
+        initRulesUsingObjects();
+        assertEquals(14, engine.getRulesCount());
+
+        vwapNodeTests();
+    }
+
+    private void vwapNodeTests() {
         Order order1 = new Order(123, 1);
         engine.onNewOrder(order1);
         assertEquals("action1,action5,action6", order1.actions());
@@ -101,12 +123,26 @@ class CustomizationEngineTest {
     }
 
     @Test
-    void testFromMicrotraderNode() {
-        when(algo.getAlgoType()).thenReturn("MICROTRADER");
+    void testFromPOVNode() {
+        when(algo.getAlgoType()).thenReturn("POV");
 
         initRules();
-        assertEquals(15, engine.getRulesCount());
+        assertEquals(16, engine.getRulesCount());
 
+        povNodeTests();
+    }
+
+    @Test
+    void testFromPOVNodeUsingObjects() {
+        when(algo.getAlgoType()).thenReturn("POV");
+
+        initRulesUsingObjects();
+        assertEquals(16, engine.getRulesCount());
+
+        povNodeTests();
+    }
+
+    void povNodeTests() {
         Order order1 = new Order(123, 1);
         engine.onNewOrder(order1);
         assertEquals("action1,action15,action16,action17", order1.actions());
@@ -147,36 +183,36 @@ class CustomizationEngineTest {
 
     @Test
     void testMalformedNodePredicates() {
-        when(algo.getAlgoType()).thenReturn("AXIS");
+        when(algo.getAlgoType()).thenReturn("VWAP");
 
-        engine.onAddRuleMsg(new AddRuleMsg("tru", "$tuid== \"CLIENT1\"", true, createAction("action1")));
+        engine.onAddRuleMsg(new AddRuleMsg("tru", "tuid== \"CLIENT1\"", true, createAction("action1")));
         assertEquals(1, errorHandler.errors.size());
-        engine.onAddRuleMsg(new AddRuleMsg("true and", "$tuid== \"CLIENT2\"", true, createAction("action2")));
+        engine.onAddRuleMsg(new AddRuleMsg("true and", "tuid== \"CLIENT2\"", true, createAction("action2")));
         assertEquals(2, errorHandler.errors.size());
-        engine.onAddRuleMsg(new AddRuleMsg("algoNodeType==\"AXIS", "$tuid== \"CLIENT2\"", true, createAction("action3")));
+        engine.onAddRuleMsg(new AddRuleMsg("algoNodeType==\"VWAP", "tuid== \"CLIENT2\"", true, createAction("action3")));
         assertEquals(3, errorHandler.errors.size());
-        engine.onAddRuleMsg(new AddRuleMsg("algoNodeType=\"MICROTRADER\"", "$tuid== \"CLIENT2\"", true, createAction("action4")));
+        engine.onAddRuleMsg(new AddRuleMsg("algoNodeType=\"POV\"", "tuid== \"CLIENT2\"", true, createAction("action4")));
         assertEquals(4, errorHandler.errors.size());
-        engine.onAddRuleMsg(new AddRuleMsg("algoNodType==\"MICROTRADER\"", "$tuid== \"CLIENT2\"", true, createAction("action5")));
+        engine.onAddRuleMsg(new AddRuleMsg("algoNodType==\"POV\"", "tuid== \"CLIENT2\"", true, createAction("action5")));
         assertEquals(5, errorHandler.errors.size());
-        engine.onAddRuleMsg(new AddRuleMsg("algoNodeType==\"MICROTRADER\"", "$tuid== \"CLIENT1\"", true, createAction("action15")));
+        engine.onAddRuleMsg(new AddRuleMsg("algoNodeType==\"POV\"", "tuid== \"CLIENT1\"", true, createAction("action15")));
         assertEquals(5, errorHandler.errors.size());
 
         assertEquals(0, engine.getRulesCount());
 
-        when(algo.getAlgoType()).thenReturn("MICROTRADER");
+        when(algo.getAlgoType()).thenReturn("POV");
 
-        engine.onAddRuleMsg(new AddRuleMsg("tru", "$tuid== \"CLIENT1\"", true, createAction("action1")));
+        engine.onAddRuleMsg(new AddRuleMsg("tru", "tuid== \"CLIENT1\"", true, createAction("action1")));
         assertEquals(6, errorHandler.errors.size());
-        engine.onAddRuleMsg(new AddRuleMsg("true and", "$tuid== \"CLIENT2\"", true, createAction("action2")));
+        engine.onAddRuleMsg(new AddRuleMsg("true and", "tuid== \"CLIENT2\"", true, createAction("action2")));
         assertEquals(7, errorHandler.errors.size());
-        engine.onAddRuleMsg(new AddRuleMsg("algoNodeType==\"AXIS", "$tuid== \"CLIENT2\"", true, createAction("action3")));
+        engine.onAddRuleMsg(new AddRuleMsg("algoNodeType==\"VWAP", "tuid== \"CLIENT2\"", true, createAction("action3")));
         assertEquals(8, errorHandler.errors.size());
-        engine.onAddRuleMsg(new AddRuleMsg("algoNodeType=\"MICROTRADER\"", "$tuid== \"CLIENT2\"", true, createAction("action4")));
+        engine.onAddRuleMsg(new AddRuleMsg("algoNodeType=\"POV\"", "tuid== \"CLIENT2\"", true, createAction("action4")));
         assertEquals(9, errorHandler.errors.size());
-        engine.onAddRuleMsg(new AddRuleMsg("algoNodType==\"MICROTRADER\"", "$tuid== \"CLIENT2\"", true, createAction("action5")));
+        engine.onAddRuleMsg(new AddRuleMsg("algoNodType==\"POV\"", "tuid== \"CLIENT2\"", true, createAction("action5")));
         assertEquals(10, errorHandler.errors.size());
-        engine.onAddRuleMsg(new AddRuleMsg("algoNodeType==\"MICROTRADER\"", "$tuid== \"CLIENT1\"", true, createAction("action15")));
+        engine.onAddRuleMsg(new AddRuleMsg("algoNodeType==\"POV\"", "tuid== \"CLIENT1\"", true, createAction("action15")));
         assertEquals(10, errorHandler.errors.size());
 
         assertEquals(1, engine.getRulesCount());
@@ -184,27 +220,31 @@ class CustomizationEngineTest {
 
     @Test
     void testMalformedRulePredicates() {
-        when(algo.getAlgoType()).thenReturn("AXIS");
+        when(algo.getAlgoType()).thenReturn("VWAP");
 
         initRules();
-        assertEquals(13, engine.getRulesCount());
+        assertEquals(14, engine.getRulesCount());
         assertEquals(0, errorHandler.errors.size());
 
         // malformed rules
-        engine.onAddRuleMsg(new AddRuleMsg("true", "$tuid= \"CLIENT2\"", true, createAction("action30")));
-        assertEquals(13, engine.getRulesCount());
+        // parsing error
+        engine.onAddRuleMsg(new AddRuleMsg("true", "tuid= \"CLIENT2\"", true, createAction("action30")));
+        assertEquals(14, engine.getRulesCount());
         assertEquals(1, errorHandler.errors.size());
-        engine.onAddRuleMsg(new AddRuleMsg("true", "$tuid==\"CLIENT2", true, createAction("action31")));
-        assertEquals(13, engine.getRulesCount());
-        assertEquals(2, errorHandler.errors.size());
-        // wrong identifier but it will be known at evaluation only
-        engine.onAddRuleMsg(new AddRuleMsg("true", "$tud==\"CLIENT1\"", true, createAction("action32")));
+        // parsing error
+        engine.onAddRuleMsg(new AddRuleMsg("true", "tuid==\"CLIENT2", true, createAction("action31")));
         assertEquals(14, engine.getRulesCount());
         assertEquals(2, errorHandler.errors.size());
         // "not" applies to non-boolean
-        engine.onAddRuleMsg(new AddRuleMsg("true", "not $ric==\"BT.L\"", true, createAction("action33")));
+        // parsing error
+        engine.onAddRuleMsg(new AddRuleMsg("true", "not ric==\"BT.L\"", true, createAction("action33")));
+        assertEquals(14, engine.getRulesCount());
+        assertEquals(3, errorHandler.errors.size());
+        // wrong identifier but it will be known at evaluation only
+        // evaluation error
+        engine.onAddRuleMsg(new AddRuleMsg("true", "tud==\"CLIENT1\"", true, createAction("action32")));
         assertEquals(15, engine.getRulesCount());
-        assertEquals(2, errorHandler.errors.size());
+        assertEquals(3, errorHandler.errors.size());
 
         Order order1 = new Order(123, 1);
         engine.onNewOrder(order1);
@@ -214,65 +254,67 @@ class CustomizationEngineTest {
         Order order2 = new Order(124, 1);
         engine.onNewOrder(order2);
         assertEquals("action1,action7", order2.actions());
-        assertEquals(6, errorHandler.errors.size());
+        assertEquals(5, errorHandler.errors.size());
     }
 
     private void initRules() {
-        engine.onAddRuleMsg(new AddRuleMsg("true", "$tuid== \"CLIENT1\"", true, createAction("action1")));
-        engine.onAddRuleMsg(new AddRuleMsg("true", "$tuid== \"CLIENT2\"", true, createAction("action2")));
-        engine.onAddRuleMsg(new AddRuleMsg("algoNodeType==\"AXIS\"", "$tuid== \"CLIENT2\"", true, createAction("action3")));
-        engine.onAddRuleMsg(new AddRuleMsg("algoNodeType==\"MICROTRADER\"", "$tuid== \"CLIENT2\"", true, createAction("action4")));
-        engine.onAddRuleMsg(new AddRuleMsg("algoNodeType==\"AXIS\"", "$tuid== \"CLIENT1\" and $ric==\"VOD.L\"", true, createAction("action5")));
-        engine.onAddRuleMsg(new AddRuleMsg("algoNodeType==\"AXIS\"", "$tuid== \"CLIENT1\" and not ($ric==\"BT.L\")", true, createAction("action6")));
-        engine.onAddRuleMsg(new AddRuleMsg("algoNodeType==\"AXIS\"", "$tuid== \"CLIENT1\" and $ric==\"BT.L\"", true, createAction("action7")));
-        engine.onAddRuleMsg(new AddRuleMsg("algoNodeType==\"AXIS\"", "$tuid== \"CLIENT2\" and $ric==\"VOD.L\"", true, createAction("action8")));
-        engine.onAddRuleMsg(new AddRuleMsg("algoNodeType==\"AXIS\"", "$tuid== \"CLIENT2\" and not ($ric==\"BT.L\")", true, createAction("action9")));
-        engine.onAddRuleMsg(new AddRuleMsg("algoNodeType==\"AXIS\"", "$tuid== \"CLIENT2\" and $ric==\"BT.L\"", true, createAction("action10")));
-        engine.onAddRuleMsg(new AddRuleMsg("algoNodeType==\"AXIS\"", "$tuid== \"CLIENT3\" and $ric==\"BT.L\"", true, createAction("action11")));
-        engine.onAddRuleMsg(new AddRuleMsg("algoNodeType==\"AXIS\"", "$tuid== \"CLIENT3\" and $ric==\"VOD.L\"", true, createAction("action12")));
-        engine.onAddRuleMsg(new AddRuleMsg("algoNodeType==\"AXIS\"", "$tuid== \"CLIENT3\" and not ($ric==\"BT.L\")", true, createAction("action13")));
-        engine.onAddRuleMsg(new AddRuleMsg("algoNodeType==\"AXIS\"", "$tuid== \"CLIENT3\" and $ric==\"TSCO.L\"", true, createAction("action14")));
-        engine.onAddRuleMsg(new AddRuleMsg("algoNodeType==\"MICROTRADER\"", "$tuid== \"CLIENT1\"", true, createAction("action15")));
-        engine.onAddRuleMsg(new AddRuleMsg("algoNodeType==\"MICROTRADER\"", "$tuid== \"CLIENT1\" and $ric==\"VOD.L\"", true, createAction("action16")));
-        engine.onAddRuleMsg(new AddRuleMsg("algoNodeType==\"MICROTRADER\"", "$tuid== \"CLIENT1\" and not ($ric==\"BT.L\")", true, createAction("action17")));
-        engine.onAddRuleMsg(new AddRuleMsg("algoNodeType==\"MICROTRADER\"", "$tuid== \"CLIENT1\" and $ric==\"BT.L\"", true, createAction("action18")));
-        engine.onAddRuleMsg(new AddRuleMsg("algoNodeType==\"MICROTRADER\"", "$tuid== \"CLIENT2\"", true, createAction("action19")));
-        engine.onAddRuleMsg(new AddRuleMsg("algoNodeType==\"MICROTRADER\"", "$tuid== \"CLIENT2\" and $ric==\"VOD.L\"", true, createAction("action20")));
-        engine.onAddRuleMsg(new AddRuleMsg("algoNodeType==\"MICROTRADER\"", "$tuid== \"CLIENT2\" and not ($ric==\"BT.L\")", true, createAction("action21")));
-        engine.onAddRuleMsg(new AddRuleMsg("algoNodeType==\"MICROTRADER\"", "$tuid== \"CLIENT2\" and $ric==\"BT.L\"", true, createAction("action22")));
-        engine.onAddRuleMsg(new AddRuleMsg("algoNodeType==\"MICROTRADER\"", "$tuid== \"CLIENT3\"", true, createAction("action23")));
-        engine.onAddRuleMsg(new AddRuleMsg("algoNodeType==\"MICROTRADER\"", "$tuid== \"CLIENT3\" and $ric==\"VOD.L\"", true, createAction("action24")));
-        engine.onAddRuleMsg(new AddRuleMsg("algoNodeType==\"MICROTRADER\"", "$tuid== \"CLIENT3\" and not ($ric==\"BT.L\")", true, createAction("action25")));
-        engine.onAddRuleMsg(new AddRuleMsg("algoNodeType==\"MICROTRADER\"", "$tuid== \"CLIENT3\" and $ric==\"BT.L\"", true, createAction("action26")));
+        engine.onAddRuleMsg(new AddRuleMsg("true", "tuid== \"CLIENT1\"", true, createAction("action1")));
+        engine.onAddRuleMsg(new AddRuleMsg("true", "tuid== \"CLIENT2\"", true, createAction("action2")));
+        engine.onAddRuleMsg(new AddRuleMsg("algoNodeType==\"VWAP\"", "tuid== \"CLIENT2\"", true, createAction("action3")));
+        engine.onAddRuleMsg(new AddRuleMsg("algoNodeType==\"POV\"", "tuid== \"CLIENT2\"", true, createAction("action4")));
+        engine.onAddRuleMsg(new AddRuleMsg("algoNodeType==\"VWAP\"", "tuid== \"CLIENT1\" and ric==\"VOD.L\"", true, createAction("action5")));
+        engine.onAddRuleMsg(new AddRuleMsg("algoNodeType==\"VWAP\"", "tuid== \"CLIENT1\" and not (ric==\"BT.L\")", true, createAction("action6")));
+        engine.onAddRuleMsg(new AddRuleMsg("algoNodeType==\"VWAP\"", "tuid== \"CLIENT1\" and ric==\"BT.L\"", true, createAction("action7")));
+        engine.onAddRuleMsg(new AddRuleMsg("algoNodeType==\"VWAP\"", "tuid== \"CLIENT2\" and ric==\"VOD.L\"", true, createAction("action8")));
+        engine.onAddRuleMsg(new AddRuleMsg("algoNodeType==\"VWAP\"", "tuid== \"CLIENT2\" and not (ric==\"BT.L\")", true, createAction("action9")));
+        engine.onAddRuleMsg(new AddRuleMsg("algoNodeType==\"VWAP\"", "tuid== \"CLIENT2\" and ric==\"BT.L\"", true, createAction("action10")));
+        engine.onAddRuleMsg(new AddRuleMsg("algoNodeType==\"VWAP\"", "tuid== \"CLIENT3\" and ric==\"BT.L\"", true, createAction("action11")));
+        engine.onAddRuleMsg(new AddRuleMsg("algoNodeType==\"VWAP\"", "tuid== \"CLIENT3\" and ric==\"VOD.L\"", true, createAction("action12")));
+        engine.onAddRuleMsg(new AddRuleMsg("algoNodeType==\"VWAP\"", "tuid== \"CLIENT3\" and not (ric==\"BT.L\")", true, createAction("action13")));
+        engine.onAddRuleMsg(new AddRuleMsg("algoNodeType==\"VWAP\"", "tuid== \"CLIENT3\" and ric==\"TSCO.L\"", true, createAction("action14")));
+        engine.onAddRuleMsg(new AddRuleMsg("algoNodeType==\"POV\"", "tuid== \"CLIENT1\"", true, createAction("action15")));
+        engine.onAddRuleMsg(new AddRuleMsg("algoNodeType==\"POV\"", "tuid== \"CLIENT1\" and ric==\"VOD.L\"", true, createAction("action16")));
+        engine.onAddRuleMsg(new AddRuleMsg("algoNodeType==\"POV\"", "tuid== \"CLIENT1\" and not (ric==\"BT.L\")", true, createAction("action17")));
+        engine.onAddRuleMsg(new AddRuleMsg("algoNodeType==\"POV\"", "tuid== \"CLIENT1\" and ric==\"BT.L\"", true, createAction("action18")));
+        engine.onAddRuleMsg(new AddRuleMsg("algoNodeType==\"POV\"", "tuid== \"CLIENT2\"", true, createAction("action19")));
+        engine.onAddRuleMsg(new AddRuleMsg("algoNodeType==\"POV\"", "tuid== \"CLIENT2\" and ric==\"VOD.L\"", true, createAction("action20")));
+        engine.onAddRuleMsg(new AddRuleMsg("algoNodeType==\"POV\"", "tuid== \"CLIENT2\" and not (ric==\"BT.L\")", true, createAction("action21")));
+        engine.onAddRuleMsg(new AddRuleMsg("algoNodeType==\"POV\"", "tuid== \"CLIENT2\" and ric==\"BT.L\"", true, createAction("action22")));
+        engine.onAddRuleMsg(new AddRuleMsg("algoNodeType==\"POV\"", "tuid== \"CLIENT3\"", true, createAction("action23")));
+        engine.onAddRuleMsg(new AddRuleMsg("algoNodeType==\"POV\"", "tuid== \"CLIENT3\" and ric==\"VOD.L\"", true, createAction("action24")));
+        engine.onAddRuleMsg(new AddRuleMsg("algoNodeType==\"POV\"", "tuid== \"CLIENT3\" and not (ric==\"BT.L\")", true, createAction("action25")));
+        engine.onAddRuleMsg(new AddRuleMsg("algoNodeType==\"POV\"", "tuid== \"CLIENT3\" and ric==\"BT.L\"", true, createAction("action26")));
+        engine.onAddRuleMsg(new AddRuleMsg("not(atlasNodeName.isEmpty()) and not (isEmpty(algoNodeType))", "algoNodeType == \"TWAP\" and ric==\"BT.L\"", true, createAction("action27")));
     }
 
-    private void initRules2() {
+    private void initRulesUsingObjects() {
         engine.onAddRuleMsg(new AddRuleMsg("true", "order.tuid== \"CLIENT1\"", true, createAction("action1")));
         engine.onAddRuleMsg(new AddRuleMsg("true", "order.tuid== \"CLIENT2\"", true, createAction("action2")));
-        engine.onAddRuleMsg(new AddRuleMsg("algo.nodeType==\"AXIS\"", "order.tuid== \"CLIENT2\"", true, createAction("action3")));
-        engine.onAddRuleMsg(new AddRuleMsg("algo.nodeType==\"MICROTRADER\"", "order.tuid== \"CLIENT2\"", true, createAction("action4")));
-        engine.onAddRuleMsg(new AddRuleMsg("algo.nodeType==\"AXIS\"", "order.tuid== \"CLIENT1\" and order.ric==\"VOD.L\"", true, createAction("action5")));
-        engine.onAddRuleMsg(new AddRuleMsg("algo.nodeType==\"AXIS\"", "order.tuid== \"CLIENT1\" and not order.ric==\"BT.L\"", true, createAction("action6")));
-        engine.onAddRuleMsg(new AddRuleMsg("algo.nodeType==\"AXIS\"", "order.tuid== \"CLIENT1\" and order.ric==\"BT.L\"", true, createAction("action7")));
-        engine.onAddRuleMsg(new AddRuleMsg("algo.nodeType==\"AXIS\"", "order.tuid== \"CLIENT2\" and order.ric==\"VOD.L\"", true, createAction("action8")));
-        engine.onAddRuleMsg(new AddRuleMsg("algo.nodeType==\"AXIS\"", "order.tuid== \"CLIENT2\" and not order.ric==\"BT.L\"", true, createAction("action9")));
-        engine.onAddRuleMsg(new AddRuleMsg("algo.nodeType==\"AXIS\"", "order.tuid== \"CLIENT2\" and order.ric==\"BT.L\"", true, createAction("action10")));
-        engine.onAddRuleMsg(new AddRuleMsg("algo.nodeType==\"AXIS\"", "order.tuid== \"CLIENT3\" and order.ric==\"BT.L\"", true, createAction("action11")));
-        engine.onAddRuleMsg(new AddRuleMsg("algo.nodeType==\"AXIS\"", "order.tuid== \"CLIENT3\" and order.ric==\"VOD.L\"", true, createAction("action12")));
-        engine.onAddRuleMsg(new AddRuleMsg("algo.nodeType==\"AXIS\"", "order.tuid== \"CLIENT3\" and not order.ric==\"BT.L\"", true, createAction("action13")));
-        engine.onAddRuleMsg(new AddRuleMsg("algo.nodeType==\"AXIS\"", "order.tuid== \"CLIENT3\" and order.ric==\"TSCO.L\"", true, createAction("action14")));
-        engine.onAddRuleMsg(new AddRuleMsg("algo.nodeType==\"MICROTRADER\"", "order.tuid== \"CLIENT1\"", true, createAction("action15")));
-        engine.onAddRuleMsg(new AddRuleMsg("algo.nodeType==\"MICROTRADER\"", "order.tuid== \"CLIENT1\" and order.ric==\"VOD.L\"", true, createAction("action16")));
-        engine.onAddRuleMsg(new AddRuleMsg("algo.nodeType==\"MICROTRADER\"", "order.tuid== \"CLIENT1\" and not order.ric==\"BT.L\"", true, createAction("action17")));
-        engine.onAddRuleMsg(new AddRuleMsg("algo.nodeType==\"MICROTRADER\"", "order.tuid== \"CLIENT1\" and order.ric==\"BT.L\"", true, createAction("action18")));
-        engine.onAddRuleMsg(new AddRuleMsg("algo.nodeType==\"MICROTRADER\"", "order.tuid== \"CLIENT2\"", true, createAction("action19")));
-        engine.onAddRuleMsg(new AddRuleMsg("algo.nodeType==\"MICROTRADER\"", "order.tuid== \"CLIENT2\" and order.ric==\"VOD.L\"", true, createAction("action20")));
-        engine.onAddRuleMsg(new AddRuleMsg("algo.nodeType==\"MICROTRADER\"", "order.tuid== \"CLIENT2\" and not order.ric==\"BT.L\"", true, createAction("action21")));
-        engine.onAddRuleMsg(new AddRuleMsg("algo.nodeType==\"MICROTRADER\"", "order.tuid== \"CLIENT2\" and order.ric==\"BT.L\"", true, createAction("action22")));
-        engine.onAddRuleMsg(new AddRuleMsg("algo.nodeType==\"MICROTRADER\"", "order.tuid== \"CLIENT3\"", true, createAction("action23")));
-        engine.onAddRuleMsg(new AddRuleMsg("algo.nodeType==\"MICROTRADER\"", "order.tuid== \"CLIENT3\" and order.ric==\"VOD.L\"", true, createAction("action24")));
-        engine.onAddRuleMsg(new AddRuleMsg("algo.nodeType==\"MICROTRADER\"", "order.tuid== \"CLIENT3\" and not order.ric==\"BT.L\"", true, createAction("action25")));
-        engine.onAddRuleMsg(new AddRuleMsg("algo.nodeType==\"MICROTRADER\"", "order.tuid== \"CLIENT3\" and order.ric==\"BT.L\"", true, createAction("action26")));
+        engine.onAddRuleMsg(new AddRuleMsg("algo.nodeType==\"VWAP\"", "order.tuid== \"CLIENT2\"", true, createAction("action3")));
+        engine.onAddRuleMsg(new AddRuleMsg("algo.nodeType==\"POV\"", "order.tuid== \"CLIENT2\"", true, createAction("action4")));
+        engine.onAddRuleMsg(new AddRuleMsg("algo.nodeType==\"VWAP\"", "order.tuid== \"CLIENT1\" and order.ric==\"VOD.L\"", true, createAction("action5")));
+        engine.onAddRuleMsg(new AddRuleMsg("algo.nodeType==\"VWAP\"", "order.tuid== \"CLIENT1\" and not (order.ric==\"BT.L\")", true, createAction("action6")));
+        engine.onAddRuleMsg(new AddRuleMsg("algo.nodeType==\"VWAP\"", "order.tuid== \"CLIENT1\" and order.ric==\"BT.L\"", true, createAction("action7")));
+        engine.onAddRuleMsg(new AddRuleMsg("algo.nodeType==\"VWAP\"", "order.tuid== \"CLIENT2\" and order.ric==\"VOD.L\"", true, createAction("action8")));
+        engine.onAddRuleMsg(new AddRuleMsg("algo.nodeType==\"VWAP\"", "order.tuid== \"CLIENT2\" and not (order.ric==\"BT.L\")", true, createAction("action9")));
+        engine.onAddRuleMsg(new AddRuleMsg("algo.nodeType==\"VWAP\"", "order.tuid== \"CLIENT2\" and order.ric==\"BT.L\"", true, createAction("action10")));
+        engine.onAddRuleMsg(new AddRuleMsg("algo.nodeType==\"VWAP\"", "order.tuid== \"CLIENT3\" and order.ric==\"BT.L\"", true, createAction("action11")));
+        engine.onAddRuleMsg(new AddRuleMsg("algo.nodeType==\"VWAP\"", "order.tuid== \"CLIENT3\" and order.ric==\"VOD.L\"", true, createAction("action12")));
+        engine.onAddRuleMsg(new AddRuleMsg("algo.nodeType==\"VWAP\"", "order.tuid== \"CLIENT3\" and not (order.ric==\"BT.L\")", true, createAction("action13")));
+        engine.onAddRuleMsg(new AddRuleMsg("algo.nodeType==\"VWAP\"", "order.tuid== \"CLIENT3\" and order.ric==\"TSCO.L\"", true, createAction("action14")));
+        engine.onAddRuleMsg(new AddRuleMsg("algo.nodeType==\"POV\"", "order.tuid== \"CLIENT1\"", true, createAction("action15")));
+        engine.onAddRuleMsg(new AddRuleMsg("algo.nodeType==\"POV\"", "order.tuid== \"CLIENT1\" and order.ric==\"VOD.L\"", true, createAction("action16")));
+        engine.onAddRuleMsg(new AddRuleMsg("algo.nodeType==\"POV\"", "order.tuid== \"CLIENT1\" and not (order.ric==\"BT.L\")", true, createAction("action17")));
+        engine.onAddRuleMsg(new AddRuleMsg("algo.nodeType==\"POV\"", "order.tuid== \"CLIENT1\" and order.ric==\"BT.L\"", true, createAction("action18")));
+        engine.onAddRuleMsg(new AddRuleMsg("algo.nodeType==\"POV\"", "order.tuid== \"CLIENT2\"", true, createAction("action19")));
+        engine.onAddRuleMsg(new AddRuleMsg("algo.nodeType==\"POV\"", "order.tuid== \"CLIENT2\" and order.ric==\"VOD.L\"", true, createAction("action20")));
+        engine.onAddRuleMsg(new AddRuleMsg("algo.nodeType==\"POV\"", "order.tuid== \"CLIENT2\" and not (order.ric==\"BT.L\")", true, createAction("action21")));
+        engine.onAddRuleMsg(new AddRuleMsg("algo.nodeType==\"POV\"", "order.tuid== \"CLIENT2\" and order.ric==\"BT.L\"", true, createAction("action22")));
+        engine.onAddRuleMsg(new AddRuleMsg("algo.nodeType==\"POV\"", "order.tuid== \"CLIENT3\"", true, createAction("action23")));
+        engine.onAddRuleMsg(new AddRuleMsg("algo.nodeType==\"POV\"", "order.tuid== \"CLIENT3\" and order.ric==\"VOD.L\"", true, createAction("action24")));
+        engine.onAddRuleMsg(new AddRuleMsg("algo.nodeType==\"POV\"", "order.tuid== \"CLIENT3\" and not (order.ric==\"BT.L\")", true, createAction("action25")));
+        engine.onAddRuleMsg(new AddRuleMsg("algo.nodeType==\"POV\"", "order.tuid== \"CLIENT3\" and order.ric==\"BT.L\"", true, createAction("action26")));
+        engine.onAddRuleMsg(new AddRuleMsg("not(atlas.nodeName.isEmpty()) and not (isEmpty(algo.nodeType))", "algo.nodeType == \"TWAP\" and order.ric==\"BT.L\"", true, createAction("action27")));
     }
 
     static class TestCustomizationErrorHandler implements CustomizationErrorHandler {
@@ -295,10 +337,10 @@ class CustomizationEngineTest {
             this.name = name;
         }
 
-//        @Override
-//        public void apply(Order order) {
-//            // ???
-//        }
+        @Override
+        public void apply(Order order) {
+            order.applyAction(name);
+        }
 
         @Override
         public String toString() {

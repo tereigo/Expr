@@ -22,7 +22,7 @@ public class Order {
         return actions;
     }
 
-    public void apply(CustomizationAction action) {
+    public void applyAction(String action) {
         if (!actions.isEmpty()) {
             actions += ',';
         }

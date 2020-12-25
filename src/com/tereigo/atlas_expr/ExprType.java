@@ -5,5 +5,7 @@ public enum ExprType {
     LONG,
     BOOL,
     STRING,
-    BYTE_BUFFER
+    BYTE_BUFFER,
+    EXPR_CONTEXT,
+    OBJECT
 }

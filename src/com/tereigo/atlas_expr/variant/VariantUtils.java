@@ -29,4 +29,12 @@ public final class VariantUtils {
     public static boolean isBoolean(Variant operand) {
         return operand.exprType() == ExprType.BOOL;
     }
+
+    public static boolean isExprContext(Variant operand) {
+        return operand.exprType() == ExprType.EXPR_CONTEXT;
+    }
+
+    public static boolean isObject(Variant operand) {
+        return operand.exprType() == ExprType.OBJECT;
+    }
 }

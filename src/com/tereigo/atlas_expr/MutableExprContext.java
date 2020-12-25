@@ -1,6 +1,7 @@
 package com.tereigo.atlas_expr;
 
 import com.tereigo.atlas_expr.function.ByteBufferSupplier;
+import com.tereigo.atlas_expr.function.ExprContextSupplier;
 import com.tereigo.atlas_expr.function.Function0;
 import com.tereigo.atlas_expr.function.Function1;
 import com.tereigo.atlas_expr.function.Function2;
@@ -25,6 +26,8 @@ public interface MutableExprContext extends ExprContext {
 
   void defineBool(String name, BooleanSupplier supplier);
 
+  void defineExprContext(String name, ExprContextSupplier supplier);
+
   void defineFunction(String name, Function0 func);
 
   void defineFunction(String name, Function1 func);
@@ -36,6 +39,8 @@ public interface MutableExprContext extends ExprContext {
   void defineFunction(String name, Function4 func);
 
   void defineFunction(String name, Function5 func);
+
+  void addAlias(String name, String alias);
 
   void enrich(ExprContextEnricher... enrichers);
 }

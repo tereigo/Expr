@@ -1,7 +1,7 @@
 package com.tereigo.atlas_expr;
 
-import com.tereigo.atlas_expr.order.Order;
-import com.tereigo.atlas_expr.order.OrderFieldSupplier;
+import com.tereigo.atlas_expr.order.TestOrder;
+import com.tereigo.atlas_expr.order.TestOrderFieldSupplier;
 import org.junit.jupiter.api.Test;
 
 import static com.tereigo.atlas_expr.atlas.utils.ByteBufferUtils.constant;
@@ -20,7 +20,7 @@ class ExprEvaluationWithContextTest extends ExprEvaluatorTestBase {
         ctx.defineDouble("$PI", () -> 3.14);
         ctx.defineLong("$productId", () -> 123L);
         ctx.defineString("$ric", () -> "VOD.L");
-        ctx.defineString("$nodeAlgoType", () -> "Axis");
+        ctx.defineString("$nodeAlgoType", () -> "Vwap");
         ctx.defineBool("$enabled", () -> true);
         ctx.defineByteBuffer("$tuid", () -> constant("CLIENT1"));
 
@@ -29,11 +29,11 @@ class ExprEvaluationWithContextTest extends ExprEvaluatorTestBase {
 
     @Test
     void contextTestsWithSuppliersForOrder() {
-        Order order = new Order("VOD.L", 123L, true, constant("CLIENT1"));
+        TestOrder order = new TestOrder("VOD.L", 123L, true, constant("CLIENT1"));
         final MutableExprContext ctx = ExprContextFactory.create();
         ctx.defineDouble("PI", () -> 3.14);
         ctx.defineDouble("$PI", () -> 3.14);
-        ctx.defineString("$nodeAlgoType", () -> "Axis");
+        ctx.defineString("$nodeAlgoType", () -> "Vwap");
         ctx.defineLong("$productId", order::productId);
         ctx.defineString("$ric", order::ric);
         ctx.defineBool("$enabled", order::enabled);
@@ -44,13 +44,13 @@ class ExprEvaluationWithContextTest extends ExprEvaluatorTestBase {
 
     @Test
     void contextTestsWithOrderSupplier() {
-        OrderFieldSupplier orderSupplier = new OrderFieldSupplier();
-        Order order1 = new Order("VOD.L", 123L, true, constant("CLIENT1"));
+        TestOrderFieldSupplier orderSupplier = new TestOrderFieldSupplier();
+        TestOrder order1 = new TestOrder("VOD.L", 123L, true, constant("CLIENT1"));
         orderSupplier.setOrder(order1);
         final MutableExprContext ctx = ExprContextFactory.create();
         ctx.defineDouble("PI", () -> 3.14);
         ctx.defineDouble("$PI", () -> 3.14);
-        ctx.defineString("$nodeAlgoType", () -> "Axis");
+        ctx.defineString("$nodeAlgoType", () -> "Vwap");
         ctx.defineLong("$productId", orderSupplier::productId);
         ctx.defineString("$ric", orderSupplier::ric);
         ctx.defineBool("$enabled", orderSupplier::enabled);
@@ -59,7 +59,7 @@ class ExprEvaluationWithContextTest extends ExprEvaluatorTestBase {
         runExpressionWithContextTests(ctx);
 
         // Change the order
-        Order order2 = new Order("BT.L", 456L, false, constant("CLIENT2"));
+        TestOrder order2 = new TestOrder("BT.L", 456L, false, constant("CLIENT2"));
         orderSupplier.setOrder(order2);
 
         // and execute with the same context
@@ -82,23 +82,44 @@ class ExprEvaluationWithContextTest extends ExprEvaluatorTestBase {
 
     @Test
     void globalAndLocalContextTests() {
-        OrderFieldSupplier orderSupplier = new OrderFieldSupplier();
-        Order order1 = new Order("VOD.L", 123L, true, constant("CLIENT1"));
+        RuntimeError runErr;
+        ParseError err;
+
+        TestOrderFieldSupplier orderSupplier = new TestOrderFieldSupplier();
+        TestOrder order1 = new TestOrder("VOD.L", 123L, true, constant("CLIENT1"));
         orderSupplier.setOrder(order1);
 
         final MutableExprContext globalCtx = ExprContextFactory.create();
         globalCtx.defineDouble("PI", () -> 3.14);
         globalCtx.defineDouble("$PI", () -> 3.14);
-        globalCtx.defineString("$nodeAlgoType", () -> "Axis");
+        globalCtx.defineString("$nodeAlgoType", () -> "Vwap");
         globalCtx.defineString("$region", () -> "EMEA");
         globalCtx.defineByteBuffer("$atlasEnv", () -> constant("PROD"));
         globalCtx.defineLong("$timeNs", System::nanoTime);
+
+        globalCtx.addAlias("$nodeAlgoType", "nodeAlgoType");
+        globalCtx.addAlias("$region", "region");
+        globalCtx.addAlias("$atlasEnv", "atlasEnv");
+        globalCtx.addAlias("$timeNs", "timeNs");
 
         final MutableExprContext orderCtx = ExprContextFactory.create();
         orderCtx.defineLong("$productId", orderSupplier::productId);
         orderCtx.defineString("$ric", orderSupplier::ric);
         orderCtx.defineBool("$enabled", orderSupplier::enabled);
         orderCtx.defineByteBuffer("$tuid", orderSupplier::tuid);
+
+        orderCtx.addAlias("$productId", "productId");
+        orderCtx.addAlias("$ric", "ric");
+        orderCtx.addAlias("$enabled", "enabled");
+        orderCtx.addAlias("$tuid", "tuid");
+        // let's define an alias on alias
+        orderCtx.addAlias("tuid", "clientID");
+
+        RuntimeException runEx = assertThrows(RuntimeException.class, () -> orderCtx.addAlias("$tuid", "$tuid"));
+        assertEquals("Identical name and alias: '$tuid'", runEx.getMessage());
+
+        runEx = assertThrows(RuntimeException.class, () -> orderCtx.addAlias("unknown", "coolAlias"));
+        assertEquals("Unknown identifier 'unknown' for alias 'coolAlias'", runEx.getMessage());
 
         final ExprContextChained ctx = new ExprContextChained(globalCtx);
         ctx.add(orderCtx);
@@ -107,14 +128,29 @@ class ExprEvaluationWithContextTest extends ExprEvaluatorTestBase {
 
         assertTrue(evaluateBool("$timeNs > $productId", ctx));
         assertTrue(evaluateBool("$region == \"EMEA\" and $atlasEnv == \"PROD\"", ctx));
-        assertTrue(evaluateBool("$nodeAlgoType == \"Axis\" and $ric == \"VOD.L\"", ctx));
+        assertTrue(evaluateBool("$nodeAlgoType == \"Vwap\" and $ric == \"VOD.L\"", ctx));
         assertTrue(evaluateBool("$atlasEnv == \"PROD\" and $tuid == \"CLIENT1\"", ctx));
+        // using aliases
+        assertTrue(evaluateBool("timeNs > productId", ctx));
+        assertTrue(evaluateBool("region == \"EMEA\" and atlasEnv == \"PROD\"", ctx));
+        assertTrue(evaluateBool("nodeAlgoType == \"Vwap\" and ric == \"VOD.L\"", ctx));
+        assertTrue(evaluateBool("atlasEnv == \"PROD\" and tuid == \"CLIENT1\"", ctx));
+        // using alias on alias
+        assertTrue(evaluateBool("atlasEnv == \"PROD\" and clientID == \"CLIENT1\"", ctx));
 
-        RuntimeError runErr = assertThrows(RuntimeError.class, () -> evaluate("$curTime > 0", ctx));
+        runErr = assertThrows(RuntimeError.class, () -> evaluate("$curTime > 0", ctx));
         assertEquals("Expression evaluation error [line 1, pos 1]: Unknown identifier '$curTime' in expression '$curTime > 0'", runErr.getMessage());
 
+        // this is a parsing error
+        err = assertThrows(ParseError.class, () -> evaluate("not $productId == 123", ctx));
+        assertEquals("Expression parsing error [line 1, pos 5]: Operator NOT should be applied to the expression in parens '()' in expression 'not $productId == 123'", err.getMessage());
+
+        // but it's still possible to get evaluation error as well
+        runErr = assertThrows(RuntimeError.class, () -> evaluate("not($productId) == 123", ctx));
+        assertEquals("Expression evaluation error [line 1, pos 1]: Operand must be a boolean in expression 'not($productId) == 123'", runErr.getMessage());
+
         // Change the order
-        Order order2 = new Order("BT.L", 456L, false, constant("CLIENT2"));
+        TestOrder order2 = new TestOrder("BT.L", 456L, false, constant("CLIENT2"));
         orderSupplier.setOrder(order2);
 
         // and execute with the same context
@@ -140,6 +176,7 @@ class ExprEvaluationWithContextTest extends ExprEvaluatorTestBase {
         assertEquals(-3.14, evaluateDouble("-$PI", ctx), EPS);
         assertEquals(-3.14, evaluateDouble("(-$PI)", ctx), EPS);
         assertEquals(-3.14, evaluateDouble("-($PI)", ctx), EPS);
+        assertFalse(evaluateBool("not($enabled)", ctx));
         assertTrue(evaluateBool("$PI == PI", ctx));
         assertTrue(evaluateBool("$productId == 123 and $ric == \"VOD.L\"", ctx));
         assertTrue(evaluateBool("$productId == 567 or $enabled", ctx));

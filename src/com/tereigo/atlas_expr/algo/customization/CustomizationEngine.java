@@ -5,10 +5,13 @@ import com.tereigo.atlas_expr.ExprContextFactory;
 import com.tereigo.atlas_expr.ExprEvaluator;
 import com.tereigo.atlas_expr.MutableExprContext;
 import com.tereigo.atlas_expr.atlas.AddRuleMsg;
+import com.tereigo.atlas_expr.atlas.AlgoExprContext;
 import com.tereigo.atlas_expr.atlas.AlgoExprContextEnricher;
+import com.tereigo.atlas_expr.atlas.AtlasExprContext;
 import com.tereigo.atlas_expr.atlas.AtlasExprContextEnricher;
 import com.tereigo.atlas_expr.atlas.CustomizationAction;
 import com.tereigo.atlas_expr.atlas.Order;
+import com.tereigo.atlas_expr.atlas.OrderExprContext;
 import com.tereigo.atlas_expr.atlas.OrderFieldResolver;
 import com.tereigo.atlas_expr.atlas.utils.ReferenceDataCache;
 
@@ -16,10 +19,10 @@ import java.util.List;
 
 @SuppressWarnings("ForLoopReplaceableByForEach")
 public class CustomizationEngine {
-    private final MutableExprContext algoExprContext = ExprContextFactory.create();
+    private final MutableExprContext nodeContext = ExprContextFactory.create();
 
     private OrderFieldResolver orderFieldResolver;
-    private final MutableExprContext orderExprContext = ExprContextFactory.create();
+    private final MutableExprContext ruleContext = ExprContextFactory.create();
 
     private final List<RuleRecord> rules = Lists.newArrayList();
     private CustomizationErrorHandler errorHandler;
@@ -29,25 +32,15 @@ public class CustomizationEngine {
                      AlgoExprContextEnricher algoEnricher,
                      CustomizationErrorHandler errorHandler) {
 
-        algoExprContext.enrich(atlasEnricher, algoEnricher);
-
-        orderFieldResolver = new OrderFieldResolver(refData);
-        orderExprContext.enrich(atlasEnricher, algoEnricher);
-        registerOrderFunctions(orderExprContext);
-
+        initNodeContext(atlasEnricher, algoEnricher);
+        initRuleContext(refData, atlasEnricher, algoEnricher);
         this.errorHandler = errorHandler;
-    }
-
-    public void registerOrderFunctions(MutableExprContext ctx) {
-        ctx.defineLong("$productId", orderFieldResolver::productId);
-        ctx.defineByteBuffer("$ric", orderFieldResolver::ric);
-        ctx.defineByteBuffer("$tuid", orderFieldResolver::tuid);
     }
 
     public void onAddRuleMsg(AddRuleMsg addRuleMsg) {
         try {
             final ExprEvaluator nodeEvaluator = new ExprEvaluator(addRuleMsg.nodePredicate);
-            boolean result = nodeEvaluator.evaluateBool(algoExprContext);
+            boolean result = nodeEvaluator.evaluateBool(nodeContext);
             if (result) {
                 rules.add(new RuleRecord(new ExprEvaluator(addRuleMsg.rulePredicate), addRuleMsg.enabled, addRuleMsg.action));
             }
@@ -62,9 +55,9 @@ public class CustomizationEngine {
             final RuleRecord rule = rules.get(i);
             if (rule.enabled) {
                 try {
-                    boolean result = rule.evaluator.evaluateBool(orderExprContext);
+                    boolean result = rule.evaluator.evaluateBool(ruleContext);
                     if (result) {
-                        order.apply(rule.action);
+                        rule.action.apply(order);
                     }
                 }
                 catch (RuntimeException ex) {
@@ -76,6 +69,30 @@ public class CustomizationEngine {
 
     int getRulesCount() {
         return rules.size();
+    }
+
+    private void initNodeContext(AtlasExprContextEnricher atlasEnricher, AlgoExprContextEnricher algoEnricher) {
+        nodeContext.enrich(atlasEnricher, algoEnricher);
+        nodeContext.defineExprContext("atlas", AtlasExprContext::get);
+        nodeContext.defineExprContext("algo", AlgoExprContext::get);
+    }
+
+    private void initRuleContext(ReferenceDataCache refData, AtlasExprContextEnricher atlasEnricher, AlgoExprContextEnricher algoEnricher) {
+        orderFieldResolver = new OrderFieldResolver(refData);
+
+        ruleContext.defineExprContext("atlas", AtlasExprContext::get);
+        ruleContext.defineExprContext("algo", AlgoExprContext::get);
+        final OrderExprContext orderExprContext = new OrderExprContext(orderFieldResolver);
+        ruleContext.defineExprContext("order", () -> orderExprContext);
+
+        ruleContext.enrich(atlasEnricher, algoEnricher);
+        registerOrderFunctions(ruleContext);
+    }
+
+    public void registerOrderFunctions(MutableExprContext ctx) {
+        ctx.defineLong("productId", orderFieldResolver::productId);
+        ctx.defineByteBuffer("ric", orderFieldResolver::ric);
+        ctx.defineByteBuffer("tuid", orderFieldResolver::tuid);
     }
 
     private static final class RuleRecord {

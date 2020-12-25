@@ -1,5 +1,6 @@
 package com.tereigo.atlas_expr.variant;
 
+import com.tereigo.atlas_expr.ExprContext;
 import com.tereigo.atlas_expr.ExprType;
 import com.tereigo.atlas_expr.atlas.utils.ByteBufferUtils;
 
@@ -20,12 +21,16 @@ public class VariantImpl implements MutableVariant {
     // This is needed to be able to compare ByteBuffer values returned from the msg (order.ric) to String values in the expressions:
     // $ric == "VOD.L"
     // Here $ric - will be ByteBuffer taken from the msg and "VOD.L" will be String as a result of expression parsing
-    private String strVal;
+    //
     // IMPORTANT: ByteBuffer is not owned by Variant
     //            It's just a reference to a buffer stored and managed somewhere else
     //            It's used only for the temporary references during expression evaluation
     //            to the data provided by the external objects: Atlink msg, Order, etc
-    private ByteBuffer bbVal;
+    //
+    // IMPORTANT:
+    // we use one obj reference for the following types: String, ByteBuffer, ExprContext, Object
+    // and just cast to the required type when required
+    private Object objVal;
 
     VariantImpl() {
     }
@@ -80,13 +85,19 @@ public class VariantImpl implements MutableVariant {
     @Override
     public String getAsString() {
         sanityCheck(ExprType.STRING);
-        return strVal;
+        return (String)objVal;
     }
 
     @Override
     public ByteBuffer getAsByteBuffer() {
         sanityCheck(ExprType.BYTE_BUFFER);
-        return bbVal;
+        return (ByteBuffer)objVal;
+    }
+
+    @Override
+    public ExprContext getAsExprContext() {
+        sanityCheck(ExprType.EXPR_CONTEXT);
+        return (ExprContext)objVal;
     }
 
     @Override
@@ -95,8 +106,10 @@ public class VariantImpl implements MutableVariant {
             case DOUBLE:        return doubleVal;
             case LONG:          return longVal;
             case BOOL:          return longVal != 0;
-            case STRING:        return strVal;
-            case BYTE_BUFFER:   return bbVal;
+            case STRING:
+            case BYTE_BUFFER:
+            case EXPR_CONTEXT:
+            case OBJECT:        return objVal;
         }
         throw new RuntimeException("Unknown Variant type: " + type);
     }
@@ -121,14 +134,26 @@ public class VariantImpl implements MutableVariant {
 
     @Override
     public void accept(String value) {
-        this.strVal = value;
+        this.objVal = value;
         this.type = ExprType.STRING;
     }
 
     @Override
     public void accept(ByteBuffer value) {
-        this.bbVal = value;
+        this.objVal = value;
         this.type = ExprType.BYTE_BUFFER;
+    }
+
+    @Override
+    public void accept(ExprContext value) {
+        this.objVal = value;
+        this.type = ExprType.EXPR_CONTEXT;
+    }
+
+    @Override
+    public void accept(Object value) {
+        this.objVal = value;
+        this.type = ExprType.OBJECT;
     }
 
     private void sanityCheck(ExprType expected) {
@@ -148,20 +173,19 @@ public class VariantImpl implements MutableVariant {
         VariantImpl variant = (VariantImpl) o;
         // see "IMPORTANT NOTE" above
         if (type == ExprType.STRING && variant.type == ExprType.BYTE_BUFFER) {
-            return ByteBufferUtils.equals(variant.bbVal, strVal);
+            return ByteBufferUtils.equals((ByteBuffer)variant.objVal, (String)objVal);
         } else if (type == ExprType.BYTE_BUFFER && variant.type == ExprType.STRING) {
-            return ByteBufferUtils.equals(bbVal, variant.strVal);
+            return ByteBufferUtils.equals((ByteBuffer)objVal, (String)variant.objVal);
         }
         return type == variant.type &&
                 longVal == variant.longVal &&
                 Double.compare(doubleVal, variant.doubleVal) == 0 &&
-                Objects.equals(strVal, variant.strVal) &&
-                Objects.equals(bbVal, variant.bbVal);
+                Objects.equals(objVal, variant.objVal);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(longVal, doubleVal, strVal, bbVal, type);
+        return Objects.hash(longVal, doubleVal, objVal, type);
     }
 
 }

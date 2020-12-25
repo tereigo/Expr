@@ -9,11 +9,15 @@ import com.tereigo.atlas_expr.function.Function4;
 import com.tereigo.atlas_expr.function.Function5;
 import com.tereigo.atlas_expr.variant.MutableVariant;
 import com.tereigo.atlas_expr.variant.Variant;
+import com.tereigo.atlas_expr.variant.VariantImpl;
+
+import java.util.List;
 
 import static com.tereigo.atlas_expr.atlas.utils.AlgoUtils.epsilonEquals;
 import static com.tereigo.atlas_expr.variant.VariantUtils.isBoolean;
 import static com.tereigo.atlas_expr.variant.VariantUtils.isByteBuffer;
 import static com.tereigo.atlas_expr.variant.VariantUtils.isDouble;
+import static com.tereigo.atlas_expr.variant.VariantUtils.isExprContext;
 import static com.tereigo.atlas_expr.variant.VariantUtils.isLong;
 import static com.tereigo.atlas_expr.variant.VariantUtils.isString;
 
@@ -166,19 +170,32 @@ final class Interpreter implements Expr.Visitor<Variant> {
   @Override
   public Variant visitCallExpr(Expr.Call expr) {
     Object funcObj = ctx.getFunction(expr.name.lexeme);
+    return callFunction(expr.result, expr.name, funcObj, expr.args);
+  }
+
+  @Override
+  public Variant visitObjectCallExpr(Expr.ObjectCall expr) {
+    Variant objResult = evaluate(expr.object);
+    // if it's an object call from ExprContext
+    if (isExprContext(objResult)) {
+      // then fetch the function from that ExprContext
+      Object funcObj = objResult.getAsExprContext().getFunction(expr.name.lexeme);
+      return callFunction(expr.result, expr.name, funcObj, expr.args);
+    }
+    // otherwise it's a normal/native function call -> get the function from the global context
+    Object funcObj = ctx.getFunction(expr.name.lexeme);
     if (funcObj == null) {
       throw new RuntimeError(expr.name, "Unknown function '" + expr.name.lexeme + "'");
     }
 
-    // cast to the appropriate function type depending on the number of args, evaluate all arguments and call the function
     try {
-      switch (expr.args.size()) {
-        case 0: ((Function0)funcObj).call(expr.result); break;
-        case 1: ((Function1)funcObj).call(expr.result, evaluate(expr.args.get(0))); break;
-        case 2: ((Function2)funcObj).call(expr.result, evaluate(expr.args.get(0)), evaluate(expr.args.get(1))); break;
-        case 3: ((Function3)funcObj).call(expr.result, evaluate(expr.args.get(0)), evaluate(expr.args.get(1)), evaluate(expr.args.get(2))); break;
-        case 4: ((Function4)funcObj).call(expr.result, evaluate(expr.args.get(0)), evaluate(expr.args.get(1)), evaluate(expr.args.get(2)), evaluate(expr.args.get(3))); break;
-        case 5: ((Function5)funcObj).call(expr.result, evaluate(expr.args.get(0)), evaluate(expr.args.get(1)), evaluate(expr.args.get(2)), evaluate(expr.args.get(3)), evaluate(expr.args.get(4))); break;
+      // expr.args.size()+1 - because we add the resolved "this" as a second parameter (objResult)
+      switch (expr.args.size() + 1) {
+        case 1: ((Function1)funcObj).call(expr.result, objResult); break;
+        case 2: ((Function2)funcObj).call(expr.result, objResult, evaluate(expr.args.get(0))); break;
+        case 3: ((Function3)funcObj).call(expr.result, objResult, evaluate(expr.args.get(0)), evaluate(expr.args.get(1))); break;
+        case 4: ((Function4)funcObj).call(expr.result, objResult, evaluate(expr.args.get(0)), evaluate(expr.args.get(1)), evaluate(expr.args.get(2))); break;
+        case 5: ((Function5)funcObj).call(expr.result, objResult, evaluate(expr.args.get(0)), evaluate(expr.args.get(1)), evaluate(expr.args.get(2)), evaluate(expr.args.get(3))); break;
       }
     } catch (ClassCastException castEx) {
       throw new RuntimeError(expr.name, "ClassCastException in function '" + expr.name.lexeme + "': " + castEx.getMessage());
@@ -187,6 +204,29 @@ final class Interpreter implements Expr.Visitor<Variant> {
       throw new RuntimeError(expr.name, "RuntimeException in function '" + expr.name.lexeme + "': " + runtimeEx.getMessage());
     }
     return expr.result;
+  }
+
+  private Variant callFunction(VariantImpl result, Token token, Object funcObj, List<Expr> args) {
+    if (funcObj == null) {
+      throw new RuntimeError(token, "Unknown function '" + token.lexeme + "'");
+    }
+    try {
+      // cast to the appropriate function type depending on the number of args, evaluate all arguments and call the function
+      switch (args.size()) {
+        case 0: ((Function0)funcObj).call(result); break;
+        case 1: ((Function1)funcObj).call(result, evaluate(args.get(0))); break;
+        case 2: ((Function2)funcObj).call(result, evaluate(args.get(0)), evaluate(args.get(1))); break;
+        case 3: ((Function3)funcObj).call(result, evaluate(args.get(0)), evaluate(args.get(1)), evaluate(args.get(2))); break;
+        case 4: ((Function4)funcObj).call(result, evaluate(args.get(0)), evaluate(args.get(1)), evaluate(args.get(2)), evaluate(args.get(3))); break;
+        case 5: ((Function5)funcObj).call(result, evaluate(args.get(0)), evaluate(args.get(1)), evaluate(args.get(2)), evaluate(args.get(3)), evaluate(args.get(4))); break;
+      }
+    } catch (ClassCastException castEx) {
+      throw new RuntimeError(token, "ClassCastException in function '" + token.lexeme + "': " + castEx.getMessage());
+    }
+    catch (RuntimeException runtimeEx) {
+      throw new RuntimeError(token, "RuntimeException in function '" + token.lexeme + "': " + runtimeEx.getMessage());
+    }
+    return result;
   }
 
   private boolean isEqual(Token token, Variant left, Variant right) {

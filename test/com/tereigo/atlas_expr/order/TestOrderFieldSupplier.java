@@ -2,10 +2,10 @@ package com.tereigo.atlas_expr.order;
 
 import java.nio.ByteBuffer;
 
-public class OrderFieldSupplier {
-    private Order order;
+public class TestOrderFieldSupplier {
+    private TestOrder order;
 
-    public void setOrder(Order order) {
+    public void setOrder(TestOrder order) {
         this.order = order;
     }
 

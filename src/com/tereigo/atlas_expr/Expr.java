@@ -19,7 +19,8 @@ abstract class Expr {
     R visitLogicalExpr(Logical expr);   // or, and
     R visitUnaryExpr(Unary expr);       // -, not
     R visitIdentifierExpr(Identifier expr); // external value
-    R visitCallExpr(Expr.Call expr);    // function
+    R visitCallExpr(Call expr);         // function
+    R visitObjectCallExpr(ObjectCall expr); // call method from the object
   }
 
   static class Binary extends Expr {
@@ -168,6 +169,24 @@ abstract class Expr {
     @Override
     <R> R accept(Visitor<R> visitor) {
       return visitor.visitCallExpr(this);
+    }
+  }
+
+  static class ObjectCall extends Expr {
+    final Expr object;
+    final Token name;
+    final List<Expr> args;
+    final VariantImpl result = VariantFactory.createEmpty();
+
+    ObjectCall(Expr object, Token name, List<Expr> args) {
+      this.object = object;
+      this.name = name;
+      this.args = args;
+    }
+
+    @Override
+    <R> R accept(Visitor<R> visitor) {
+      return visitor.visitObjectCallExpr(this);
     }
   }
 

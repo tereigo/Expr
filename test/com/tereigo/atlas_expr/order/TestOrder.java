@@ -2,13 +2,13 @@ package com.tereigo.atlas_expr.order;
 
 import java.nio.ByteBuffer;
 
-public class Order {
+public class TestOrder {
     private final String ric;
     private final long productId;
     private final boolean enabled;
     private final ByteBuffer tuid;
 
-    public Order(String ric, long productId, boolean enabled, ByteBuffer tuid) {
+    public TestOrder(String ric, long productId, boolean enabled, ByteBuffer tuid) {
         this.ric = ric;
         this.productId = productId;
         this.enabled = enabled;

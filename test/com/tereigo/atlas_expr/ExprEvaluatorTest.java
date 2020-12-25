@@ -47,7 +47,7 @@ class ExprEvaluatorTest extends ExprEvaluatorTestBase {
 
     @Test
     void rerunningTheSameExpressionBool() {
-        ASTRoot expr = ExprCompiler.compile("not(true) or not false and ((true and not false) or 5 != 2)");
+        ASTRoot expr = ExprCompiler.compile("not(true) or not (false) and ((true and not(false)) or 5 != 2)");
         assertTrue(evaluateBool(expr));
         assertTrue(evaluateBool(expr));
         assertTrue(evaluateBool(expr));
@@ -127,8 +127,6 @@ class ExprEvaluatorTest extends ExprEvaluatorTestBase {
         assertFalse(evaluateBool("FALSE"));
         assertTrue(evaluateBool(" ( true ) "));
         assertFalse(evaluateBool("( ( false ))"));
-        assertFalse(evaluateBool("!true"));
-        assertTrue(evaluateBool("not false"));
         assertFalse(evaluateBool("!(true)"));
         assertTrue(evaluateBool("not(false)"));
         assertTrue(evaluateBool("not(1 >= 9)"));
@@ -183,6 +181,16 @@ class ExprEvaluatorTest extends ExprEvaluatorTestBase {
         assertTrue(evaluateBool("\"A\" == \"A\" or \"B\" == \"C\""));
         assertTrue(evaluateBool("\"A\" == \"B\" or \"B\" == \"B\""));
         assertFalse(evaluateBool("\"A\" == \"B\" or \"B\" == \"C\""));
+    }
+
+    @Test
+    void unaryNotTests() {
+        assertTrue(evaluateBool("not(false)"));
+        assertFalse(evaluateBool("!(true)"));
+        assertFalse(evaluateBool("not(true)"));
+        assertTrue(evaluateBool("not(1 >= 9)"));
+        assertFalse(evaluateBool("not(\"A\" == \"A\")"));
+        assertTrue(evaluateBool("not(\"A\" == \"B\")"));
     }
 
     @Test
@@ -308,12 +316,10 @@ class ExprEvaluatorTest extends ExprEvaluatorTestBase {
         assertEquals("Expression parsing error [line 1, pos 5]: Expect function name after '.' in expression 'abc.1 == 2'", err.getMessage());
         err = assertThrows(ParseError.class, () -> evaluate("abc.1() == 2"));
         assertEquals("Expression parsing error [line 1, pos 5]: Expect function name after '.' in expression 'abc.1() == 2'", err.getMessage());
-        err = assertThrows(ParseError.class, () -> evaluate("abc.cde == 2"));
-        assertEquals("Expression parsing error [line 1, pos 9]: Expect '(' after '.'function_name in expression 'abc.cde == 2'", err.getMessage());
 
         // Evaluation errors
-        runErr = assertThrows(RuntimeError.class, () -> evaluate("!1 + 2"));
-        assertEquals("Expression evaluation error [line 1, pos 1]: Operand must be a boolean in expression '!1 + 2'", runErr.getMessage());
+        runErr = assertThrows(RuntimeError.class, () -> evaluate("!(1 + 2)"));
+        assertEquals("Expression evaluation error [line 1, pos 1]: Operand must be a boolean in expression '!(1 + 2)'", runErr.getMessage());
 
         final MutableExprContext ctx = ExprContextFactory.create();
         ctx.defineString("$ric", () -> "VOD.L");
@@ -414,11 +420,11 @@ class ExprEvaluatorTest extends ExprEvaluatorTestBase {
         assertTrue(runErr.getMessage().contains("cannot be cast to com.tereigo.atlas_expr.function.Function2"));
 
         // error: func2(10, 1) it expects Double as a second parameter
-        runErr = assertThrows(RuntimeError.class, () -> evaluate("func5(func1(100), func2(func1(10), func2(10, 1)), not $enabled, $ric, $tuid)", ctx));
-        assertEquals("Expression evaluation error [line 1, pos 1]: RuntimeException in function 'func5': RuntimeException in function 'func2': RuntimeException in function 'func2': Variant type mismatch: LONG, expected: DOUBLE in expression 'func5(func1(100), func2(func1(10), func2(10, 1)), not $enabled, $ric, $tuid)'", runErr.getMessage());
+        runErr = assertThrows(RuntimeError.class, () -> evaluate("func5(func1(100), func2(func1(10), func2(10, 1)), not($enabled), $ric, $tuid)", ctx));
+        assertEquals("Expression evaluation error [line 1, pos 1]: RuntimeException in function 'func5': RuntimeException in function 'func2': RuntimeException in function 'func2': Variant type mismatch: LONG, expected: DOUBLE in expression 'func5(func1(100), func2(func1(10), func2(10, 1)), not($enabled), $ric, $tuid)'", runErr.getMessage());
 
         // error is: func2(10) - expected call with 2 args
-        runErr = assertThrows(RuntimeError.class, () -> evaluate("func5(func1(100), func2(func1(10), func2(10)), not $enabled, $ric, $tuid)", ctx));
+        runErr = assertThrows(RuntimeError.class, () -> evaluate("func5(func1(100), func2(func1(10), func2(10)), not($enabled), $ric, $tuid)", ctx));
         assertTrue(runErr.getMessage().contains("RuntimeException in function 'func5': RuntimeException in function 'func2': ClassCastException in function 'func2'"));
         assertTrue(runErr.getMessage().contains("cannot be cast to com.tereigo.atlas_expr.function.Function1"));
 

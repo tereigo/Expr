@@ -1,6 +1,7 @@
 package com.tereigo.atlas_expr;
 
 import com.tereigo.atlas_expr.function.ByteBufferSupplier;
+import com.tereigo.atlas_expr.function.ExprContextSupplier;
 import com.tereigo.atlas_expr.function.Function0;
 import com.tereigo.atlas_expr.function.Function1;
 import com.tereigo.atlas_expr.function.Function2;
@@ -63,6 +64,11 @@ final class ExprContextImpl implements ExprContext, MutableExprContext {
   }
 
   @Override
+  public void defineExprContext(String name, ExprContextSupplier supplier) {
+    functions.put(name, (Function0) result -> result.accept(supplier.getAsExprContext()));
+  }
+
+  @Override
   public void defineFunction(String name, Function0 func) {
     functions.put(name, func);
   }
@@ -90,6 +96,21 @@ final class ExprContextImpl implements ExprContext, MutableExprContext {
   @Override
   public void defineFunction(String name, Function5 func) {
     functions.put(name, func);
+  }
+
+  @Override
+  public void addAlias(String name, String alias) {
+    if (name == null || alias == null) {
+      throw new RuntimeException("Empty name or alias");
+    }
+    if (name.equals(alias)) {
+      throw new RuntimeException("Identical name and alias: '" + name + "'");
+    }
+    final Object val = functions.get(name);
+    if (val == null) {
+      throw new RuntimeException("Unknown identifier '" + name + "' for alias '" + alias + "'");
+    }
+    functions.put(alias, val);
   }
 
   @Override

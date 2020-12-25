@@ -5,6 +5,7 @@ import com.tereigo.atlas_expr.variant.Variant;
 import com.tereigo.atlas_expr.variant.VariantFactory;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import static com.tereigo.atlas_expr.TokenType.AND;
@@ -221,6 +222,11 @@ final class Parser {
     if (match(NOT, MINUS)) {
       Token operator = previous();
       Expr right = unary();
+      // safety check that "NOT" always followed by "()"
+      // This is to avoid runtime errors for syntax: not $ric == "VOD.L" which compiles into AST: not($ric) == "VOD.L"
+      if (operator.type == NOT && !(right instanceof Expr.Grouping)) {
+        throw error(previous(), "Operator NOT should be applied to the expression in parens '()'");
+      }
       return new Expr.Unary(operator, right);
     }
 
@@ -239,11 +245,13 @@ final class Parser {
         expr = new Expr.Call(((Expr.Identifier) expr).name, args);
       } else if (match(DOT)) {
         Token name = consume(IDENTIFIER, "Expect function name after '.'");
-        consume(LEFT_PAREN, "Expect '(' after '.'function_name");
-        // we convert "object call" into the normal call where the first parameter is recalculatable Expr representing "this"
-        List<Expr> args = Lists.newArrayList(expr);
-        args.addAll(arguments(4));
-        expr = new Expr.Call(name, args);
+        if (peek().type == LEFT_PAREN) {
+          consume(LEFT_PAREN, "Expect '(' after '.'function_name");
+          List<Expr> args = arguments(4);
+          expr = new Expr.ObjectCall(expr, name, args);
+        } else {
+          expr = new Expr.ObjectCall(expr, name, Collections.emptyList());
+        }
       } else {
         break;
       }

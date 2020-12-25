@@ -7,10 +7,11 @@ import com.tereigo.atlas_expr.MutableExprContext;
   Provides access to Algo functions
  */
 public class AlgoExprContextEnricher implements ExprContextEnricher {
+    private static AlgoExprContextEnricher INSTANCE;
 
     private final AlgoDataProvider algoDataProvider;
 
-    public AlgoExprContextEnricher(AlgoDataProvider algoDataProvider) {
+    private AlgoExprContextEnricher(final AlgoDataProvider algoDataProvider) {
         this.algoDataProvider = algoDataProvider;
     }
 
@@ -19,4 +20,11 @@ public class AlgoExprContextEnricher implements ExprContextEnricher {
       ctx.defineFunction("algoNodeType", result -> result.accept(algoDataProvider.getAlgoType()));
     }
 
+    public static void init(final AlgoDataProvider algoDataProvider) {
+        INSTANCE = new AlgoExprContextEnricher(algoDataProvider);
+    }
+
+    public static AlgoExprContextEnricher get() {
+        return INSTANCE;
+    }
 }

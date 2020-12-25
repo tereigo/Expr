@@ -750,31 +750,55 @@ class ExprArithmeticTest extends ExprEvaluatorTestBase {
 
     @Test
     void unaryNotTests() {
+        ParseError err;
         RuntimeError runErr;
-        assertFalse(evaluateBool("not true"));
-        assertTrue(evaluateBool("not FALSE"));
-        runErr = assertThrows(RuntimeError.class, () -> evaluate("not 0"));
-        assertEquals("Expression evaluation error [line 1, pos 1]: Operand must be a boolean in expression 'not 0'", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluate("not 0.0"));
-        assertEquals("Expression evaluation error [line 1, pos 1]: Operand must be a boolean in expression 'not 0.0'", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluate("not \"\""));
-        assertEquals("Expression evaluation error [line 1, pos 1]: Operand must be a boolean in expression 'not \"\"'", runErr.getMessage());
+        assertFalse(evaluateBool("not(true)"));
+        assertTrue(evaluateBool("not(FALSE)"));
+
+        // Parsing errors
+        err = assertThrows(ParseError.class, () -> evaluate("not 0"));
+        assertEquals("Expression parsing error [line 1, pos 5]: Operator NOT should be applied to the expression in parens '()' in expression 'not 0'", err.getMessage());
+        err = assertThrows(ParseError.class, () -> evaluate("not 0.0"));
+        assertEquals("Expression parsing error [line 1, pos 5]: Operator NOT should be applied to the expression in parens '()' in expression 'not 0.0'", err.getMessage());
+        err = assertThrows(ParseError.class, () -> evaluate("not \"\""));
+        assertEquals("Expression parsing error [line 1, pos 5]: Operator NOT should be applied to the expression in parens '()' in expression 'not \"\"'", err.getMessage());
+
+        // Evaluation errors
+        runErr = assertThrows(RuntimeError.class, () -> evaluate("not(0)"));
+        assertEquals("Expression evaluation error [line 1, pos 1]: Operand must be a boolean in expression 'not(0)'", runErr.getMessage());
+        runErr = assertThrows(RuntimeError.class, () -> evaluate("not(0.0)"));
+        assertEquals("Expression evaluation error [line 1, pos 1]: Operand must be a boolean in expression 'not(0.0)'", runErr.getMessage());
+        runErr = assertThrows(RuntimeError.class, () -> evaluate("not(\"\")"));
+        assertEquals("Expression evaluation error [line 1, pos 1]: Operand must be a boolean in expression 'not(\"\")'", runErr.getMessage());
     }
 
     @Test
     void unaryNotWithContextTests() {
         final ExprContext ctx = createContext();
 
+        ParseError err;
         RuntimeError runErr;
-        assertFalse(evaluateBool("not $enabled", ctx));
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("not $productId", ctx));
-        assertEquals("Expression evaluation error [line 1, pos 1]: Operand must be a boolean in expression 'not $productId'", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("not $PI", ctx));
-        assertEquals("Expression evaluation error [line 1, pos 1]: Operand must be a boolean in expression 'not $PI'", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("not $ric", ctx));
-        assertEquals("Expression evaluation error [line 1, pos 1]: Operand must be a boolean in expression 'not $ric'", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("not $tuid", ctx));
-        assertEquals("Expression evaluation error [line 1, pos 1]: Operand must be a boolean in expression 'not $tuid'", runErr.getMessage());
+        assertFalse(evaluateBool("not($enabled)", ctx));
+
+        // Parsing errors
+        err = assertThrows(ParseError.class, () -> evaluateBool("not $productId", ctx));
+        assertEquals("Expression parsing error [line 1, pos 5]: Operator NOT should be applied to the expression in parens '()' in expression 'not $productId'", err.getMessage());
+        err = assertThrows(ParseError.class, () -> evaluateBool("not $PI", ctx));
+        assertEquals("Expression parsing error [line 1, pos 5]: Operator NOT should be applied to the expression in parens '()' in expression 'not $PI'", err.getMessage());
+        err = assertThrows(ParseError.class, () -> evaluateBool("not $ric", ctx));
+        assertEquals("Expression parsing error [line 1, pos 5]: Operator NOT should be applied to the expression in parens '()' in expression 'not $ric'", err.getMessage());
+        err = assertThrows(ParseError.class, () -> evaluateBool("not $tuid", ctx));
+        assertEquals("Expression parsing error [line 1, pos 5]: Operator NOT should be applied to the expression in parens '()' in expression 'not $tuid'", err.getMessage());
+
+        // Evaluation errors
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("not($productId)", ctx));
+        assertEquals("Expression evaluation error [line 1, pos 1]: Operand must be a boolean in expression 'not($productId)'", runErr.getMessage());
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("not($PI)", ctx));
+        assertEquals("Expression evaluation error [line 1, pos 1]: Operand must be a boolean in expression 'not($PI)'", runErr.getMessage());
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("not($ric)", ctx));
+        assertEquals("Expression evaluation error [line 1, pos 1]: Operand must be a boolean in expression 'not($ric)'", runErr.getMessage());
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBool("not($tuid)", ctx));
+        assertEquals("Expression evaluation error [line 1, pos 1]: Operand must be a boolean in expression 'not($tuid)'", runErr.getMessage());
     }
 
     @Test

@@ -1,35 +1,30 @@
 package com.tereigo.atlas_expr.atlas;
 
-import com.tereigo.atlas_expr.ExprContext;
-import com.tereigo.atlas_expr.ExprContextFactory;
-import com.tereigo.atlas_expr.MutableExprContext;
-import com.tereigo.atlas_expr.variant.MutableVariant;
+import com.tereigo.atlas_expr.CustomExprContext;
 
 /*
   Provides access to Atlas functions
  */
-public class AtlasExprContext implements ExprContext {
-  private final MutableExprContext ctx = ExprContextFactory.create();
+public class AtlasExprContext extends CustomExprContext {
+  private static AtlasExprContext INSTANCE;
 
-  public AtlasExprContext(final AtlasDataProvider atlas) {
-    ctx.defineFunction("engineTime", result -> result.accept(atlas.getEngineTime()));
+  private AtlasExprContext(final AtlasDataProvider atlas) {
+    ctx.defineLong("engineTime", atlas::getEngineTime);
 
-    ctx.defineFunction("random", result -> result.accept(atlas.getNextRandom()));
+    ctx.defineDouble("random", atlas::getNextRandom);
 
     ctx.defineFunction("tuidByClientId", (result, clientId) ->
       result.accept(atlas.getTuidByClientId((int)clientId.getAsLong()))
     );
 
-    ctx.defineFunction("nodeName", result -> result.accept(atlas.getNodeName()));
+    ctx.defineString("nodeName", atlas::getNodeName);
   }
 
-  @Override
-  public MutableVariant get(String name, MutableVariant result) {
-    return ctx.get(name, result);
+  public static void init(final AtlasDataProvider atlas) {
+    INSTANCE = new AtlasExprContext(atlas);
   }
 
-  @Override
-  public Object getFunction(String name) {
-    return ctx.getFunction(name);
+  public static AtlasExprContext get() {
+    return INSTANCE;
   }
 }

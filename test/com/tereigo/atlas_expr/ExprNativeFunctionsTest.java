@@ -311,15 +311,21 @@ class ExprNativeFunctionsTest extends ExprEvaluatorTestBase {
         RuntimeError runErr;
 
         assertTrue(evaluateBool("\"\".isEmpty()"));
-        assertFalse(evaluateBool("not \"\".isEmpty()"));
+        assertFalse(evaluateBool("not(\"\".isEmpty())"));
         assertFalse(evaluateBool("\"A\".isEmpty()"));
-        assertTrue(evaluateBool("not \"A\".isEmpty()"));
+        assertTrue(evaluateBool("not(\"A\".isEmpty())"));
+
+        assertFalse(evaluateBool("isEmpty(\"A\")"));
+        assertTrue(evaluateBool("not(isEmpty(\"A\"))"));
 
         assertTrue(evaluateBool("\"\".length() == 0"));
         assertEquals(0, evaluateLong("\"\".length()"));
 
         assertTrue(evaluateBool("\"ABC\".length() == 3"));
         assertEquals(3, evaluateLong("\"ABC\".length()"));
+
+        assertTrue(evaluateBool("length(\"ABC\") == 3"));
+        assertEquals(3, evaluateLong("length(\"ABC\")"));
 
         assertTrue(evaluateBool("\"ABC\".contains(\"ABC\")"));
         assertFalse(evaluateBool("\"ABC\".contains(\"abc\")"));
@@ -328,6 +334,14 @@ class ExprNativeFunctionsTest extends ExprEvaluatorTestBase {
         assertTrue(evaluateBool("\"abc\".contains(\"\")"));
         assertFalse(evaluateBool("\"\".contains(\"abc\")"));
         assertFalse(evaluateBool("\"\".contains(\"ABC\")"));
+
+        assertTrue(evaluateBool("contains(\"ABC\", \"ABC\")"));
+        assertFalse(evaluateBool("contains(\"ABC\", \"abc\")"));
+        assertFalse(evaluateBool("contains(\"abc\", \"ABC\")"));
+        assertTrue(evaluateBool("contains(\"ABC\", \"\")"));
+        assertTrue(evaluateBool("contains(\"abc\", \"\")"));
+        assertFalse(evaluateBool("contains(\"\", \"abc\")"));
+        assertFalse(evaluateBool("contains(\"\", \"ABC\")"));
 
         runErr = assertThrows(RuntimeError.class, () -> evaluate("\"ABC\".contains(1)"));
         assertEquals("Expression evaluation error [line 1, pos 7]: RuntimeException in function 'contains': Operand must be a STRING in expression '\"ABC\".contains(1)'", runErr.getMessage());

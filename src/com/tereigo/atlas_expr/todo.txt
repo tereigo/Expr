@@ -1,12 +1,18 @@
  TODO:
-4. Check that "not" is followed by Grouping to avoid runtime errors:
-   not "A" == "B". Because it's translated into not("A") == "B" whereas it should be: not("A" == "B")
-   not enabled  => not(enabled)
-   not $ric=="BT.L"  =>  not ($ric=="BT.L")
-
 3. Add tests for VariantImpl equals / hashCode
 
-2. Support scientific input for Doubles: 1e6
+4. May be enforce supplying ExprContext during expression compilation to make sure that it's not changed during evaluation?
+   It ensures that a client will not apply any GC-type ops to ExprContext during evaluation
+   It also means that the original expression and it's Expr context are "immutable" after compilation.
+   Not "totally immutable" because you can substitute an order still in Supplier but both both Compiled expr and its ExprContext are bound together.
+   "evaluate()" will not have "ctx" in that case and it goes into ExprEvaluator constructor:
+        ASTRoot root = ExprCompiler.compile("$ric == \"VOD.L\" and $productId == 123 or 5 != 2");
+        ExprEvaluator exprEvaluator = new ExprEvaluator(root, ctx);
+
+        exprEvaluator.evaluateBool();
+
+   Cons:
+   You need to have ExprContext to be able to compile the expression which is not always available. especially when you compile in front-end
 
 7. Add string operators:
  startsWith
@@ -32,7 +38,6 @@ and all other functions well be available via reflection
 
 10. Type conversion functions and rounding: toNanos, nanoToSec
 12. May be add function aliases: len / length / size, $tuid / $clientTuid
-13. May be use one Variant.objVal which can be used for both String and ByteBuffer and for any other object that the use can expose?
 14. Do we need to add Int type? we can re-use Variant.longVal
 15. May be we don't need Operator Tokens in Expr classes because Tokens are from parsing
     We really need just type of operation and may be the location of that token in the string to report an error if it happens during evaluation
@@ -62,23 +67,21 @@ and all other functions well be available via reflection
   atlasReleaseVersion
 
 9. Do we NIL ?
+2. Support scientific input for Doubles: 1e6
 12.
 
-Potential syntax:
- $tuid.contains("ABC")
- contains($tuid,"ABC")
- "abc".contains($tuid)
-
- Python:
-if substring in fullstring:
-if fullstring.find(substring) != -1:
-if search(substring, fullstring):   - regexp
 
 
 
 
 
 Done:
+5. Add tests for aliases
+4. Check that "not" is followed by Grouping to avoid runtime errors:
+   not "A" == "B". Because it's translated into not("A") == "B" whereas it should be: not("A" == "B")
+   not enabled  => not(enabled)
+   not $ric=="BT.L"  =>  not ($ric=="BT.L")
+13. May be use one Variant.objVal which can be used for both String and ByteBuffer and for any other object that the use can expose?
 10. Doublecheck that: Remove all foreach in evaluations
 11. Make sure initialization of Environment is gc-free! We should not add entries every time for a new evaluation
 5. Add more malformed expression tests and make better error handling (see testMalformedExpressions)
@@ -139,3 +142,13 @@ Done:
    In that case I don't need to fill up Environment for every order for processing
 5. Rename Environment into ExprEnvironment
 10. Check if "!" is the same as "not"
+
+Potential syntax:
+ $tuid.contains("ABC")     - supported
+ contains($tuid,"ABC")     - supported
+ "abc".contains($tuid)     - supported
+
+ Python:
+if substring in fullstring:
+if fullstring.find(substring) != -1:
+if search(substring, fullstring):   - regexp

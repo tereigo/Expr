@@ -1,27 +1,22 @@
 package com.tereigo.atlas_expr.atlas;
 
-import com.tereigo.atlas_expr.ExprContext;
-import com.tereigo.atlas_expr.ExprContextFactory;
-import com.tereigo.atlas_expr.MutableExprContext;
-import com.tereigo.atlas_expr.variant.MutableVariant;
+import com.tereigo.atlas_expr.CustomExprContext;
 
 /*
   Provides access to Algo functions
  */
-public class AlgoExprContext implements ExprContext {
-    private final MutableExprContext ctx = ExprContextFactory.create();
+public class AlgoExprContext extends CustomExprContext {
+    private static AlgoExprContext INSTANCE;
 
-    public AlgoExprContext(final AlgoDataProvider algo ) {
-        ctx.defineFunction("nodeType", result -> result.accept(algo.getAlgoType()));
+    private AlgoExprContext(final AlgoDataProvider algo) {
+        ctx.defineString("nodeType", algo::getAlgoType);
     }
 
-    @Override
-    public MutableVariant get(String name, MutableVariant result) {
-        return ctx.get(name, result);
+    public static void init(final AlgoDataProvider algo) {
+        INSTANCE = new AlgoExprContext(algo);
     }
 
-    @Override
-    public Object getFunction(String name) {
-        return ctx.getFunction(name);
+    public static AlgoExprContext get() {
+        return INSTANCE;
     }
 }

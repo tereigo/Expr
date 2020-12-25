@@ -1,6 +1,13 @@
  TODO:
+4. Check that "not" is followed by Grouping to avoid runtime errors:
+   not "A" == "B". Because it's translated into not("A") == "B" whereas it should be: not("A" == "B")
+   not enabled  => not(enabled)
+   not $ric=="BT.L"  =>  not ($ric=="BT.L")
+
 3. Add tests for VariantImpl equals / hashCode
+
 2. Support scientific input for Doubles: 1e6
+
 7. Add string operators:
  startsWith
  endsWith

@@ -36,6 +36,6 @@ final class ExprContextCombined implements ExprContext {
 
     @Override
     public String toString() {
-        return ctx1.toString() + (ctx2 != null ? "," + ctx2.toString() : "");
+        return (ctx1 != null ? "ctx1: " + ctx1.toString() : "") + (ctx2 != null ? ", ctx2: " + ctx2.toString() : "");
     }
 }

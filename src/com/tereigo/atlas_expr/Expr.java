@@ -3,7 +3,6 @@ package com.tereigo.atlas_expr;
 import com.tereigo.atlas_expr.variant.MutableVariant;
 import com.tereigo.atlas_expr.variant.Variant;
 import com.tereigo.atlas_expr.variant.VariantFactory;
-import com.tereigo.atlas_expr.variant.VariantImpl;
 
 import java.util.List;
 
@@ -179,7 +178,7 @@ abstract class Expr {
   static class Call extends Expr {
     final Token name;
     final List<Expr> args;
-    final VariantImpl result = VariantFactory.createEmpty();
+    final MutableVariant result = VariantFactory.createEmpty();
 
     Call(Token name, List<Expr> args) {
       this.name = name;
@@ -192,16 +191,12 @@ abstract class Expr {
     }
   }
 
-  static class ObjectCall extends Expr {
+  static class ObjectCall extends Call {
     final Expr object;
-    final Token name;
-    final List<Expr> args;
-    final VariantImpl result = VariantFactory.createEmpty();
 
     ObjectCall(Expr object, Token name, List<Expr> args) {
+      super(name, args);
       this.object = object;
-      this.name = name;
-      this.args = args;
     }
 
     @Override
@@ -209,5 +204,4 @@ abstract class Expr {
       return visitor.visitObjectCallExpr(this);
     }
   }
-
 }

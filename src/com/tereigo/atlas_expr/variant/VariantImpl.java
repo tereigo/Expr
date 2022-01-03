@@ -7,7 +7,7 @@ import com.tereigo.atlas_expr.atlas.utils.ByteBufferUtils;
 import java.nio.ByteBuffer;
 import java.util.Objects;
 
-public class VariantImpl implements MutableVariant {
+class VariantImpl implements MutableVariant {
     private ExprType type; // this field can be use to determine if it's empty: type != null
     // NOTICE: we re-use longVal for boolean values
     // true:  longVal != 0

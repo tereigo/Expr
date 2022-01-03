@@ -9,7 +9,6 @@ import com.tereigo.atlas_expr.function.Function4;
 import com.tereigo.atlas_expr.function.Function5;
 import com.tereigo.atlas_expr.variant.MutableVariant;
 import com.tereigo.atlas_expr.variant.Variant;
-import com.tereigo.atlas_expr.variant.VariantImpl;
 
 import java.util.List;
 
@@ -214,7 +213,7 @@ final class Interpreter implements Expr.Visitor<Variant> {
     return expr.result;
   }
 
-  private Variant callFunction(VariantImpl result, Token token, Object funcObj, List<Expr> args) {
+  private Variant callFunction(MutableVariant result, Token token, Object funcObj, List<Expr> args) {
     if (funcObj == null) {
       throw new RuntimeError(token, "Unknown function '" + token.lexeme + "'");
     }

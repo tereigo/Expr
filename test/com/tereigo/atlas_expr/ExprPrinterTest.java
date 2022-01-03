@@ -107,6 +107,30 @@ class ExprPrinterTest extends ExprEvaluatorTestBase {
                 "├── $curTime", printer.print(ExprCompiler.compile("func($id, isEven(rnd())) == $curTime")));
 
         assertEquals("obj call ABC.contains($id)", printer.print(ExprCompiler.compile("\"ABC\".contains($id)")));
+
+        assertEquals("?\n" +
+                "│\n" +
+                "├── true\n" +
+                "│\n" +
+                "├── 1\n" +
+                "│\n" +
+                "├── 2", printer.print(ExprCompiler.compile("true?1:2")));
+
+        assertEquals("+\n" +
+                "│\n" +
+                "├── 5\n" +
+                "│\n" +
+                "├── ?\n" +
+                "│   │\n" +
+                "│   ├── ==\n" +
+                "│   │   │\n" +
+                "│   │   ├── 1\n" +
+                "│   │   │\n" +
+                "│   │   ├── 2\n" +
+                "│   │\n" +
+                "│   ├── 3\n" +
+                "│   │\n" +
+                "│   ├── 4", printer.print(ExprCompiler.compile("5 + ((1 == 2) ? 3 : 4)")));
     }
 
     @Test
@@ -131,6 +155,11 @@ class ExprPrinterTest extends ExprEvaluatorTestBase {
         assertEquals("(== call func($id, 1) $curTime)", printer.print(ExprCompiler.compile("func($id, 1) == $curTime")));
         assertEquals("(== call func($id, call isEven(call rnd())) $curTime)", printer.print(ExprCompiler.compile("func($id, isEven(rnd())) == $curTime")));
         assertEquals("obj call ABC.contains($id)", printer.print(ExprCompiler.compile("\"ABC\".contains($id)")));
+        assertEquals("true(? 1 2)", printer.print(ExprCompiler.compile("true?1:2")));
+        assertEquals("(== 1 2)(? 3 4)", printer.print(ExprCompiler.compile("1 == 2 ? 3 : 4")));
+        assertEquals("(group (!= 1 2))(? 3 4)", printer.print(ExprCompiler.compile("(1 != 2) ? 3 : 4")));
+        assertEquals("(+ 5 (group (== 1 2)(? 3 4)))", printer.print(ExprCompiler.compile("5 + (1 == 2 ? 3 : 4)")));
+        assertEquals("(+ 5 (group (group (== 1 2))(? 3 4)))", printer.print(ExprCompiler.compile("5 + ((1 == 2) ? 3 : 4)")));
     }
 
     @Test

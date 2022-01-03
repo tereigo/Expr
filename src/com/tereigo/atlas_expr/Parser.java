@@ -9,6 +9,7 @@ import java.util.Collections;
 import java.util.List;
 
 import static com.tereigo.atlas_expr.TokenType.AND;
+import static com.tereigo.atlas_expr.TokenType.COLON;
 import static com.tereigo.atlas_expr.TokenType.COMMA;
 import static com.tereigo.atlas_expr.TokenType.DIV;
 import static com.tereigo.atlas_expr.TokenType.DOT;
@@ -32,6 +33,7 @@ import static com.tereigo.atlas_expr.TokenType.NOT;
 import static com.tereigo.atlas_expr.TokenType.NOT_EQUAL;
 import static com.tereigo.atlas_expr.TokenType.OR;
 import static com.tereigo.atlas_expr.TokenType.PLUS;
+import static com.tereigo.atlas_expr.TokenType.QUESTION_MARK;
 import static com.tereigo.atlas_expr.TokenType.RIGHT_BRACKET;
 import static com.tereigo.atlas_expr.TokenType.RIGHT_PAREN;
 import static com.tereigo.atlas_expr.TokenType.STRING;
@@ -58,7 +60,8 @@ import static com.tereigo.atlas_expr.TokenType.TRUE;
     expression : logic_or
     logic_or   : logic_and ( "or" logic_and )* ;
     logic_and  : in_operator ( "and" in_operator )* ;
-    in_operator: equality ( "in" "[" LIST_ENTRY ( "," LIST_ENTRY )* "]" ) ;
+    in_operator: ternary ( "in" "[" LIST_ENTRY ( "," LIST_ENTRY )* "]" ) ;
+    ternary    : equality ( "?" expression ":" expression ) ;
     equality   : comparison ( ( "!=" | "==" ) comparison )* ;
     comparison : term ( ( ">" | ">=" | "<" | "<=" ) term )* ;
     term       : factor ( ( "-" | "+" ) factor )* ;
@@ -123,18 +126,18 @@ final class Parser {
     return expr;
   }
 
-  // in_operator : equality ("in" [ LIST_ENTRY ("," LIST_ENTRY)* ]) ;
+  // in_operator: ternary ( "in" "[" LIST_ENTRY ( "," LIST_ENTRY )* "]" ) ;
   private Expr in_operator() {
-      Expr expr = equality();
-      if (match(IN)) {
-          Token operator = previous();
-          if (match(LEFT_BRACKET)) {
-              List<Variant> values = list();
-              consume(RIGHT_BRACKET, "Expect ']' after '['");
-              return new Expr.InOperator(expr, operator, values);
-          } else {
-              throw error(peek(), "Expect '[' after IN operator");
-          }
+    Expr expr = ternary();
+    if (match(IN)) {
+      Token operator = previous();
+      if (match(LEFT_BRACKET)) {
+        List<Variant> values = list();
+        consume(RIGHT_BRACKET, "Expect ']' after '['");
+        return new Expr.InOperator(expr, operator, values);
+      } else {
+        throw error(peek(), "Expect '[' after IN operator");
+      }
     }
     return expr;
   }
@@ -163,6 +166,24 @@ final class Parser {
       return VariantFactory.createImmutableString((String)previous().literal);
     }
     throw error(peek(), "Expect number/string list entry inside '[]'");
+  }
+
+  // ternary : equality ( "?" expression ":" expression ) ;
+  private Expr ternary() {
+    Expr expr = equality();
+
+    if (match(QUESTION_MARK)) {
+      Token operator = previous();
+      Expr trueExpr = expression();
+      if (match(COLON)) {
+        Expr falseExpr = expression();
+        expr = new Expr.Ternary(operator, expr, trueExpr, falseExpr);
+      } else {
+        throw error(peek(), "Expect ':' after ternary ('?') operator");
+      }
+    }
+
+    return expr;
   }
 
   // equality   : comparison ( ( "!=" | "==" ) comparison )* ;

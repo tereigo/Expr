@@ -17,6 +17,7 @@ abstract class Expr {
     R visitGroupingExpr(Grouping expr); // ()
     R visitLiteralExpr(Literal expr);   // long, double, string, boolean, ByteBuffer values
     R visitLogicalExpr(Logical expr);   // or, and
+    R visitTernaryExpr(Ternary expr);   // boolExpr ? trueExpr : falseExpr
     R visitUnaryExpr(Unary expr);       // -, not
     R visitIdentifierExpr(Identifier expr); // external value
     R visitCallExpr(Call expr);         // function
@@ -121,6 +122,25 @@ abstract class Expr {
     @Override
     <R> R accept(Visitor<R> visitor) {
       return visitor.visitLogicalExpr(this);
+    }
+  }
+
+  static class Ternary extends Expr {
+    final Token operator;
+    final Expr condition;
+    final Expr trueExpr;
+    final Expr falseExpr;
+
+    Ternary(Token operator, Expr condition, Expr trueExpr, Expr falseExpr) {
+      this.operator = operator;
+      this.condition = condition;
+      this.trueExpr = trueExpr;
+      this.falseExpr = falseExpr;
+    }
+
+    @Override
+    <R> R accept(Visitor<R> visitor) {
+      return visitor.visitTernaryExpr(this);
     }
   }
 

@@ -144,6 +144,14 @@ final class Interpreter implements Expr.Visitor<Variant> {
   }
 
   @Override
+  public Variant visitTernaryExpr(Expr.Ternary expr) {
+    Variant conditionVar = evaluate(expr.condition);
+    checkBoolOperand(expr.operator, conditionVar);
+    final boolean condition = conditionVar.getAsBoolean();
+    return evaluate(condition ? expr.trueExpr : expr.falseExpr);
+  }
+
+  @Override
   public Variant visitUnaryExpr(Expr.Unary expr) {
     Variant result = evaluate(expr.expression);
     switch (expr.operator.type) {

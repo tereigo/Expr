@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import static com.tereigo.atlas_expr.TokenType.AND;
+import static com.tereigo.atlas_expr.TokenType.COLON;
 import static com.tereigo.atlas_expr.TokenType.COMMA;
 import static com.tereigo.atlas_expr.TokenType.DIV;
 import static com.tereigo.atlas_expr.TokenType.DOT;
@@ -17,8 +18,8 @@ import static com.tereigo.atlas_expr.TokenType.GREATER;
 import static com.tereigo.atlas_expr.TokenType.GREATER_EQUAL;
 import static com.tereigo.atlas_expr.TokenType.IDENTIFIER;
 import static com.tereigo.atlas_expr.TokenType.IN;
-import static com.tereigo.atlas_expr.TokenType.LEFT_PAREN;
 import static com.tereigo.atlas_expr.TokenType.LEFT_BRACKET;
+import static com.tereigo.atlas_expr.TokenType.LEFT_PAREN;
 import static com.tereigo.atlas_expr.TokenType.LESS;
 import static com.tereigo.atlas_expr.TokenType.LESS_EQUAL;
 import static com.tereigo.atlas_expr.TokenType.LONG_NUMBER;
@@ -29,8 +30,9 @@ import static com.tereigo.atlas_expr.TokenType.NOT;
 import static com.tereigo.atlas_expr.TokenType.NOT_EQUAL;
 import static com.tereigo.atlas_expr.TokenType.OR;
 import static com.tereigo.atlas_expr.TokenType.PLUS;
-import static com.tereigo.atlas_expr.TokenType.RIGHT_PAREN;
+import static com.tereigo.atlas_expr.TokenType.QUESTION_MARK;
 import static com.tereigo.atlas_expr.TokenType.RIGHT_BRACKET;
+import static com.tereigo.atlas_expr.TokenType.RIGHT_PAREN;
 import static com.tereigo.atlas_expr.TokenType.STRING;
 import static com.tereigo.atlas_expr.TokenType.TRUE;
 
@@ -86,6 +88,8 @@ final class Scanner {
       case '+': addToken(PLUS); break;
       case '*': addToken(MUL); break;
       case '%': addToken(MODULUS); break;
+      case '?': addToken(QUESTION_MARK); break;
+      case ':': addToken(COLON); break;
       case '!':
         addToken(match('=') ? NOT_EQUAL : NOT);
         break;

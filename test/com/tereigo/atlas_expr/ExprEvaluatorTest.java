@@ -14,6 +14,51 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class ExprEvaluatorTest extends ExprEvaluatorTestBase {
 
     @Test
+    void conditionTests() {
+        ParseError err;
+        RuntimeError runErr;
+
+        assertEquals(1, evaluateLong("true ? 1 : 2"));
+        assertEquals(2, evaluateLong("false ? 1 : 2"));
+        assertEquals(1, evaluateLong("0 == 0 ? 1 : 2"));
+        assertEquals(2, evaluateLong("0 == 1 ? 1 : 2"));
+        assertEquals(9, evaluateLong("5 + (1 == 2 ? 3 : 4)"));
+        assertEquals(9, evaluateLong("5 + ((1 == 2) ? 3 : 4)"));
+        assertEquals(8, evaluateLong("5 + ((1 == 1) ? 3 : 4)"));
+        assertFalse(evaluateBool("0 == 1 ? true : false"));
+        assertTrue(evaluateBool("1 == 1 ? true : false"));
+        // nested ternary operators
+        assertEquals(5, evaluateLong("true ? 1 == 1 ? 5 : 6 : 2"));
+        assertEquals(1, evaluateLong("true ? 1 : false"));
+        // returning different types
+        assertFalse(evaluateBool("false ? 1 : false"));
+        assertEquals(1, evaluateLong("0 == 0 ? 1 : 2"));
+        // with parens
+        assertEquals(2, evaluateLong("(0 == 1) ? 1 : 2"));
+        assertEquals(2, evaluateLong("(0 == 1) ? (1) : (2)"));
+        assertEquals(2, evaluateLong("(0 == 1) ? (1 + 3) : (2 + 0)"));
+        assertEquals(2, evaluateLong("(0 == 1) ? (1 + 3) : 2 + 0"));
+
+        err = assertThrows(ParseError.class, () -> evaluate("(0 == 1) ? (1 + 3 : 2 + 0)"));
+        assertEquals("Expression parsing error [line 1, pos 19]: Expect ')' after expression in expression '(0 == 1) ? (1 + 3 : 2 + 0)'", err.getMessage());
+
+        err = assertThrows(ParseError.class, () -> evaluate("true ? 1 ; 2"));
+        assertEquals("Expression parsing error [line 1, pos 10]: Unexpected character in expression 'true ? 1 ; 2'", err.getMessage());
+
+        err = assertThrows(ParseError.class, () -> evaluate("true ? 1 . 2"));
+        assertEquals("Expression parsing error [line 1, pos 12]: Expect function name after '.' in expression 'true ? 1 . 2'", err.getMessage());
+
+        err = assertThrows(ParseError.class, () -> evaluate("true ? 1 , 2"));
+        assertEquals("Expression parsing error [line 1, pos 10]: Expect ':' after ternary ('?') operator in expression 'true ? 1 , 2'", err.getMessage());
+
+        err = assertThrows(ParseError.class, () -> evaluate("true ? 1 abc 2"));
+        assertEquals("Expression parsing error [line 1, pos 10]: Expect ':' after ternary ('?') operator in expression 'true ? 1 abc 2'", err.getMessage());
+
+        runErr = assertThrows(RuntimeError.class, () -> evaluate("1 ? 1 : 2"));
+        assertEquals("Expression evaluation error [line 1, pos 3]: Operand must be a boolean in expression '1 ? 1 : 2'", runErr.getMessage());
+    }
+
+    @Test
     void simpleLongTest() {
         assertEquals(3, evaluateLong("1+2"));
     }

@@ -55,6 +55,22 @@ final class AstHierarchyPrinter implements Expr.Visitor<String> {
   }
 
   @Override
+  public String visitTernaryExpr(Expr.Ternary expr) {
+    StringBuilder builder = new StringBuilder();
+    String ident = generateIdent(level);
+    builder.append(expr.operator.lexeme).append("\n");
+    builder.append(ident).append('│').append("\n");
+    level++;
+    builder.append(ident).append("├── ").append(expr.condition.accept(this)).append("\n");
+    builder.append(ident).append('│').append("\n");
+    builder.append(ident).append("├── ").append(expr.trueExpr.accept(this)).append("\n");
+    builder.append(ident).append('│').append("\n");
+    builder.append(ident).append("├── ").append(expr.falseExpr.accept(this));
+    level--;
+    return builder.toString();
+  }
+
+  @Override
   public String visitUnaryExpr(Expr.Unary expr) {
     return formatExpr(expr.operator, expr.expression, null);
   }

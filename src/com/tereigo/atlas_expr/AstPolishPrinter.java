@@ -51,6 +51,12 @@ final class AstPolishPrinter implements Expr.Visitor<String> {
   }
 
   @Override
+  public String visitTernaryExpr(Expr.Ternary expr) {
+    return expr.condition.accept(this) +
+            parenthesize(expr.operator.lexeme, expr.trueExpr, expr.falseExpr);
+  }
+
+  @Override
   public String visitUnaryExpr(Expr.Unary expr) {
     return parenthesize(expr.operator.lexeme, expr.expression);
   }

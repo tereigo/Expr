@@ -25,5 +25,6 @@
       </library>
     </orderEntry>
     <orderEntry type="library" name="guava-23.0-sources" level="project" />
+    <orderEntry type="library" scope="TEST" name="mockito" level="project" />
   </component>
 </module>

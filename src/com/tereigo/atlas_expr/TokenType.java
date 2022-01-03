@@ -13,6 +13,8 @@ enum TokenType {
   DIV,               // '/'
   MUL,               // '*'
   MODULUS,           // '%'
+  QUESTION_MARK,     // '?'
+  COLON,             // ':'
 
   // One or two character tokens.
   NOT,              // '!' or 'not'

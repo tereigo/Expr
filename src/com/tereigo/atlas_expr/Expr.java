@@ -23,16 +23,23 @@ abstract class Expr {
     R visitObjectCallExpr(ObjectCall expr); // call method from the object
   }
 
-  static class Binary extends Expr {
-    final Expr left;
+  static abstract class BaseExpr extends Expr {
     final Token operator;
-    final Expr right;
     // result of the evaluation of this expression
     final MutableVariant result = VariantFactory.createEmpty();
 
-    Binary(Expr left, Token operator, Expr right) {
-      this.left = left;
+    BaseExpr(Token operator) {
       this.operator = operator;
+    }
+  }
+
+  static class Binary extends BaseExpr {
+    final Expr left;
+    final Expr right;
+
+    Binary(Expr left, Token operator, Expr right) {
+      super(operator);
+      this.left = left;
       this.right = right;
     }
 
@@ -42,16 +49,13 @@ abstract class Expr {
     }
   }
 
-  static class InOperator extends Expr {
+  static class InOperator extends BaseExpr {
     final Expr operand;
-    final Token operator;
     final List<Variant> values;
-    // result of the evaluation of this expression
-    final MutableVariant result = VariantFactory.createEmpty();
 
     InOperator(Expr operand, Token operator, List<Variant> values) {
+      super(operator);
       this.operand = operand;
-      this.operator = operator;
       this.values = values;
     }
 
@@ -105,16 +109,13 @@ abstract class Expr {
     }
   }
 
-  static class Logical extends Expr {
+  static class Logical extends BaseExpr {
     final Expr left;
-    final Token operator;
     final Expr right;
-    // result of the evaluation of this expression
-    final MutableVariant result = VariantFactory.createEmpty();
 
     Logical(Expr left, Token operator, Expr right) {
+      super(operator);
       this.left = left;
-      this.operator = operator;
       this.right = right;
     }
 
@@ -143,14 +144,11 @@ abstract class Expr {
     }
   }
 
-  static class Unary extends Expr {
-    final Token operator;
+  static class Unary extends BaseExpr {
     final Expr expression;
-    // result of the evaluation of this expression
-    final MutableVariant result = VariantFactory.createEmpty();
 
     Unary(Token operator, Expr expression) {
-      this.operator = operator;
+      super(operator);
       this.expression = expression;
     }
 
@@ -160,13 +158,9 @@ abstract class Expr {
     }
   }
 
-  static class Identifier extends Expr {
-    final Token name;
-    // result of the evaluation of this expression
-    final MutableVariant result = VariantFactory.createEmpty();
-
+  static class Identifier extends BaseExpr {
     Identifier(Token name) {
-      this.name = name;
+      super(name);
     }
 
     @Override
@@ -175,13 +169,11 @@ abstract class Expr {
     }
   }
 
-  static class Call extends Expr {
-    final Token name;
+  static class Call extends BaseExpr {
     final List<Expr> args;
-    final MutableVariant result = VariantFactory.createEmpty();
 
     Call(Token name, List<Expr> args) {
-      this.name = name;
+      super(name);
       this.args = args;
     }
 

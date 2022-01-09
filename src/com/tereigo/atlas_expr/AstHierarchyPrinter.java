@@ -77,17 +77,17 @@ final class AstHierarchyPrinter implements Expr.Visitor<String> {
 
   @Override
   public String visitIdentifierExpr(Expr.Identifier expr) {
-    return expr.name.lexeme;
+    return expr.operator.lexeme;
   }
 
   @Override
   public String visitCallExpr(Expr.Call expr) {
-    return "call " + expr.name.lexeme + formatParams(expr.args);
+    return "call " + expr.operator.lexeme + formatParams(expr.args);
   }
 
   @Override
   public String visitObjectCallExpr(Expr.ObjectCall expr) {
-    return "obj call " + expr.object.accept(this) + "." + expr.name.lexeme + formatParams(expr.args);
+    return "obj call " + expr.object.accept(this) + "." + expr.operator.lexeme + formatParams(expr.args);
   }
 
   private String formatParams(List<Expr> list) {

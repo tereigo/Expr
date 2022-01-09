@@ -263,7 +263,7 @@ final class Parser {
           throw error(previous(2), "Function name should be an identifier");
         }
         List<Expr> args = arguments(5);
-        expr = new Expr.Call(((Expr.Identifier) expr).name, args);
+        expr = new Expr.Call(((Expr.Identifier) expr).operator, args);
       } else if (match(DOT)) {
         Token name = consume(IDENTIFIER, "Expect function name after '.'");
         if (peek().type == LEFT_PAREN) {

@@ -167,17 +167,17 @@ final class Interpreter implements Expr.Visitor<Variant> {
 
   @Override
   public Variant visitIdentifierExpr(Expr.Identifier expr) {
-    MutableVariant res = ctx.get(expr.name.lexeme, expr.result);
+    MutableVariant res = ctx.get(expr.operator.lexeme, expr.result);
     if (res == null) {
-      throw new RuntimeError(expr.name, "Unknown identifier '" + expr.name.lexeme + "'");
+      throw new RuntimeError(expr.operator, "Unknown identifier '" + expr.operator.lexeme + "'");
     }
     return res;
   }
 
   @Override
   public Variant visitCallExpr(Expr.Call expr) {
-    Object funcObj = ctx.getFunction(expr.name.lexeme);
-    return callFunction(expr.result, expr.name, funcObj, expr.args);
+    Object funcObj = ctx.getFunction(expr.operator.lexeme);
+    return callFunction(expr.result, expr.operator, funcObj, expr.args);
   }
 
   @Override
@@ -186,13 +186,13 @@ final class Interpreter implements Expr.Visitor<Variant> {
     // if it's an object call from ExprContext
     if (isExprContext(objResult)) {
       // then fetch the function from that ExprContext
-      Object funcObj = objResult.getAsExprContext().getFunction(expr.name.lexeme);
-      return callFunction(expr.result, expr.name, funcObj, expr.args);
+      Object funcObj = objResult.getAsExprContext().getFunction(expr.operator.lexeme);
+      return callFunction(expr.result, expr.operator, funcObj, expr.args);
     }
     // otherwise it's a normal/native function call -> get the function from the global context
-    Object funcObj = ctx.getFunction(expr.name.lexeme);
+    Object funcObj = ctx.getFunction(expr.operator.lexeme);
     if (funcObj == null) {
-      throw new RuntimeError(expr.name, "Unknown function '" + expr.name.lexeme + "'");
+      throw new RuntimeError(expr.operator, "Unknown function '" + expr.operator.lexeme + "'");
     }
 
     try {
@@ -205,10 +205,10 @@ final class Interpreter implements Expr.Visitor<Variant> {
         case 5: ((Function5)funcObj).call(expr.result, objResult, evaluate(expr.args.get(0)), evaluate(expr.args.get(1)), evaluate(expr.args.get(2)), evaluate(expr.args.get(3))); break;
       }
     } catch (ClassCastException castEx) {
-      throw new RuntimeError(expr.name, "ClassCastException in function '" + expr.name.lexeme + "': " + castEx.getMessage());
+      throw new RuntimeError(expr.operator, "ClassCastException in function '" + expr.operator.lexeme + "': " + castEx.getMessage());
     }
     catch (RuntimeException runtimeEx) {
-      throw new RuntimeError(expr.name, "RuntimeException in function '" + expr.name.lexeme + "': " + runtimeEx.getMessage());
+      throw new RuntimeError(expr.operator, "RuntimeException in function '" + expr.operator.lexeme + "': " + runtimeEx.getMessage());
     }
     return expr.result;
   }

@@ -14,9 +14,7 @@ import java.util.List;
 
 import static com.tereigo.atlas_expr.ExceptionUtils.getExceptionMsg;
 import static com.tereigo.atlas_expr.variant.VariantUtils.isBoolean;
-import static com.tereigo.atlas_expr.variant.VariantUtils.isDouble;
 import static com.tereigo.atlas_expr.variant.VariantUtils.isExprContext;
-import static com.tereigo.atlas_expr.variant.VariantUtils.isLong;
 
 /*
   Evaluates the expressions defined in Expr class using the provided ExprContext
@@ -57,22 +55,22 @@ final class ExprInterpreter implements Expr.Visitor<Variant> {
           expr.result.accept(!VariantUtils.isEqual(left, right));
           break;
         case GREATER:
-          expr.result.accept(isGreaterNumbers(expr.operator, left, right));
+          expr.result.accept(VariantUtils.isGreaterNumbers(left, right));
           break;
         case GREATER_EQUAL:
-          expr.result.accept(isGreaterOrEqualNumbers(expr.operator, left, right));
+          expr.result.accept(VariantUtils.isGreaterOrEqualNumbers(left, right));
           break;
         case LESS:
-          expr.result.accept(isLessNumbers(expr.operator, left, right));
+          expr.result.accept(VariantUtils.isLessNumbers(left, right));
           break;
         case LESS_EQUAL:
-          expr.result.accept(isLessOrEqualNumbers(expr.operator, left, right));
+          expr.result.accept(VariantUtils.isLessOrEqualNumbers(left, right));
           break;
         case MINUS:
-          subtractNumbers(expr.operator, expr.result, left, right);
+          VariantUtils.subtractNumbers(expr.result, left, right);
           break;
         case PLUS:
-          addNumbers(expr.operator, expr.result, left, right);
+          VariantUtils.addNumbers(expr.result, left, right);
           break;
         // NOTICE: We don't allow String concatenation because it produces garbage
 //        if (isString(left) && isString(right)) {
@@ -81,13 +79,13 @@ final class ExprInterpreter implements Expr.Visitor<Variant> {
 //        }
 //        throw new RuntimeError(expr.operator, "Operands must be two numbers or two strings");
         case DIV:
-          divideNumbers(expr.operator, expr.result, left, right);
+          VariantUtils.divideNumbers(expr.result, left, right);
           break;
         case MUL:
-          multiplyNumbers(expr.operator, expr.result, left, right);
+          VariantUtils.multiplyNumbers(expr.result, left, right);
           break;
         case MODULUS:
-          modulusNumbers(expr.operator, expr.result, left, right);
+          VariantUtils.modulusNumbers(expr.result, left, right);
           break;
       }
       return expr.result;
@@ -240,164 +238,6 @@ final class ExprInterpreter implements Expr.Visitor<Variant> {
       throw new RuntimeError(token, "RuntimeException in function '" + token.lexeme + "': " + runtimeEx.getMessage());
     }
     return result;
-  }
-
-  private boolean isGreaterNumbers(Token token, Variant left, Variant right) {
-    if (isDouble(left) && isDouble(right)) {
-      return left.getAsDouble() > right.getAsDouble();
-    }
-    if (isDouble(left) && isLong(right)) {
-      return left.getAsDouble() > right.getAsLong();
-    }
-    if (isLong(left) && isDouble(right)) {
-      return left.getAsLong() > right.getAsDouble();
-    }
-    if (isLong(left) && isLong(right)) {
-      return left.getAsLong() > right.getAsLong();
-    }
-    throw new RuntimeError(token, "Operands must be numbers");
-  }
-
-  private boolean isGreaterOrEqualNumbers(Token token, Variant left, Variant right) {
-    if (isDouble(left) && isDouble(right)) {
-      return left.getAsDouble() >= right.getAsDouble();
-    }
-    if (isDouble(left) && isLong(right)) {
-      return left.getAsDouble() >= right.getAsLong();
-    }
-    if (isLong(left) && isDouble(right)) {
-      return left.getAsLong() >= right.getAsDouble();
-    }
-    if (isLong(left) && isLong(right)) {
-      return left.getAsLong() >= right.getAsLong();
-    }
-    throw new RuntimeError(token, "Operands must be numbers");
-  }
-
-  private boolean isLessNumbers(Token token, Variant left, Variant right) {
-    if (isDouble(left) && isDouble(right)) {
-      return left.getAsDouble() < right.getAsDouble();
-    }
-    if (isDouble(left) && isLong(right)) {
-      return left.getAsDouble() < right.getAsLong();
-    }
-    if (isLong(left) && isDouble(right)) {
-      return left.getAsLong() < right.getAsDouble();
-    }
-    if (isLong(left) && isLong(right)) {
-      return left.getAsLong() < right.getAsLong();
-    }
-    throw new RuntimeError(token, "Operands must be numbers");
-  }
-
-  private boolean isLessOrEqualNumbers(Token token, Variant left, Variant right) {
-    if (isDouble(left) && isDouble(right)) {
-      return left.getAsDouble() <= right.getAsDouble();
-    }
-    if (isDouble(left) && isLong(right)) {
-      return left.getAsDouble() <= right.getAsLong();
-    }
-    if (isLong(left) && isDouble(right)) {
-      return left.getAsLong() <= right.getAsDouble();
-    }
-    if (isLong(left) && isLong(right)) {
-      return left.getAsLong() <= right.getAsLong();
-    }
-    throw new RuntimeError(token, "Operands must be numbers");
-  }
-
-  private void addNumbers(Token token, MutableVariant result, Variant left, Variant right) {
-    if (isDouble(left) && isDouble(right)) {
-      result.accept(left.getAsDouble() + right.getAsDouble());
-      return;
-    }
-    if (isDouble(left) && isLong(right)) {
-      result.accept(left.getAsDouble() + right.getAsLong());
-      return;
-    }
-    if (isLong(left) && isDouble(right)) {
-      result.accept(left.getAsLong() + right.getAsDouble());
-      return;
-    }
-    if (isLong(left) && isLong(right)) {
-      result.accept(left.getAsLong() + right.getAsLong());
-      return;
-    }
-    throw new RuntimeError(token, "Operands must be numbers");
-  }
-
-  private void subtractNumbers(Token token, MutableVariant result, Variant left, Variant right) {
-    if (isDouble(left) && isDouble(right)) {
-      result.accept(left.getAsDouble() - right.getAsDouble());
-      return;
-    }
-    if (isDouble(left) && isLong(right)) {
-      result.accept(left.getAsDouble() - right.getAsLong());
-      return;
-    }
-    if (isLong(left) && isDouble(right)) {
-      result.accept(left.getAsLong() - right.getAsDouble());
-      return;
-    }
-    if (isLong(left) && isLong(right)) {
-      result.accept(left.getAsLong() - right.getAsLong());
-      return;
-    }
-    throw new RuntimeError(token, "Operands must be numbers");
-  }
-
-  private void divideNumbers(Token token, MutableVariant result, Variant left, Variant right) {
-    if (isDouble(left) && isDouble(right)) {
-      result.accept(left.getAsDouble() / right.getAsDouble());
-      return;
-    }
-    if (isDouble(left) && isLong(right)) {
-      result.accept(left.getAsDouble() / right.getAsLong());
-      return;
-    }
-    if (isLong(left) && isDouble(right)) {
-      result.accept(left.getAsLong() / right.getAsDouble());
-      return;
-    }
-    if (isLong(left) && isLong(right)) {
-      if (right.getAsLong() == 0) {
-        throw new RuntimeError(token, "Division by zero");
-      }
-      result.accept(left.getAsLong() / right.getAsLong());
-      return;
-    }
-    throw new RuntimeError(token, "Operands must be numbers");
-  }
-
-  private void multiplyNumbers(Token token, MutableVariant result, Variant left, Variant right) {
-    if (isDouble(left) && isDouble(right)) {
-      result.accept(left.getAsDouble() * right.getAsDouble());
-      return;
-    }
-    if (isDouble(left) && isLong(right)) {
-      result.accept(left.getAsDouble() * right.getAsLong());
-      return;
-    }
-    if (isLong(left) && isDouble(right)) {
-      result.accept(left.getAsLong() * right.getAsDouble());
-      return;
-    }
-    if (isLong(left) && isLong(right)) {
-      result.accept(left.getAsLong() * right.getAsLong());
-      return;
-    }
-    throw new RuntimeError(token, "Operands must be numbers");
-  }
-
-  private void modulusNumbers(Token token, MutableVariant result, Variant left, Variant right) {
-    if (isLong(left) && isLong(right)) {
-      if (right.getAsLong() == 0) {
-        throw new RuntimeException("Division by zero");
-      }
-      result.accept(left.getAsLong() % right.getAsLong());
-      return;
-    }
-    throw new RuntimeError(token, "Operands must be long numbers");
   }
 
   private void negateNumber(Token token, MutableVariant result, Variant operand) {

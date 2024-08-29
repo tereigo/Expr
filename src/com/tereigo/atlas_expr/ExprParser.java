@@ -1,6 +1,5 @@
 package com.tereigo.atlas_expr;
 
-import com.google.common.collect.Lists;
 import com.tereigo.atlas_expr.variant.Variant;
 import com.tereigo.atlas_expr.variant.VariantFactory;
 
@@ -78,12 +77,12 @@ import static com.tereigo.atlas_expr.TokenType.TRUE;
     You can find plenty of the expression examples in the tests
 */
 
-final class Parser {
+final class ExprParser {
 
   private final List<Token> tokens;
   private int current = 0;
 
-  Parser(List<Token> tokens) {
+  ExprParser(List<Token> tokens) {
     this.tokens = tokens;
   }
 
@@ -282,7 +281,7 @@ final class Parser {
 
   // arguments  : expression ( "," expression )* ;
   private List<Expr> arguments(int maxArgs) {
-    List<Expr> args = Lists.newArrayListWithCapacity(maxArgs);
+    List<Expr> args = new ArrayList<>(maxArgs);
     if (!check(RIGHT_PAREN)) {
       do {
         if (args.size() >= maxArgs) {

@@ -1,6 +1,5 @@
 package com.tereigo.atlas_expr;
 
-import com.tereigo.atlas_expr.atlas.utils.ByteBufferUtils;
 import com.tereigo.atlas_expr.function.Function0;
 import com.tereigo.atlas_expr.function.Function1;
 import com.tereigo.atlas_expr.function.Function2;
@@ -9,25 +8,24 @@ import com.tereigo.atlas_expr.function.Function4;
 import com.tereigo.atlas_expr.function.Function5;
 import com.tereigo.atlas_expr.variant.MutableVariant;
 import com.tereigo.atlas_expr.variant.Variant;
+import com.tereigo.atlas_expr.variant.VariantUtils;
 
 import java.util.List;
 
-import static com.tereigo.atlas_expr.atlas.utils.AlgoUtils.epsilonEquals;
+import static com.tereigo.atlas_expr.ExceptionUtils.getExceptionMsg;
 import static com.tereigo.atlas_expr.variant.VariantUtils.isBoolean;
-import static com.tereigo.atlas_expr.variant.VariantUtils.isByteBuffer;
 import static com.tereigo.atlas_expr.variant.VariantUtils.isDouble;
 import static com.tereigo.atlas_expr.variant.VariantUtils.isExprContext;
 import static com.tereigo.atlas_expr.variant.VariantUtils.isLong;
-import static com.tereigo.atlas_expr.variant.VariantUtils.isString;
 
 /*
   Evaluates the expressions defined in Expr class using the provided ExprContext
  */
-final class Interpreter implements Expr.Visitor<Variant> {
+final class ExprInterpreter implements Expr.Visitor<Variant> {
   private final Expr expression;
   private final ExprContextCombined ctx = new ExprContextCombined();
 
-  Interpreter(final Expr expression) {
+  ExprInterpreter(final Expr expression) {
     this.expression = expression;
   }
 
@@ -50,58 +48,66 @@ final class Interpreter implements Expr.Visitor<Variant> {
     Variant left = evaluate(expr.left);
     Variant right = evaluate(expr.right);
 
-    switch (expr.operator.type) {
-      case EQUAL_EQUAL:
-        expr.result.accept(isEqual(expr.operator, left, right));
-        break;
-      case NOT_EQUAL:
-        expr.result.accept(!isEqual(expr.operator, left, right));
-        break;
-      case GREATER:
-        expr.result.accept(isGreaterNumbers(expr.operator, left, right));
-        break;
-      case GREATER_EQUAL:
-        expr.result.accept(isGreaterOrEqualNumbers(expr.operator, left, right));
-        break;
-      case LESS:
-        expr.result.accept(isLessNumbers(expr.operator, left, right));
-        break;
-      case LESS_EQUAL:
-        expr.result.accept(isLessOrEqualNumbers(expr.operator, left, right));
-        break;
-      case MINUS:
-        subtractNumbers(expr.operator, expr.result, left, right);
-        break;
-      case PLUS:
-        addNumbers(expr.operator, expr.result, left, right);
-        break;
+    try {
+      switch (expr.operator.type) {
+        case EQUAL_EQUAL:
+          expr.result.accept(VariantUtils.isEqual(left, right));
+          break;
+        case NOT_EQUAL:
+          expr.result.accept(!VariantUtils.isEqual(left, right));
+          break;
+        case GREATER:
+          expr.result.accept(isGreaterNumbers(expr.operator, left, right));
+          break;
+        case GREATER_EQUAL:
+          expr.result.accept(isGreaterOrEqualNumbers(expr.operator, left, right));
+          break;
+        case LESS:
+          expr.result.accept(isLessNumbers(expr.operator, left, right));
+          break;
+        case LESS_EQUAL:
+          expr.result.accept(isLessOrEqualNumbers(expr.operator, left, right));
+          break;
+        case MINUS:
+          subtractNumbers(expr.operator, expr.result, left, right);
+          break;
+        case PLUS:
+          addNumbers(expr.operator, expr.result, left, right);
+          break;
         // NOTICE: We don't allow String concatenation because it produces garbage
 //        if (isString(left) && isString(right)) {
 //          expr.result.accept(left.getAsString() + right.getAsString());
 //          break;
 //        }
 //        throw new RuntimeError(expr.operator, "Operands must be two numbers or two strings");
-      case DIV:
-        divideNumbers(expr.operator, expr.result, left, right);
-        break;
-      case MUL:
-        multiplyNumbers(expr.operator, expr.result, left, right);
-        break;
-      case MODULUS:
-        modulusNumbers(expr.operator, expr.result, left, right);
-        break;
+        case DIV:
+          divideNumbers(expr.operator, expr.result, left, right);
+          break;
+        case MUL:
+          multiplyNumbers(expr.operator, expr.result, left, right);
+          break;
+        case MODULUS:
+          modulusNumbers(expr.operator, expr.result, left, right);
+          break;
+      }
+      return expr.result;
+    } catch (RuntimeException ex) {
+      throw new RuntimeError(expr.operator, getExceptionMsg(ex), ex);
     }
-    return expr.result;
   }
 
   @Override
   public Variant visitInOperator(Expr.InOperator expr) {
     Variant operand = evaluate(expr.operand);
-    for (int i = 0; i < expr.values.size(); i++) {
-      if (isEqual(expr.operator, operand, expr.values.get(i))) {
-        expr.result.accept(true);
-        return expr.result;
+    try {
+      for (int i = 0; i < expr.values.size(); i++) {
+        if (VariantUtils.isEqual(operand, expr.values.get(i))) {
+          expr.result.accept(true);
+          return expr.result;
+        }
       }
+    } catch (RuntimeException ex) {
+      throw new RuntimeError(expr.operator, getExceptionMsg(ex), ex);
     }
     expr.result.accept(false);
     return expr.result;
@@ -234,39 +240,6 @@ final class Interpreter implements Expr.Visitor<Variant> {
       throw new RuntimeError(token, "RuntimeException in function '" + token.lexeme + "': " + runtimeEx.getMessage());
     }
     return result;
-  }
-
-  private boolean isEqual(Token token, Variant left, Variant right) {
-    if (isString(left) && isString(right)) {
-      return left.equals(right);
-    }
-    if (isByteBuffer(left) && isByteBuffer(right)) {
-      // it should be the same as:
-      // return left.getAsByteBuffer().equals(right.getAsByteBuffer());
-      return ByteBufferUtils.equals(left.getAsByteBuffer(), right.getAsByteBuffer());
-    }
-    if (isByteBuffer(left) && isString(right)) {
-      return ByteBufferUtils.equals(left.getAsByteBuffer(), right.getAsString());
-    }
-    if (isString(left) && isByteBuffer(right)) {
-      return ByteBufferUtils.equals(right.getAsByteBuffer(), left.getAsString());
-    }
-    if (isDouble(left) && isDouble(right)) {
-      return epsilonEquals(left.getAsDouble(), right.getAsDouble());
-    }
-    if (isDouble(left) && isLong(right)) {
-      return epsilonEquals(left.getAsDouble(), right.getAsLong());
-    }
-    if (isLong(left) && isDouble(right)) {
-      return epsilonEquals(left.getAsLong(), right.getAsDouble());
-    }
-    if (isLong(left) && isLong(right)) {
-      return left.getAsLong() == right.getAsLong();
-    }
-    if (isBoolean(left) && isBoolean(right)) {
-      return left.getAsBoolean() == right.getAsBoolean();
-    }
-    throw new RuntimeError(token, "Operands of different types cannot be compared: " + left.exprType() + " and " + right.exprType());
   }
 
   private boolean isGreaterNumbers(Token token, Variant left, Variant right) {
@@ -418,6 +391,9 @@ final class Interpreter implements Expr.Visitor<Variant> {
 
   private void modulusNumbers(Token token, MutableVariant result, Variant left, Variant right) {
     if (isLong(left) && isLong(right)) {
+      if (right.getAsLong() == 0) {
+        throw new RuntimeException("Division by zero");
+      }
       result.accept(left.getAsLong() % right.getAsLong());
       return;
     }
@@ -425,15 +401,11 @@ final class Interpreter implements Expr.Visitor<Variant> {
   }
 
   private void negateNumber(Token token, MutableVariant result, Variant operand) {
-    if (isDouble(operand)) {
-      result.accept(-operand.getAsDouble());
-      return;
+    try {
+      VariantUtils.negateNumber(result, operand);
+    } catch (RuntimeException ex) {
+      throw new RuntimeError(token, getExceptionMsg(ex), ex);
     }
-    if (isLong(operand)) {
-      result.accept(-operand.getAsLong());
-      return;
-    }
-    throw new RuntimeError(token, "Operand must be a number");
   }
 
   private void checkBoolOperand(Token operator, Variant operand) {

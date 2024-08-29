@@ -10,9 +10,9 @@ public final class ExprCompiler {
     @SuppressWarnings("UnnecessaryLocalVariable")
     public static ASTRoot compile(String source) {
         try {
-            final Scanner scanner = new Scanner(source);
+            final ExprScanner scanner = new ExprScanner(source);
             final List<Token> tokens = scanner.tokens();
-            final Parser parser = new Parser(tokens);
+            final ExprParser parser = new ExprParser(tokens);
             final Expr expression = parser.parse();
             return new ASTRoot(source, expression);
         } catch (ParseError err) {

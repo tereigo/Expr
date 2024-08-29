@@ -3,7 +3,7 @@ package com.tereigo.atlas_expr;
 import com.tereigo.atlas_expr.variant.MutableVariant;
 
 final class ExprContextChained implements ExprContext {
-    ExprContext ctx;
+    private ExprContext ctx;
 
     public ExprContextChained(ExprContext ctx) {
         this.ctx = ctx;

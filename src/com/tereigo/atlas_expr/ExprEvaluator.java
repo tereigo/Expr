@@ -4,6 +4,8 @@ import com.tereigo.atlas_expr.variant.Variant;
 
 import java.nio.ByteBuffer;
 
+import static com.tereigo.atlas_expr.ExceptionUtils.getExceptionMsg;
+
 /*
    This is the main public class for clients
 
@@ -18,7 +20,7 @@ import java.nio.ByteBuffer;
  */
 public final class ExprEvaluator {
     private final String source;
-    private final Interpreter interpreter;
+    private final ExprInterpreter interpreter;
 
     public ExprEvaluator(final String source) {
         this(ExprCompiler.compile(source));
@@ -26,7 +28,7 @@ public final class ExprEvaluator {
 
     public ExprEvaluator(final ASTRoot root) {
         this.source = root.source();
-        this.interpreter = new Interpreter(root.expr());
+        this.interpreter = new ExprInterpreter(root.expr());
     }
 
     public boolean evaluateBool() {
@@ -97,6 +99,14 @@ public final class ExprEvaluator {
             String msg = "Expression evaluation error [line " + err.token.line + ", pos " + (err.token.pos + 1) + "]: "
                     + err.getMessage() + (source.isEmpty() ? "" : " in expression '" + source + "'");
             throw new RuntimeError(err.token, msg);
+        } catch (RuntimeException ex) {
+            // Let's enhance the error with the relevant context info
+            String msg = "Expression evaluation error: " + getExceptionMsg(ex) + getSourceString();
+            throw new RuntimeException(msg, ex);
         }
+    }
+
+    private String getSourceString() {
+        return source.isEmpty() ? "" : " in expression '" + source + "'";
     }
 }

@@ -1,6 +1,5 @@
 package com.tereigo.atlas_expr.algo.customization;
 
-import com.google.common.collect.Lists;
 import com.tereigo.atlas_expr.ExprContextFactory;
 import com.tereigo.atlas_expr.ExprEvaluator;
 import com.tereigo.atlas_expr.MutableExprContext;
@@ -15,6 +14,7 @@ import com.tereigo.atlas_expr.atlas.OrderExprContext;
 import com.tereigo.atlas_expr.atlas.OrderFieldResolver;
 import com.tereigo.atlas_expr.atlas.utils.ReferenceDataCache;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @SuppressWarnings("ForLoopReplaceableByForEach")
@@ -24,7 +24,7 @@ public class CustomizationEngine {
     private OrderFieldResolver orderFieldResolver;
     private final MutableExprContext ruleContext = ExprContextFactory.create();
 
-    private final List<RuleRecord> rules = Lists.newArrayList();
+    private final List<RuleRecord> rules = new ArrayList<>();
     private CustomizationErrorHandler errorHandler;
 
     public void init(ReferenceDataCache refData,

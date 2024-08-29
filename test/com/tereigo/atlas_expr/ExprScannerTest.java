@@ -27,7 +27,7 @@ import static com.tereigo.atlas_expr.TokenType.STRING;
 import static com.tereigo.atlas_expr.TokenType.TRUE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-class ScannerTest {
+class ExprScannerTest {
 
     @Test
     void scannerTest() {
@@ -58,7 +58,7 @@ class ScannerTest {
     }
 
     private void testScanner(String source, TokenType... expectedTypes) {
-        Scanner scanner = new Scanner(source);
+        ExprScanner scanner = new ExprScanner(source);
         int i = 0;
         for(TokenType type: expectedTypes) {
             assertEquals(type, scanner.tokens().get(i++).type);

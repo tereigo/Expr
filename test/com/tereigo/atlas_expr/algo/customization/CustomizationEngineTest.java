@@ -1,6 +1,5 @@
 package com.tereigo.atlas_expr.algo.customization;
 
-import com.google.common.collect.Lists;
 import com.tereigo.atlas_expr.atlas.AddRuleMsg;
 import com.tereigo.atlas_expr.atlas.AlgoDataProvider;
 import com.tereigo.atlas_expr.atlas.AlgoExprContext;
@@ -18,6 +17,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static com.tereigo.atlas_expr.atlas.utils.ByteBufferUtils.constant;
@@ -318,7 +318,7 @@ class CustomizationEngineTest {
     }
 
     static class TestCustomizationErrorHandler implements CustomizationErrorHandler {
-        final List<String> errors = Lists.newArrayList();
+        final List<String> errors = new ArrayList<>();
 
         @Override
         public void onError(String context, String msg) {

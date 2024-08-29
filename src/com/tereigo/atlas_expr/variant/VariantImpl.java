@@ -7,13 +7,13 @@ import com.tereigo.atlas_expr.atlas.utils.ByteBufferUtils;
 import java.nio.ByteBuffer;
 import java.util.Objects;
 
-class VariantImpl implements MutableVariant {
-    private ExprType type; // this field can be use to determine if it's empty: type != null
-    // NOTICE: we re-use longVal for boolean values
+final class VariantImpl implements MutableVariant {
+    private ExprType type; // this field can be used to determine if it's empty: type != null
+    // NOTICE: we re-use longVal for boolean and double values
     // true:  longVal != 0
     // false: longVal == 0
+    // double is stored as long bits
     private long longVal;
-    private double doubleVal;
     // IMPORTANT NOTE on implementation:
     // String value and ByteBuffer values are interchangeable
     // we consider Variant values equal if strVal == other.strVal || strVal == other.bbVal || bbVal == other.bbVal
@@ -73,7 +73,17 @@ class VariantImpl implements MutableVariant {
     @Override
     public double getAsDouble() {
         sanityCheck(ExprType.DOUBLE);
-        return doubleVal;
+        return Double.longBitsToDouble(longVal);
+    }
+
+    @Override
+    public double getAsNumber() {
+        if (type == ExprType.LONG) {
+            return longVal;
+        } else if (type == ExprType.DOUBLE) {
+            return Double.longBitsToDouble(longVal);
+        }
+        throw new RuntimeException("Variant type mismatch: " + type + ", expected: LONG or DOUBLE");
     }
 
     @Override
@@ -102,14 +112,20 @@ class VariantImpl implements MutableVariant {
 
     @Override
     public Object getAsObject() {
-        switch (type) {
-            case DOUBLE:        return doubleVal;
-            case LONG:          return longVal;
-            case BOOL:          return longVal != 0;
-            case STRING:
-            case BYTE_BUFFER:
-            case EXPR_CONTEXT:
-            case OBJECT:        return objVal;
+        if (type != null) {
+            switch (type) {
+                case DOUBLE:
+                    return Double.longBitsToDouble(longVal);
+                case LONG:
+                    return longVal;
+                case BOOL:
+                    return longVal != 0;
+                case STRING:
+                case BYTE_BUFFER:
+                case EXPR_CONTEXT:
+                case OBJECT:
+                    return objVal;
+            }
         }
         throw new RuntimeException("Unknown Variant type: " + type);
     }
@@ -122,7 +138,7 @@ class VariantImpl implements MutableVariant {
 
     @Override
     public void accept(double value) {
-        this.doubleVal = value;
+        this.longVal = Double.doubleToLongBits(value);
         this.type = ExprType.DOUBLE;
     }
 
@@ -150,11 +166,13 @@ class VariantImpl implements MutableVariant {
         this.type = ExprType.EXPR_CONTEXT;
     }
 
-    @Override
-    public void accept(Object value) {
-        this.objVal = value;
-        this.type = ExprType.OBJECT;
-    }
+    // it's not supposed to be used
+    // and it protects from defining a user-function for some unknown Object type into VariantImpl by mistake
+//    @Override
+//    public void accept(Object value) {
+//        this.objVal = value;
+//        this.type = ExprType.OBJECT;
+//    }
 
     private void sanityCheck(ExprType expected) {
         if (type != expected) {
@@ -170,7 +188,10 @@ class VariantImpl implements MutableVariant {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
+
         VariantImpl variant = (VariantImpl) o;
+        // TODO: can we just call VariantUtils.isEqual(this, variant)
+
         // see "IMPORTANT NOTE" above
         if (type == ExprType.STRING && variant.type == ExprType.BYTE_BUFFER) {
             return ByteBufferUtils.equals((ByteBuffer)variant.objVal, (String)objVal);
@@ -179,13 +200,15 @@ class VariantImpl implements MutableVariant {
         }
         return type == variant.type &&
                 longVal == variant.longVal &&
-                Double.compare(doubleVal, variant.doubleVal) == 0 &&
                 Objects.equals(objVal, variant.objVal);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(longVal, doubleVal, objVal, type);
+        int result = 31 + Long.hashCode(longVal);
+        result = 31 * result + (objVal == null ? 0 : objVal.hashCode());
+        result = 31 * result + (type == null ? 0 : type.hashCode());
+        return result;
     }
 
 }

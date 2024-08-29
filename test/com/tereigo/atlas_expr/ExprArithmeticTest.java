@@ -609,8 +609,8 @@ class ExprArithmeticTest extends ExprEvaluatorTestBase {
         assertEquals("Expression evaluation error [line 1, pos 4]: Operands must be long numbers in expression '10 % 3.0'", runErr.getMessage());
         runErr = assertThrows(RuntimeError.class, () -> evaluate("3 % 1.0"));
         assertEquals("Expression evaluation error [line 1, pos 3]: Operands must be long numbers in expression '3 % 1.0'", runErr.getMessage());
-        ArithmeticException ex = assertThrows(ArithmeticException.class, () -> evaluateLong("3 % 0"));
-        assertEquals("/ by zero", ex.getMessage());
+        runErr = assertThrows(RuntimeError.class, () -> evaluateLong("3 % 0"));
+        assertEquals("Expression evaluation error [line 1, pos 3]: Division by zero in expression '3 % 0'", runErr.getMessage());
         runErr = assertThrows(RuntimeError.class, () -> evaluate("0 % true"));
         assertEquals("Expression evaluation error [line 1, pos 3]: Operands must be long numbers in expression '0 % true'", runErr.getMessage());
         runErr = assertThrows(RuntimeError.class, () -> evaluate("0 % \"\""));
@@ -677,8 +677,8 @@ class ExprArithmeticTest extends ExprEvaluatorTestBase {
         assertEquals("Expression evaluation error [line 1, pos 12]: Operands must be long numbers in expression '$productId % 1.0'", runErr.getMessage());
         runErr = assertThrows(RuntimeError.class, () -> evaluate("$productId % $PI", ctx));
         assertEquals("Expression evaluation error [line 1, pos 12]: Operands must be long numbers in expression '$productId % $PI'", runErr.getMessage());
-        ArithmeticException ex = assertThrows(ArithmeticException.class, () -> evaluateLong("$productId % 0", ctx));
-        assertEquals("/ by zero", ex.getMessage());
+        runErr = assertThrows(RuntimeError.class, () -> evaluate("$productId % 0", ctx));
+        assertEquals("Expression evaluation error [line 1, pos 12]: Division by zero in expression '$productId % 0'", runErr.getMessage());
         runErr = assertThrows(RuntimeError.class, () -> evaluate("$productId % true", ctx));
         assertEquals("Expression evaluation error [line 1, pos 12]: Operands must be long numbers in expression '$productId % true'", runErr.getMessage());
         runErr = assertThrows(RuntimeError.class, () -> evaluate("$productId % $enabled", ctx));

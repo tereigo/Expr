@@ -3,8 +3,8 @@ package com.tereigo.atlas_expr;
 import com.tereigo.atlas_expr.variant.MutableVariant;
 
 final class ExprContextCombined implements ExprContext {
-    ExprContext ctx1;
-    ExprContext ctx2; // can be null
+    private ExprContext ctx1;
+    private ExprContext ctx2; // can be null
 
     public void init(ExprContext ctx1) {
         this.ctx1 = ctx1;
@@ -36,6 +36,6 @@ final class ExprContextCombined implements ExprContext {
 
     @Override
     public String toString() {
-        return (ctx1 != null ? "ctx1: " + ctx1.toString() : "") + (ctx2 != null ? ", ctx2: " + ctx2.toString() : "");
+        return (ctx1 != null ? "ctx1: " + ctx1 : "") + (ctx2 != null ? ", ctx2: " + ctx2 : "");
     }
 }

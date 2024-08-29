@@ -39,7 +39,7 @@ import static com.tereigo.atlas_expr.TokenType.TRUE;
 /*
   Converts a given String into a list of Tokens
  */
-final class Scanner {
+final class ExprScanner {
   private static final Map<String, TokenType> keywords;
 
   static {
@@ -57,7 +57,7 @@ final class Scanner {
   private int current = 0;
   private int line = 1;
 
-  Scanner(String source) {
+  ExprScanner(String source) {
     this.source = source;
     tokenize();
   }

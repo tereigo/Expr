@@ -13,8 +13,8 @@ enum TokenType {
   DIV,               // '/'
   MUL,               // '*'
   MODULUS,           // '%'
-  QUESTION_MARK,     // '?'
-  COLON,             // ':'
+  TERNARY_IF,        // '?'
+  TERNARY_ELSE,      // ':'
 
   // One or two character tokens.
   NOT,              // '!' or 'not'
@@ -35,6 +35,8 @@ enum TokenType {
   AND,              // 'and'
   OR,               // 'or'
   IN,               // 'in'
+  WITHIN,           // 'within'
+  BETWEEN,          // 'between'
   FALSE,
   TRUE,
 

@@ -94,6 +94,18 @@ class ExprPrinterTest extends ExprEvaluatorTestBase {
                 "│\n" +
                 "├── [A, B]", printer.print(ExprCompiler.compile("\"A\" in [\"A\", \"B\"]")));
 
+        assertEquals("within\n" +
+                "│\n" +
+                "├── 1\n" +
+                "│\n" +
+                "├── [1, 2]", printer.print(ExprCompiler.compile("1 within [1, 2]")));
+
+        assertEquals("between\n" +
+                "│\n" +
+                "├── 1\n" +
+                "│\n" +
+                "├── [1, 2]", printer.print(ExprCompiler.compile("1 between [1, 2]")));
+
         assertEquals("==\n" +
                 "│\n" +
                 "├── call func($id, 1)\n" +
@@ -152,6 +164,8 @@ class ExprPrinterTest extends ExprEvaluatorTestBase {
         assertEquals("(in 1.0 [2.0, 3.0])", printer.print(ExprCompiler.compile("1.0 in [2.0, 3.0]")));
         assertEquals("(in 1 [2])", printer.print(ExprCompiler.compile("1 in [2]")));
         assertEquals("(in A [A, B])", printer.print(ExprCompiler.compile("\"A\" in [\"A\", \"B\"]")));
+        assertEquals("(within 1 [1, 2])", printer.print(ExprCompiler.compile("1 within [1, 2]")));
+        assertEquals("(between 1 [1, 2])", printer.print(ExprCompiler.compile("1 between [1, 2]")));
         assertEquals("(== call func($id, 1) $curTime)", printer.print(ExprCompiler.compile("func($id, 1) == $curTime")));
         assertEquals("(== call func($id, call isEven(call rnd())) $curTime)", printer.print(ExprCompiler.compile("func($id, isEven(rnd())) == $curTime")));
         assertEquals("obj call ABC.contains($id)", printer.print(ExprCompiler.compile("\"ABC\".contains($id)")));

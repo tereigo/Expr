@@ -310,6 +310,53 @@ class ExprEvaluatorTest extends ExprEvaluatorTestBase {
     }
 
     @Test
+    void operatorWithinTest() {
+        assertTrue(evaluateBool("1 within [1, 2]"));
+        assertTrue(evaluateBool("1 within [0, 2]"));
+        assertTrue(evaluateBool("(1 == 1) and (1 within [1, 2])"));
+        assertFalse(evaluateBool("1 within [2,3]"));
+        assertTrue(evaluateBool("1 within [3,1]"));
+        assertTrue(evaluateBool("1 within [3,0]"));
+        assertTrue(evaluateBool("2 within [2,2]"));
+        assertTrue(evaluateBool("1.0 within [1.0, 2.0]"));
+        assertTrue(evaluateBool("1.0 within [0.0, 2.0]"));
+        assertFalse(evaluateBool("1.0 within [2.0, 3.0]"));
+        assertFalse(evaluateBool("1.0 within [3.0, 2.0]"));
+        assertTrue(evaluateBool("1.0 within [3.0, 1.0]"));
+        assertTrue(evaluateBool("1.0 within [3.0, 0.0]"));
+        assertTrue(evaluateBool("(1 within [2, 4] or 2.0 within [1.0, 2.0])"));
+        assertTrue(evaluateBool("123 within [1, 123.0]"));
+        assertTrue(evaluateBool("123 within [1, 123.1]"));
+        assertTrue(evaluateBool("123.0 within [1, 123]"));
+        assertFalse(evaluateBool("not(123 within [1, 123.0])"));
+        assertFalse(evaluateBool("not(123.0 within [1, 123])"));
+    }
+
+    @Test
+    void operatorBetweenTest() {
+        assertFalse(evaluateBool("1 between [1, 2]"));
+        assertTrue(evaluateBool("1 within [0, 2]"));
+        assertTrue(evaluateBool("(1 == 1) and (1 between [0, 2])"));
+        assertFalse(evaluateBool("1 between [2,3]"));
+        assertFalse(evaluateBool("1 between [3,1]"));
+        assertTrue(evaluateBool("1 between [3,0]"));
+        assertFalse(evaluateBool("2 between [2,2]"));
+        assertFalse(evaluateBool("1.0 between [1.0, 2.0]"));
+        assertTrue(evaluateBool("1.0 between [0.0, 2.0]"));
+        assertFalse(evaluateBool("1.0 between [2.0, 3.0]"));
+        assertFalse(evaluateBool("1.0 between [3.0, 2.0]"));
+        assertFalse(evaluateBool("1.0 between [3.0, 1.0]"));
+        assertTrue(evaluateBool("1.0 between [3.0, 0.0]"));
+        assertTrue(evaluateBool("(1 between [2, 4] or 2.0 between [1.0, 3.0])"));
+        assertFalse(evaluateBool("123 between [1, 123.0]"));
+        assertTrue(evaluateBool("123 between [1, 123.1]"));
+        assertFalse(evaluateBool("123.0 between [1, 123]"));
+        assertTrue(evaluateBool("123.0 between [1, 123.01]"));
+        assertTrue(evaluateBool("not(123 between [1, 123.0])"));
+        assertTrue(evaluateBool("not(123.0 between [1, 123])"));
+    }
+
+    @Test
     void testMalformedExpressions() {
         ParseError err;
         RuntimeError runErr;

@@ -7,11 +7,20 @@ import com.tereigo.atlas_expr.variant.VariantUtils;
 
 /*
   Provides Expr native functions
+
+ TODO:
+     add the following functions: equals, equalsIgnoreCase, contains, containsIgnoreCase, startsWith, startsWithIgnoreCase,
+     endsWith, endsWithIgnoreCase, indexOfWith, indexOfIgnoreCase
+
  */
 class ExprContextNativeEnricher implements ExprContextEnricher {
   static final ExprContextEnricher INSTANCE = new ExprContextNativeEnricher();
 
   private ExprContextNativeEnricher() { }
+
+  public static ExprContextEnricher get() {
+    return INSTANCE;
+  }
 
   @Override
   public void enrich(MutableExprContext ctx) {
@@ -246,6 +255,16 @@ class ExprContextNativeEnricher implements ExprContextEnricher {
 //        throw new RuntimeException("Operand must be a STRING or BYTE_BUFFER");
 //      }
 //    });
+
+    ctx.defineFunction("percentOf", (result, pct, value) -> {
+      if (VariantUtils.isNumber(pct) && VariantUtils.isNumber(value)) {
+        result.accept(value.getAsNumber() * pct.getAsNumber() / 100.0);
+      } else {
+        throw new RuntimeException("Operands must be LONG or DOUBLE");
+      }
+    });
+
+    ctx.addAlias("percentOf", "pctOf");
   }
   
 }

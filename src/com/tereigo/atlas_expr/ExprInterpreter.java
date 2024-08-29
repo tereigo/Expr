@@ -28,12 +28,12 @@ final class ExprInterpreter implements Expr.Visitor<Variant> {
   }
 
   Variant evaluate() {
-    this.ctx.init(ExprContextNative.INSTANCE);
+    this.ctx.init(ExprContextNative.get());
     return evaluate(expression);
   }
 
   Variant evaluate(final ExprContext ctx) {
-    this.ctx.init(ExprContextNative.INSTANCE, ctx);
+    this.ctx.init(ExprContextNative.get(), ctx);
     return evaluate(expression);
   }
 
@@ -103,6 +103,44 @@ final class ExprInterpreter implements Expr.Visitor<Variant> {
           expr.result.accept(true);
           return expr.result;
         }
+      }
+    } catch (RuntimeException ex) {
+      throw new RuntimeError(expr.operator, getExceptionMsg(ex), ex);
+    }
+    expr.result.accept(false);
+    return expr.result;
+  }
+
+  @Override
+  public Variant visitWithinOperator(Expr.WithinOperator expr) {
+    Variant operand = evaluate(expr.operand);
+    try {
+      final Variant minVal = evaluate(expr.min);
+      final Variant maxVal = evaluate(expr.max);
+      final Variant min = VariantUtils.min(minVal, maxVal);
+      final Variant max = VariantUtils.max(minVal, maxVal);
+      if (VariantUtils.isGreaterOrEqualNumbers(operand, min) && VariantUtils.isLessOrEqualNumbers(operand, max)) {
+        expr.result.accept(true);
+        return expr.result;
+      }
+    } catch (RuntimeException ex) {
+      throw new RuntimeError(expr.operator, getExceptionMsg(ex), ex);
+    }
+    expr.result.accept(false);
+    return expr.result;
+  }
+
+  @Override
+  public Variant visitBetweenOperator(Expr.BetweenOperator expr) {
+    Variant operand = evaluate(expr.operand);
+    try {
+      final Variant minVal = evaluate(expr.min);
+      final Variant maxVal = evaluate(expr.max);
+      final Variant min = VariantUtils.min(minVal, maxVal);
+      final Variant max = VariantUtils.max(minVal, maxVal);
+      if (VariantUtils.isGreaterNumbers(operand, min) && VariantUtils.isLessNumbers(operand, max)) {
+        expr.result.accept(true);
+        return expr.result;
       }
     } catch (RuntimeException ex) {
       throw new RuntimeError(expr.operator, getExceptionMsg(ex), ex);
@@ -209,10 +247,10 @@ final class ExprInterpreter implements Expr.Visitor<Variant> {
         case 5: ((Function5)funcObj).call(expr.result, objResult, evaluate(expr.args.get(0)), evaluate(expr.args.get(1)), evaluate(expr.args.get(2)), evaluate(expr.args.get(3))); break;
       }
     } catch (ClassCastException castEx) {
-      throw new RuntimeError(expr.operator, "ClassCastException in function '" + expr.operator.lexeme + "': " + castEx.getMessage());
+      throw new RuntimeError(expr.operator, "ClassCastException in function '" + expr.operator.lexeme + "': " + getExceptionMsg(castEx));
     }
     catch (RuntimeException runtimeEx) {
-      throw new RuntimeError(expr.operator, "RuntimeException in function '" + expr.operator.lexeme + "': " + runtimeEx.getMessage());
+      throw new RuntimeError(expr.operator, "RuntimeException in function '" + expr.operator.lexeme + "': " + getExceptionMsg(runtimeEx));
     }
     return expr.result;
   }
@@ -232,10 +270,9 @@ final class ExprInterpreter implements Expr.Visitor<Variant> {
         case 5: ((Function5)funcObj).call(result, evaluate(args.get(0)), evaluate(args.get(1)), evaluate(args.get(2)), evaluate(args.get(3)), evaluate(args.get(4))); break;
       }
     } catch (ClassCastException castEx) {
-      throw new RuntimeError(token, "ClassCastException in function '" + token.lexeme + "': " + castEx.getMessage());
-    }
-    catch (RuntimeException runtimeEx) {
-      throw new RuntimeError(token, "RuntimeException in function '" + token.lexeme + "': " + runtimeEx.getMessage());
+      throw new RuntimeError(token, "ClassCastException in function '" + token.lexeme + "': " + getExceptionMsg(castEx));
+    } catch (RuntimeException runtimeEx) {
+      throw new RuntimeError(token, "RuntimeException in function '" + token.lexeme + "': " + getExceptionMsg(runtimeEx));
     }
     return result;
   }

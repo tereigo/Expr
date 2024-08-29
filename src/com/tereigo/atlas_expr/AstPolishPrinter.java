@@ -36,6 +36,38 @@ final class AstPolishPrinter implements Expr.Visitor<String> {
   }
 
   @Override
+  public String visitWithinOperator(Expr.WithinOperator expr) {
+    StringBuilder builder = new StringBuilder();
+
+    builder.append("(").append(expr.operator.lexeme);
+    builder.append(" ");
+    builder.append(expr.operand.accept(this));
+    builder.append(" [");
+    builder.append(expr.min.accept(this));
+    builder.append(", ");
+    builder.append(expr.max.accept(this));
+    builder.append("])");
+
+    return builder.toString();
+  }
+
+  @Override
+  public String visitBetweenOperator(Expr.BetweenOperator expr) {
+    StringBuilder builder = new StringBuilder();
+
+    builder.append("(").append(expr.operator.lexeme);
+    builder.append(" ");
+    builder.append(expr.operand.accept(this));
+    builder.append(" [");
+    builder.append(expr.min.accept(this));
+    builder.append(", ");
+    builder.append(expr.max.accept(this));
+    builder.append("])");
+
+    return builder.toString();
+  }
+
+  @Override
   public String visitGroupingExpr(Expr.Grouping expr) {
     return parenthesize("group", expr.expression);
   }

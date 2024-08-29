@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import static com.tereigo.atlas_expr.TokenType.AND;
-import static com.tereigo.atlas_expr.TokenType.COLON;
+import static com.tereigo.atlas_expr.TokenType.BETWEEN;
 import static com.tereigo.atlas_expr.TokenType.COMMA;
 import static com.tereigo.atlas_expr.TokenType.DIV;
 import static com.tereigo.atlas_expr.TokenType.DOT;
@@ -30,26 +30,30 @@ import static com.tereigo.atlas_expr.TokenType.NOT;
 import static com.tereigo.atlas_expr.TokenType.NOT_EQUAL;
 import static com.tereigo.atlas_expr.TokenType.OR;
 import static com.tereigo.atlas_expr.TokenType.PLUS;
-import static com.tereigo.atlas_expr.TokenType.QUESTION_MARK;
 import static com.tereigo.atlas_expr.TokenType.RIGHT_BRACKET;
 import static com.tereigo.atlas_expr.TokenType.RIGHT_PAREN;
 import static com.tereigo.atlas_expr.TokenType.STRING;
+import static com.tereigo.atlas_expr.TokenType.TERNARY_ELSE;
+import static com.tereigo.atlas_expr.TokenType.TERNARY_IF;
 import static com.tereigo.atlas_expr.TokenType.TRUE;
+import static com.tereigo.atlas_expr.TokenType.WITHIN;
 
 /*
   Converts a given String into a list of Tokens
  */
 final class ExprScanner {
-  private static final Map<String, TokenType> keywords;
+  private static final Map<String, TokenType> KEYWORDS;
 
   static {
-    keywords = new HashMap<>();
-    keywords.put("not",    NOT);
-    keywords.put("and",    AND);
-    keywords.put("or",     OR);
-    keywords.put("in",     IN);
-    keywords.put("false",  FALSE);
-    keywords.put("true",   TRUE);
+    KEYWORDS = new HashMap<>();
+    KEYWORDS.put("not",    NOT);
+    KEYWORDS.put("and",    AND);
+    KEYWORDS.put("or",     OR);
+    KEYWORDS.put("in",     IN);
+    KEYWORDS.put("within", WITHIN);
+    KEYWORDS.put("between", BETWEEN);
+    KEYWORDS.put("false",  FALSE);
+    KEYWORDS.put("true",   TRUE);
   }
   private final String source;
   private final List<Token> tokens = new ArrayList<>();
@@ -57,6 +61,7 @@ final class ExprScanner {
   private int current = 0;
   private int line = 1;
 
+  // TODO: switch to ByteBuffer
   ExprScanner(String source) {
     this.source = source;
     tokenize();
@@ -88,8 +93,8 @@ final class ExprScanner {
       case '+': addToken(PLUS); break;
       case '*': addToken(MUL); break;
       case '%': addToken(MODULUS); break;
-      case '?': addToken(QUESTION_MARK); break;
-      case ':': addToken(COLON); break;
+      case '?': addToken(TERNARY_IF); break;
+      case ':': addToken(TERNARY_ELSE); break;
       case '!':
         addToken(match('=') ? NOT_EQUAL : NOT);
         break;
@@ -128,7 +133,11 @@ final class ExprScanner {
         break;
 
       case '"':
-        string();
+        string('"');
+        break;
+
+      case '\'':
+        string('\'');
         break;
 
       default:
@@ -148,8 +157,10 @@ final class ExprScanner {
       advance();
     }
     String text = source.substring(start, current).toLowerCase();
-    TokenType type = keywords.get(text);
-    if (type == null) type = IDENTIFIER;
+    TokenType type = KEYWORDS.get(text);
+    if (type == null) {
+      type = IDENTIFIER;
+    }
     addToken(type);
   }
 
@@ -187,9 +198,9 @@ final class ExprScanner {
     }
   }
 
-  private void string() {
+  private void string(char expectedStringEnd) {
     int stringStartPos = current - 1;
-    while (peek() != '"' && !isAtEnd()) {
+    while (peek() != expectedStringEnd && !isAtEnd()) {
       if (peek() == '\n') {
         line++;
       }

@@ -2,13 +2,14 @@ package com.tereigo.atlas_expr;
 
 import com.tereigo.atlas_expr.variant.Variant;
 import com.tereigo.atlas_expr.variant.VariantFactory;
+import com.tereigo.atlas_expr.variant.VariantUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 import static com.tereigo.atlas_expr.TokenType.AND;
-import static com.tereigo.atlas_expr.TokenType.COLON;
+import static com.tereigo.atlas_expr.TokenType.BETWEEN;
 import static com.tereigo.atlas_expr.TokenType.COMMA;
 import static com.tereigo.atlas_expr.TokenType.DIV;
 import static com.tereigo.atlas_expr.TokenType.DOT;
@@ -32,11 +33,13 @@ import static com.tereigo.atlas_expr.TokenType.NOT;
 import static com.tereigo.atlas_expr.TokenType.NOT_EQUAL;
 import static com.tereigo.atlas_expr.TokenType.OR;
 import static com.tereigo.atlas_expr.TokenType.PLUS;
-import static com.tereigo.atlas_expr.TokenType.QUESTION_MARK;
 import static com.tereigo.atlas_expr.TokenType.RIGHT_BRACKET;
 import static com.tereigo.atlas_expr.TokenType.RIGHT_PAREN;
 import static com.tereigo.atlas_expr.TokenType.STRING;
+import static com.tereigo.atlas_expr.TokenType.TERNARY_ELSE;
+import static com.tereigo.atlas_expr.TokenType.TERNARY_IF;
 import static com.tereigo.atlas_expr.TokenType.TRUE;
+import static com.tereigo.atlas_expr.TokenType.WITHIN;
 
 /*
     This Expr module is largely based on the brilliant book "Crafting interpreters" by Bob Nystrom
@@ -58,9 +61,10 @@ import static com.tereigo.atlas_expr.TokenType.TRUE;
 
     expression : logic_or
     logic_or   : logic_and ( "or" logic_and )* ;
-    logic_and  : in_operator ( "and" in_operator )* ;
-    in_operator: ternary ( "in" "[" LIST_ENTRY ( "," LIST_ENTRY )* "]" ) ;
-    ternary    : equality ( "?" expression ":" expression ) ;
+    logic_and  : ternary_if ( "and" in_operator )* ;
+    ternary_if  : in_operator ( "?" expression ":" expression ) ;
+    in_operator: range_operator ( "in" "[" LIST_ENTRY ( "," LIST_ENTRY )* "]" ) ;
+    range_operator: equality ( ("within" | "between") "[" expression "," expression ) ;
     equality   : comparison ( ( "!=" | "==" ) comparison )* ;
     comparison : term ( ( ">" | ">=" | "<" | "<=" ) term )* ;
     term       : factor ( ( "-" | "+" ) factor )* ;
@@ -112,9 +116,9 @@ final class ExprParser {
     return expr;
   }
 
-  // logic_and  : in_operator ( "and" in_operator )* ;
+  // logic_and  : ternary_if ( "and" in_operator )* ;
   private Expr logic_and() {
-    Expr expr = in_operator();
+    Expr expr = ternary_if_operator();
 
     while (match(AND)) {
       Token operator = previous();
@@ -123,11 +127,39 @@ final class ExprParser {
     }
 
     return expr;
+
+//    Expr expr = in_operator();
+//
+//    while (match(AND)) {
+//      Token operator = previous();
+//      Expr right = in_operator();
+//      expr = new Expr.Logical(expr, operator, right);
+//    }
+//
+//    return expr;
   }
 
-  // in_operator: ternary ( "in" "[" LIST_ENTRY ( "," LIST_ENTRY )* "]" ) ;
+  // ternary_if : in_operator ( "?" expression ":" expression ) ;
+  private Expr ternary_if_operator() {
+    Expr expr = in_operator();
+
+    if (match(TERNARY_IF)) {
+      Token operator = previous();
+      Expr trueExpr = expression();
+      if (match(TERNARY_ELSE)) {
+        Expr falseExpr = expression();
+        expr = new Expr.Ternary(operator, expr, trueExpr, falseExpr);
+      } else {
+        throw error(peek(), "Expect ':' after ternary ('?') operator");
+      }
+    }
+
+    return expr;
+  }
+
+  // in_operator: range_operator ( "in" "[" LIST_ENTRY ( "," LIST_ENTRY )* "]" ) ;
   private Expr in_operator() {
-    Expr expr = ternary();
+    Expr expr = range_operator();
     if (match(IN)) {
       Token operator = previous();
       if (match(LEFT_BRACKET)) {
@@ -149,7 +181,7 @@ final class ExprParser {
       if (type == null) {
         type = entry.exprType();
       } else if (type != entry.exprType()) {
-          throw error(peek(), "Different value types in IN operator list: " + type + " and " + entry.exprType());
+        throw error(peek(), "Different value types in IN operator list: " + type + " and " + entry.exprType());
       }
       values.add(entry);
     } while (match(COMMA));
@@ -167,23 +199,40 @@ final class ExprParser {
     throw error(peek(), "Expect number/string list entry inside '[]'");
   }
 
-  // ternary : equality ( "?" expression ":" expression ) ;
-  private Expr ternary() {
+  // range_operator: equality ( ("within" | "between") "[" expression "," expression ) ;
+  private Expr range_operator() {
     Expr expr = equality();
 
-    if (match(QUESTION_MARK)) {
+    if (match(WITHIN) || match(BETWEEN)) {
       Token operator = previous();
-      Expr trueExpr = expression();
-      if (match(COLON)) {
-        Expr falseExpr = expression();
-        expr = new Expr.Ternary(operator, expr, trueExpr, falseExpr);
+      if (match(LEFT_BRACKET)) {
+        final Expr val1 = range_entry();
+        consume(COMMA, "Expect 2 values separated by ',' in range operator");
+        final Expr val2 = range_entry();
+        consume(RIGHT_BRACKET, "Expect ']' after '[' and 2 numbers");
+        if (operator.type == WITHIN) {
+          return new Expr.WithinOperator(expr, operator, val1, val2);
+        } else {
+          return new Expr.BetweenOperator(expr, operator, val1, val2);
+        }
       } else {
-        throw error(peek(), "Expect ':' after ternary ('?') operator");
+        throw error(peek(), "Expect '[' after WITHIN/BETWEEN operator");
       }
     }
-
     return expr;
   }
+
+  private Expr range_entry() {
+    final Expr expr = expression();
+    if (expr instanceof Expr.Literal) {
+      final Variant val = ((Expr.Literal)expr).result;
+      if (!VariantUtils.isNumber(val)) {
+        throw error(peek(), "Expect a number inside '[]' for range WITHIN/BETWEEN operator");
+      }
+    }
+    return expr;
+  }
+
 
   // equality   : comparison ( ( "!=" | "==" ) comparison )* ;
   private Expr equality() {

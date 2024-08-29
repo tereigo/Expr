@@ -13,6 +13,8 @@ abstract class Expr {
   interface Visitor<R> {
     R visitBinaryExpr(Binary expr);     // ==, !=, >, >=, <, <=, +, -, *, /
     R visitInOperator(InOperator expr); // in [...]
+    R visitWithinOperator(WithinOperator expr); // within [...] - including boundaries
+    R visitBetweenOperator(BetweenOperator expr); // between [...] - excluding boundaries
     R visitGroupingExpr(Grouping expr); // ()
     R visitLiteralExpr(Literal expr);   // long, double, string, boolean, ByteBuffer values
     R visitLogicalExpr(Logical expr);   // or, and
@@ -62,6 +64,42 @@ abstract class Expr {
     @Override
     <R> R accept(Visitor<R> visitor) {
       return visitor.visitInOperator(this);
+    }
+  }
+
+  static class WithinOperator extends BaseExpr {
+    final Expr operand;
+    final Expr min;
+    final Expr max;
+
+    WithinOperator(Expr operand, Token operator, Expr min, Expr max) {
+      super(operator);
+      this.operand = operand;
+      this.min = min;
+      this.max = max;
+    }
+
+    @Override
+    <R> R accept(Visitor<R> visitor) {
+      return visitor.visitWithinOperator(this);
+    }
+  }
+
+  static class BetweenOperator extends BaseExpr {
+    final Expr operand;
+    final Expr min;
+    final Expr max;
+
+    BetweenOperator(Expr operand, Token operator, Expr min, Expr max) {
+      super(operator);
+      this.operand = operand;
+      this.min = min;
+      this.max = max;
+    }
+
+    @Override
+    <R> R accept(Visitor<R> visitor) {
+      return visitor.visitBetweenOperator(this);
     }
   }
 

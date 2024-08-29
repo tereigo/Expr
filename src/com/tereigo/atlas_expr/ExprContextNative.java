@@ -5,10 +5,10 @@ package com.tereigo.atlas_expr;
  */
 class ExprContextNative {
 
-  static final MutableExprContext INSTANCE = ExprContextFactory.create();
+  private static final MutableExprContext INSTANCE = ExprContextFactory.createNative();
 
-  static {
-    ExprContextNativeEnricher.INSTANCE.enrich(INSTANCE);
+  public static MutableExprContext get() {
+    return INSTANCE;
   }
 
 }

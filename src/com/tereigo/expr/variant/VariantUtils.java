@@ -32,6 +32,10 @@ public final class VariantUtils {
         return operand.exprType() == ExprType.BYTE_BUFFER;
     }
 
+    public static boolean isStringOrByteBuffer(Variant operand) {
+        return isString(operand) || isByteBuffer(operand);
+    }
+
     public static boolean isBoolean(Variant operand) {
         return operand.exprType() == ExprType.BOOL;
     }

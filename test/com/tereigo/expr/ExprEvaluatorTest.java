@@ -299,7 +299,7 @@ class ExprEvaluatorTest extends ExprEvaluatorTestBase {
         assertTrue(evaluateBool("\"B\" in [\"A\", \"B\", \"A\", \"B\"]"));
         assertTrue(evaluateBool("'A' in ['A']"));
         assertTrue(evaluateBool("1 in [1]"));
-//        assertTrue(evaluateBool("1 not in [1]"));
+//        assertTrue(evaluateBool("1 not in [1]")); // TODO: implement "not in"
         assertTrue(evaluateBool("(1 == 1) and (1 in [1])"));
         assertFalse(evaluateBool("1 in [2,3]"));
         assertTrue(evaluateBool("1 in [2,3,1]"));
@@ -309,13 +309,17 @@ class ExprEvaluatorTest extends ExprEvaluatorTestBase {
         assertFalse(evaluateBool("1.0 in [2.0, 3.0, 2.0, 3.0]"));
         assertTrue(evaluateBool("1.0 in [2.0, 3.0, 1.0, 2.0, 3.0]"));
         assertTrue(evaluateBool("1.0 in [2.0, 1.0]"));
-        assertTrue(evaluateBool("(\"AB\") == \"ABC\" or (1 in [2,3,4] or 56 > 12)"));
+        assertTrue(evaluateBool("('AB') == 'ABC' or (1 in [2,3,4] or 56 > 12)"));
         assertTrue(evaluateBool("(1 in [2, 3, 4] or 2.0 in [1.0, 2.0])"));
         assertTrue(evaluateBool("((1 in [2, 3, 4]) or (2.0 in [1.0, 2.0]))"));
         assertTrue(evaluateBool("((1<=2 and 1 in [2, 3, 4]) or (2.0 in [1.0, 2.0]))"));
         assertTrue(evaluateBool("((1==1 and 4 in [1, 2, 3, 4]) and 5.0 == 5.0) and (2.0 in [1.0, 2.0] or \"A\" == \"B\")"));
         assertTrue(evaluateBool("123 in [1.0, 2.0, 3.0, 123.0]"));
         assertTrue(evaluateBool("123.0 in [1, 2, 3, 123]"));
+        assertTrue(evaluateBool("PI in [PI]"));
+        assertTrue(evaluateBool("PI in [PI, E]"));
+        assertTrue(evaluateBool("3 in [2, 3.0]"));
+        assertTrue(evaluateBool("3.0 in [2.0, 3]"));
     }
 
     @Test
@@ -381,18 +385,34 @@ class ExprEvaluatorTest extends ExprEvaluatorTestBase {
         RuntimeError runErr;
         err = assertThrows(ParseError.class, () -> evaluate(""));
         assertEquals("Expression parsing error [line 1, pos 1]: Expect expression in expression ''", err.getMessage());
-        err = assertThrows(ParseError.class, () -> evaluate("1 in [2, 3.0]"));
-        assertEquals("Expression parsing error [line 1, pos 13]: Different value types in IN operator list: LONG and DOUBLE in expression '1 in [2, 3.0]'", err.getMessage());
-        err = assertThrows(ParseError.class, () -> evaluate("\"B\" in [\"A\", 1]"));
-        assertEquals("Expression parsing error [line 1, pos 15]: Different value types in IN operator list: STRING and LONG in expression '\"B\" in [\"A\", 1]'", err.getMessage());
+        err = assertThrows(ParseError.class, () -> evaluate("'B' in ['A', 1]"));
+        assertEquals("Expression parsing error [line 1, pos 15]: Different value types in IN operator list: STRING and LONG in expression ''B' in ['A', 1]'", err.getMessage());
+        err = assertThrows(ParseError.class, () -> evaluate("'B' in ['A', 1.0]"));
+        assertEquals("Expression parsing error [line 1, pos 17]: Different value types in IN operator list: STRING and DOUBLE in expression ''B' in ['A', 1.0]'", err.getMessage());
+        err = assertThrows(ParseError.class, () -> evaluate("1 in ['A', 1]"));
+        assertEquals("Expression parsing error [line 1, pos 13]: Different value types in IN operator list: STRING and LONG in expression '1 in ['A', 1]'", err.getMessage());
+        err = assertThrows(ParseError.class, () -> evaluate("1.0 in ['A', 1]"));
+        assertEquals("Expression parsing error [line 1, pos 15]: Different value types in IN operator list: STRING and LONG in expression '1.0 in ['A', 1]'", err.getMessage());
+        err = assertThrows(ParseError.class, () -> evaluate("1.0 in [1, 'A']"));
+        assertEquals("Expression parsing error [line 1, pos 15]: Different value types in IN operator list: LONG and STRING in expression '1.0 in [1, 'A']'", err.getMessage());
+        err = assertThrows(ParseError.class, () -> evaluate("1.0 in [1.0, 'A']"));
+        assertEquals("Expression parsing error [line 1, pos 17]: Different value types in IN operator list: DOUBLE and STRING in expression '1.0 in [1.0, 'A']'", err.getMessage());
+        err = assertThrows(ParseError.class, () -> evaluate("1.0 in [1, true]"));
+        assertEquals("Expression parsing error [line 1, pos 16]: Different value types in IN operator list: LONG and BOOL in expression '1.0 in [1, true]'", err.getMessage());
+        err = assertThrows(ParseError.class, () -> evaluate("1 in [true, 'A']"));
+        assertEquals("Expression parsing error [line 1, pos 16]: Different value types in IN operator list: BOOL and STRING in expression '1 in [true, 'A']'", err.getMessage());
+        err = assertThrows(ParseError.class, () -> evaluate("1 in [true, 1]"));
+        assertEquals("Expression parsing error [line 1, pos 14]: Different value types in IN operator list: BOOL and LONG in expression '1 in [true, 1]'", err.getMessage());
+        err = assertThrows(ParseError.class, () -> evaluate("1 in [true, 1.0]"));
+        assertEquals("Expression parsing error [line 1, pos 16]: Different value types in IN operator list: BOOL and DOUBLE in expression '1 in [true, 1.0]'", err.getMessage());
         err = assertThrows(ParseError.class, () -> evaluate("1 in [2"));
         assertEquals("Expression parsing error [line 1, pos 7]: Expect ']' after '[' in expression '1 in [2'", err.getMessage());
         err = assertThrows(ParseError.class, () -> evaluate("1 in [2,"));
-        assertEquals("Expression parsing error [line 1, pos 8]: Expect number/string list entry inside '[]' in expression '1 in [2,'", err.getMessage());
+        assertEquals("Expression parsing error [line 1, pos 8]: Expect expression in expression '1 in [2,'", err.getMessage());
         err = assertThrows(ParseError.class, () -> evaluate("1 in [2,]"));
-        assertEquals("Expression parsing error [line 1, pos 9]: Expect number/string list entry inside '[]' in expression '1 in [2,]'", err.getMessage());
+        assertEquals("Expression parsing error [line 1, pos 9]: Expect expression in expression '1 in [2,]'", err.getMessage());
         err = assertThrows(ParseError.class, () -> evaluate("1 in []"));
-        assertEquals("Expression parsing error [line 1, pos 7]: Expect number/string list entry inside '[]' in expression '1 in []'", err.getMessage());
+        assertEquals("Expression parsing error [line 1, pos 7]: Expect expression in expression '1 in []'", err.getMessage());
         err = assertThrows(ParseError.class, () -> evaluate("1 in 2]"));
         assertEquals("Expression parsing error [line 1, pos 6]: Expect '[' after IN operator in expression '1 in 2]'", err.getMessage());
         err = assertThrows(ParseError.class, () -> evaluate("(5+2"));

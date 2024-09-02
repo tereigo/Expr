@@ -25,7 +25,7 @@ final class AstPolishPrinter implements Expr.Visitor<String> {
     builder.append(expr.operand.accept(this));
     builder.append(" [");
     for (int i = 0; i < expr.values.size(); i++) {
-      builder.append(expr.values.get(i).getAsObject());
+      builder.append(expr.values.get(i).accept(this));
       if (i < expr.values.size() - 1) {
         builder.append(", ");
       }

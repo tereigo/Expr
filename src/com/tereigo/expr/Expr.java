@@ -53,9 +53,9 @@ abstract class Expr {
 
   static class InOperator extends BaseExpr {
     final Expr operand;
-    final List<Variant> values;
+    final List<Expr> values;
 
-    InOperator(Expr operand, Token operator, List<Variant> values) {
+    InOperator(Expr operand, Token operator, List<Expr> values) {
       super(operator);
       this.operand = operand;
       this.values = values;

@@ -1,7 +1,5 @@
 package com.tereigo.expr;
 
-import com.tereigo.expr.variant.Variant;
-
 import java.util.List;
 
 /*
@@ -147,11 +145,11 @@ final class AstHierarchyPrinter implements Expr.Visitor<String> {
     return builder.toString();
   }
 
-  private static String formatList(List<Variant> list) {
+  private String formatList(List<Expr> list) {
     StringBuilder builder = new StringBuilder();
     builder.append("[");
     for (int i = 0; i < list.size(); i++) {
-      builder.append(list.get(i).getAsObject());
+      builder.append(list.get(i).accept(this));
       if (i < list.size() - 1) {
         builder.append(", ");
       }

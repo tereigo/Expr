@@ -1,7 +1,6 @@
 package com.tereigo.expr;
 
 import com.tereigo.expr.variant.Variant;
-import com.tereigo.expr.variant.VariantFactory;
 import com.tereigo.expr.variant.VariantUtils;
 
 import java.util.ArrayList;
@@ -63,7 +62,7 @@ import static com.tereigo.expr.TokenType.WITHIN;
     logic_or   : logic_and ( "or" logic_and )* ;
     logic_and  : ternary_if ( "and" in_operator )* ;
     ternary_if  : in_operator ( "?" expression ":" expression ) ;
-    in_operator: range_operator ( "in" "[" LIST_ENTRY ( "," LIST_ENTRY )* "]" ) ;
+    in_operator: range_operator ( "in" "[" expression ( "," expression )* "]" ) ;
     range_operator: equality ( ("within" | "between") "[" expression "," expression "]" ) ;
     equality   : comparison ( ( "!=" | "==" ) comparison )* ;
     comparison : term ( ( ">" | ">=" | "<" | "<=" ) term )* ;
@@ -76,7 +75,6 @@ import static com.tereigo.expr.TokenType.WITHIN;
 
     Lexems:
     BOOLEAN: true|false|True|False|TRUE|FALSE
-    LIST_ENTRY: (DOUBLE_NUMBER | LONG_NUMBER | STRING)
 
     You can find plenty of the expression examples in the tests
 */
@@ -147,14 +145,15 @@ final class ExprParser {
     return expr;
   }
 
-  // in_operator: range_operator ( "in" "[" LIST_ENTRY ( "," LIST_ENTRY )* "]" ) ;
+  // in_operator: range_operator ( "in" "[" expression ( "," expression )* "]" ) ;
   private Expr in_operator() {
     Expr expr = range_operator();
     if (match(IN)) {
       Token operator = previous();
       if (match(LEFT_BRACKET)) {
-        List<Variant> values = list();
+        List<Expr> values = list();
         consume(RIGHT_BRACKET, "Expect ']' after '['");
+        validateInValues(values);
         return new Expr.InOperator(expr, operator, values);
       } else {
         throw error(peek(), "Expect '[' after IN operator");
@@ -163,30 +162,40 @@ final class ExprParser {
     return expr;
   }
 
-  private List<Variant> list() {
-    List<Variant> values = new ArrayList<>();
+  private void validateInValues(List<Expr> values) {
     ExprType type = null;
-    do {
-      Variant entry = list_entry();
-      if (type == null) {
-        type = entry.exprType();
-      } else if (type != entry.exprType()) {
-        throw error(peek(), "Different value types in IN operator list: " + type + " and " + entry.exprType());
+    for (int i = 0; i < values.size(); i++) {
+      Expr expr = values.get(i);
+      if (expr instanceof Expr.Literal) {
+        final Variant val = ((Expr.Literal)expr).result;
+        if (type == null) {
+          type = val.exprType();
+        } else {
+          if (!isTypesCompatible(type, val)) {
+            throw error(peek(), "Different value types in IN operator list: " + type + " and " + val.exprType());
+          }
+        }
       }
+    }
+  }
+
+  private static boolean isTypesCompatible(final ExprType type, final Variant val) {
+    if ((type == ExprType.DOUBLE || type == ExprType.LONG) && VariantUtils.isNumber(val)) {
+      return true;
+    }
+    if ((type == ExprType.STRING || type == ExprType.BYTE_BUFFER) && VariantUtils.isStringOrByteBuffer(val)) {
+      return true;
+    }
+    return false;
+  }
+
+  private List<Expr> list() {
+    List<Expr> values = new ArrayList<>();
+    do {
+      Expr entry = expression();
       values.add(entry);
     } while (match(COMMA));
     return values;
-  }
-
-  private Variant list_entry() {
-    if (match(DOUBLE_NUMBER)) {
-      return VariantFactory.createImmutableDouble((double)previous().literal);
-    } else if (match(LONG_NUMBER)) {
-      return VariantFactory.createImmutableLong((long)previous().literal);
-    } else if (match(STRING)) {
-      return VariantFactory.createImmutableString((String)previous().literal);
-    }
-    throw error(peek(), "Expect number/string list entry inside '[]'");
   }
 
   // range_operator: equality ( ("within" | "between") "[" expression "," expression "]" ) ;
@@ -222,7 +231,6 @@ final class ExprParser {
     }
     return expr;
   }
-
 
   // equality   : comparison ( ( "!=" | "==" ) comparison )* ;
   private Expr equality() {

@@ -26,10 +26,10 @@ class ExprContextNativeEnricher implements ExprContextEnricher {
 
   @Override
   public void enrich(MutableExprContext ctx) {
-    ctx.defineFunction("pi", (result) -> result.accept(Math.PI));
+    ctx.defineDouble("pi", () -> Math.PI);
     ctx.addAlias("pi", "PI");
 
-    ctx.defineFunction("e", (result) -> result.accept(Math.E));
+    ctx.defineDouble("e", () -> Math.E);
     ctx.addAlias("e", "E");
 
     ctx.defineFunction("min", (result, arg1, arg2) -> {

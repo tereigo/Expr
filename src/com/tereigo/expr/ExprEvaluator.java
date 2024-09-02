@@ -14,7 +14,7 @@ import static com.tereigo.expr.ExceptionUtils.getExceptionMsg;
         evaluator.evaluateBool()
 
     And for evaluation of the precompiled expression:
-        ASTRoot root = ExprCompiler.compile("$ric == \"VOD.L\" and $productId == 123 or 5 != 2");
+        ASTRoot root = ExprCompiler.compile("$ric == 'VOD.L' and $productId == 123 or 5 != 2");
         ExprEvaluator exprEvaluator = new ExprEvaluator(root);
         exprEvaluator.evaluateBool(ctx);
  */

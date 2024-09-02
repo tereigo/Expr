@@ -99,7 +99,8 @@ final class ExprInterpreter implements Expr.Visitor<Variant> {
     Variant operand = evaluate(expr.operand);
     try {
       for (int i = 0; i < expr.values.size(); i++) {
-        if (VariantUtils.isEqual(operand, expr.values.get(i))) {
+        final Variant value = evaluate(expr.values.get(i));
+        if (VariantUtils.isEqual(operand, value)) {
           expr.result.accept(true);
           return expr.result;
         }

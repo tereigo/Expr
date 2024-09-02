@@ -21,6 +21,9 @@ do it once and store it for reuse
         return res != null ? res : ctx2 != null ? ctx2.get(name, result) : null;
     }
 
+    if contexts don't change at runtime then we are allowed to merge them
+    
+
 8. Introduce performance test for evaluation
 
 9. "in" should have expressions inside []!

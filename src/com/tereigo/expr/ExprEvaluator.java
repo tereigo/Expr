@@ -22,6 +22,10 @@ public final class ExprEvaluator {
     private final String source;
     private final ExprInterpreter interpreter;
 
+    public ExprEvaluator(final ByteBuffer source) {
+        this(ExprCompiler.compile(source));
+    }
+
     public ExprEvaluator(final String source) {
         this(ExprCompiler.compile(source));
     }

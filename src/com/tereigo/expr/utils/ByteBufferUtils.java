@@ -105,6 +105,19 @@ public final class ByteBufferUtils {
         }
     }
 
+    public static ByteBuffer clone(final ByteBuffer original) {
+        final ByteBuffer clone = (original.isDirect()) ?
+                ByteBuffer.allocateDirect(original.capacity()) :
+                ByteBuffer.allocate(original.capacity());
+
+        final int pos = original.position();
+        clone.put(original);
+        original.position(pos);
+
+        clone.flip();
+        return clone;
+    }
+
     public static ByteBuffer toByteBufferSafe(CharSequence data, ByteBuffer target) {
         return toByteBuffer(data, target, target.capacity());
     }

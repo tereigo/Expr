@@ -22,7 +22,7 @@ do it once and store it for reuse
     }
 
     if contexts don't change at runtime then we are allowed to merge them
-    
+
 
 8. Introduce performance test for evaluation
 
@@ -40,7 +40,8 @@ do it once and store it for reuse
 
   the only drawback is that hierarchy printers will not produce the correct output
 
-  11.
+  11. PI and E convert to Literals, not as Functions
+
 
 4. May be enforce supplying ExprContext during expression compilation to make sure that it's not changed during evaluation?
    It ensures that a client will not apply any GC-type ops to ExprContext during evaluation

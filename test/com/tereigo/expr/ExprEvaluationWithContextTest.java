@@ -117,8 +117,7 @@ class ExprEvaluationWithContextTest extends ExprEvaluatorTestBase {
         runEx = assertThrows(RuntimeException.class, () -> orderCtx.addAlias("unknown", "coolAlias"));
         assertEquals("Unknown identifier 'unknown' for alias 'coolAlias'", runEx.getMessage());
 
-        final ExprContextChained ctx = new ExprContextChained(globalCtx);
-        ctx.add(orderCtx);
+        final ExprContextCombined ctx = ExprContextCombined.create(globalCtx, orderCtx);
 
         runExpressionWithContextTests(ctx);
 

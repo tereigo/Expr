@@ -89,8 +89,7 @@ class ExprUserFunctionsTest extends ExprEvaluatorTestBase {
         orderCtx.defineBool("$enabled", orderSupplier::enabled);
         orderCtx.defineByteBuffer("$tuid", orderSupplier::tuid);
 
-        final ExprContextChained ctx = new ExprContextChained(globalCtx);
-        ctx.add(orderCtx);
+        final ExprContextCombined ctx = ExprContextCombined.create(globalCtx, orderCtx);
 
         assertTrue(evaluateBool("timeNs() > $productId", ctx));
         assertTrue(evaluateBool("6 < 2 * PI", ctx));

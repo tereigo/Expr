@@ -12,6 +12,8 @@ import com.tereigo.expr.variant.VariantUtils;
      add the following functions: equals, equalsIgnoreCase, contains, containsIgnoreCase, startsWith, startsWithIgnoreCase,
      endsWith, endsWithIgnoreCase, indexOfWith, indexOfIgnoreCase
 
+     add all Math functions
+
  */
 class ExprContextNativeEnricher implements ExprContextEnricher {
   static final ExprContextEnricher INSTANCE = new ExprContextNativeEnricher();

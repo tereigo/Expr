@@ -231,8 +231,8 @@ class ExprNativeFunctionsTest extends ExprEvaluatorTestBase {
         runErr = assertThrows(RuntimeError.class, () -> evaluate("dtol(true)"));
         assertEquals("Expression evaluation error [line 1, pos 1]: RuntimeException in function 'dtol': Operand must be a DOUBLE number in expression 'dtol(true)'", runErr.getMessage());
         // isMarketPrice
-        assertTrue(evaluateBool("isMarketPrice(" + OrderPrice.NO_LIMIT_PRICE + ")"));
-        assertFalse(evaluateBool("isMarketPrice(" + OrderPrice.INVALID_PRICE + ")"));
+        assertTrue(evaluateBool("isMarketPrice(" + OrderPrice.market() + ")"));
+        assertFalse(evaluateBool("isMarketPrice(" + OrderPrice.invalid() + ")"));
         assertFalse(evaluateBool("isMarketPrice(1000000)"));
         runErr = assertThrows(RuntimeError.class, () -> evaluate("isMarketPrice(1000000.0)"));
         assertEquals("Expression evaluation error [line 1, pos 1]: RuntimeException in function 'isMarketPrice': Operand must be a LONG number in expression 'isMarketPrice(1000000.0)'", runErr.getMessage());
@@ -241,8 +241,8 @@ class ExprNativeFunctionsTest extends ExprEvaluatorTestBase {
         runErr = assertThrows(RuntimeError.class, () -> evaluate("isMarketPrice(true)"));
         assertEquals("Expression evaluation error [line 1, pos 1]: RuntimeException in function 'isMarketPrice': Operand must be a LONG number in expression 'isMarketPrice(true)'", runErr.getMessage());
         // isLimitPrice
-        assertFalse(evaluateBool("isLimitPrice(" + OrderPrice.NO_LIMIT_PRICE + ")"));
-        assertFalse(evaluateBool("isLimitPrice(" + OrderPrice.INVALID_PRICE + ")"));
+        assertFalse(evaluateBool("isLimitPrice(" + OrderPrice.market() + ")"));
+        assertFalse(evaluateBool("isLimitPrice(" + OrderPrice.market() + ")"));
         assertTrue(evaluateBool("isLimitPrice(1000000)"));
         runErr = assertThrows(RuntimeError.class, () -> evaluate("isLimitPrice(1000000.0)"));
         assertEquals("Expression evaluation error [line 1, pos 1]: RuntimeException in function 'isLimitPrice': Operand must be a LONG number in expression 'isLimitPrice(1000000.0)'", runErr.getMessage());
@@ -251,8 +251,8 @@ class ExprNativeFunctionsTest extends ExprEvaluatorTestBase {
         runErr = assertThrows(RuntimeError.class, () -> evaluate("isLimitPrice(true)"));
         assertEquals("Expression evaluation error [line 1, pos 1]: RuntimeException in function 'isLimitPrice': Operand must be a LONG number in expression 'isLimitPrice(true)'", runErr.getMessage());
         // isValidPrice
-        assertTrue(evaluateBool("isValidPrice(" + OrderPrice.NO_LIMIT_PRICE + ")"));
-        assertFalse(evaluateBool("isValidPrice(" + OrderPrice.INVALID_PRICE + ")"));
+        assertTrue(evaluateBool("isValidPrice(" + OrderPrice.market() + ")"));
+        assertFalse(evaluateBool("isValidPrice(" + OrderPrice.invalid() + ")"));
         assertTrue(evaluateBool("isValidPrice(1000000)"));
         runErr = assertThrows(RuntimeError.class, () -> evaluate("isValidPrice(1000000.0)"));
         assertEquals("Expression evaluation error [line 1, pos 1]: RuntimeException in function 'isValidPrice': Operand must be a LONG number in expression 'isValidPrice(1000000.0)'", runErr.getMessage());

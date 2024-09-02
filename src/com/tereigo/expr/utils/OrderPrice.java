@@ -2,11 +2,11 @@ package com.tereigo.expr.utils;
 
 public final class OrderPrice {
 
-    public static final long NO_LIMIT_PRICE = Long.MIN_VALUE;
-    public static final long INVALID_PRICE = Long.MIN_VALUE + 1;
+    private static final long MARKET_PRICE = Long.MIN_VALUE;
+    private static final long INVALID_PRICE = Long.MIN_VALUE + 1;
 
     public static boolean isMarket(long price) {
-        return price == NO_LIMIT_PRICE;
+        return price == MARKET_PRICE;
     }
 
     public static boolean isLimit(long price) {
@@ -15,5 +15,17 @@ public final class OrderPrice {
 
     public static boolean isValid(long price) {
         return price != INVALID_PRICE;
+    }
+
+    public static boolean nonValid(long price) {
+        return !isValid(price);
+    }
+
+    public static long market() {
+        return MARKET_PRICE;
+    }
+
+    public static long invalid() {
+        return INVALID_PRICE;
     }
 }

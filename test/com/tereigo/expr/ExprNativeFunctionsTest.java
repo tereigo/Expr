@@ -1,6 +1,5 @@
 package com.tereigo.expr;
 
-import com.tereigo.expr.utils.OrderPrice;
 import org.junit.jupiter.api.Test;
 
 import static com.tereigo.expr.utils.ByteBufferUtils.constant;
@@ -208,58 +207,6 @@ class ExprNativeFunctionsTest extends ExprEvaluatorTestBase {
         assertEquals("Expression evaluation error [line 1, pos 1]: RuntimeException in function 'toDouble': Operand must be a number in expression 'toDouble(\"A\")'", runErr.getMessage());
         runErr = assertThrows(RuntimeError.class, () -> evaluate("toDouble(true)"));
         assertEquals("Expression evaluation error [line 1, pos 1]: RuntimeException in function 'toDouble': Operand must be a number in expression 'toDouble(true)'", runErr.getMessage());
-        // ltod
-        assertEquals(0.0, evaluateDouble("ltod(0)"), EPS);
-        assertEquals(1.0, evaluateDouble("ltod(1000000)"), EPS);
-        assertEquals(-1.0, evaluateDouble("ltod(-1000000)"), EPS);
-        assertEquals(2.0, evaluateDouble("ltod(2000000)"), EPS);
-        runErr = assertThrows(RuntimeError.class, () -> evaluate("ltod(1000000.0)"));
-        assertEquals("Expression evaluation error [line 1, pos 1]: RuntimeException in function 'ltod': Operand must be a LONG number in expression 'ltod(1000000.0)'", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluate("ltod(\"A\")"));
-        assertEquals("Expression evaluation error [line 1, pos 1]: RuntimeException in function 'ltod': Operand must be a LONG number in expression 'ltod(\"A\")'", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluate("ltod(true)"));
-        assertEquals("Expression evaluation error [line 1, pos 1]: RuntimeException in function 'ltod': Operand must be a LONG number in expression 'ltod(true)'", runErr.getMessage());
-        // dtol
-        assertEquals(0L, evaluateLong("dtol(0.0)"));
-        assertEquals(100_000_000L, evaluateLong("dtol(100.0)"));
-        assertEquals(-100_000_000L, evaluateLong("dtol(-100.0)"));
-        assertEquals(123_456_000L, evaluateLong("dtol(123.456)"));
-        runErr = assertThrows(RuntimeError.class, () -> evaluate("dtol(1000000)"));
-        assertEquals("Expression evaluation error [line 1, pos 1]: RuntimeException in function 'dtol': Operand must be a DOUBLE number in expression 'dtol(1000000)'", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluate("dtol(\"A\")"));
-        assertEquals("Expression evaluation error [line 1, pos 1]: RuntimeException in function 'dtol': Operand must be a DOUBLE number in expression 'dtol(\"A\")'", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluate("dtol(true)"));
-        assertEquals("Expression evaluation error [line 1, pos 1]: RuntimeException in function 'dtol': Operand must be a DOUBLE number in expression 'dtol(true)'", runErr.getMessage());
-        // isMarketPrice
-        assertTrue(evaluateBool("isMarketPrice(" + OrderPrice.market() + ")"));
-        assertFalse(evaluateBool("isMarketPrice(" + OrderPrice.invalid() + ")"));
-        assertFalse(evaluateBool("isMarketPrice(1000000)"));
-        runErr = assertThrows(RuntimeError.class, () -> evaluate("isMarketPrice(1000000.0)"));
-        assertEquals("Expression evaluation error [line 1, pos 1]: RuntimeException in function 'isMarketPrice': Operand must be a LONG number in expression 'isMarketPrice(1000000.0)'", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluate("isMarketPrice(\"A\")"));
-        assertEquals("Expression evaluation error [line 1, pos 1]: RuntimeException in function 'isMarketPrice': Operand must be a LONG number in expression 'isMarketPrice(\"A\")'", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluate("isMarketPrice(true)"));
-        assertEquals("Expression evaluation error [line 1, pos 1]: RuntimeException in function 'isMarketPrice': Operand must be a LONG number in expression 'isMarketPrice(true)'", runErr.getMessage());
-        // isLimitPrice
-        assertFalse(evaluateBool("isLimitPrice(" + OrderPrice.market() + ")"));
-        assertFalse(evaluateBool("isLimitPrice(" + OrderPrice.market() + ")"));
-        assertTrue(evaluateBool("isLimitPrice(1000000)"));
-        runErr = assertThrows(RuntimeError.class, () -> evaluate("isLimitPrice(1000000.0)"));
-        assertEquals("Expression evaluation error [line 1, pos 1]: RuntimeException in function 'isLimitPrice': Operand must be a LONG number in expression 'isLimitPrice(1000000.0)'", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluate("isLimitPrice(\"A\")"));
-        assertEquals("Expression evaluation error [line 1, pos 1]: RuntimeException in function 'isLimitPrice': Operand must be a LONG number in expression 'isLimitPrice(\"A\")'", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluate("isLimitPrice(true)"));
-        assertEquals("Expression evaluation error [line 1, pos 1]: RuntimeException in function 'isLimitPrice': Operand must be a LONG number in expression 'isLimitPrice(true)'", runErr.getMessage());
-        // isValidPrice
-        assertTrue(evaluateBool("isValidPrice(" + OrderPrice.market() + ")"));
-        assertFalse(evaluateBool("isValidPrice(" + OrderPrice.invalid() + ")"));
-        assertTrue(evaluateBool("isValidPrice(1000000)"));
-        runErr = assertThrows(RuntimeError.class, () -> evaluate("isValidPrice(1000000.0)"));
-        assertEquals("Expression evaluation error [line 1, pos 1]: RuntimeException in function 'isValidPrice': Operand must be a LONG number in expression 'isValidPrice(1000000.0)'", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluate("isValidPrice(\"A\")"));
-        assertEquals("Expression evaluation error [line 1, pos 1]: RuntimeException in function 'isValidPrice': Operand must be a LONG number in expression 'isValidPrice(\"A\")'", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluate("isValidPrice(true)"));
-        assertEquals("Expression evaluation error [line 1, pos 1]: RuntimeException in function 'isValidPrice': Operand must be a LONG number in expression 'isValidPrice(true)'", runErr.getMessage());
 
         final MutableExprContext ctx = ExprContextFactory.create();
 
@@ -289,20 +236,6 @@ class ExprNativeFunctionsTest extends ExprEvaluatorTestBase {
         assertEquals(3, evaluateLong("roundDown(PI)", ctx));
         assertEquals(3, evaluateLong("toLong(PI)", ctx));
         assertEquals(3.0, evaluateDouble("toDouble(toLong(PI))", ctx), EPS);
-        assertEquals(3.0, evaluateDouble("ltod(toLong(PI) * 1000000)", ctx), EPS);
-        assertEquals(3.0, evaluateDouble("ltod(round(PI) * 1000000)", ctx), EPS);
-        assertEquals(3.0, evaluateDouble("ltod(roundToNearest(PI) * 1000000)", ctx), EPS);
-        assertEquals(4.0, evaluateDouble("ltod(roundUp(PI) * 1000000)", ctx), EPS);
-        assertEquals(3.0, evaluateDouble("ltod(roundDown(PI) * 1000000)", ctx), EPS);
-        assertEquals(3.141592653589793, evaluateDouble("ltod(toLong(PI * 1000000))", ctx), EPS);
-        assertEquals(3.141592653589793, evaluateDouble("ltod(round(PI * 1000000))", ctx), EPS);
-        assertEquals(3.141592653589793, evaluateDouble("ltod(roundToNearest(PI * 1000000))", ctx), EPS);
-        assertEquals(3.141592653589793, evaluateDouble("ltod(roundUp(PI * 1000000))", ctx), EPS);
-        assertEquals(3.141592653589793, evaluateDouble("ltod(roundDown(PI * 1000000))", ctx), EPS);
-        assertEquals(3_141_592L, evaluateLong("dtol(PI)", ctx));
-        assertTrue(evaluateBool("isLimitPrice(dtol(PI))", ctx));
-        assertFalse(evaluateBool("isMarketPrice(dtol(PI))", ctx));
-        assertTrue(evaluateBool("isValidPrice(dtol(PI))", ctx));
         assertEquals(3, evaluateLong("PI.toLong()", ctx));
         assertEquals(3, evaluateLong("PI.round()", ctx));
         assertEquals(4, evaluateLong("PI.roundUp()", ctx));

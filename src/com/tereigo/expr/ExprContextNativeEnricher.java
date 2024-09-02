@@ -1,8 +1,6 @@
 package com.tereigo.expr;
 
 import com.tereigo.expr.utils.ByteBufferUtils;
-import com.tereigo.expr.utils.OrderPrice;
-import com.tereigo.expr.utils.PriceUtils;
 import com.tereigo.expr.variant.VariantUtils;
 
 /*
@@ -128,46 +126,6 @@ class ExprContextNativeEnricher implements ExprContextEnricher {
         result.accept(arg1.getAsDouble());
       } else {
         throw new RuntimeException("Operand must be a number");
-      }
-    });
-
-    ctx.defineFunction("ltod", (result, arg1) -> {
-      if (VariantUtils.isLong(arg1)) {
-        result.accept(PriceUtils.ltod(arg1.getAsLong()));
-      } else {
-        throw new RuntimeException("Operand must be a LONG number");
-      }
-    });
-
-    ctx.defineFunction("dtol", (result, arg1) -> {
-      if (VariantUtils.isDouble(arg1)) {
-        result.accept((long)PriceUtils.dtol(arg1.getAsDouble()));
-      } else {
-        throw new RuntimeException("Operand must be a DOUBLE number");
-      }
-    });
-
-    ctx.defineFunction("isMarketPrice", (result, arg1) -> {
-      if (VariantUtils.isLong(arg1)) {
-        result.accept(OrderPrice.isMarket(arg1.getAsLong()));
-      } else {
-        throw new RuntimeException("Operand must be a LONG number");
-      }
-    });
-
-    ctx.defineFunction("isLimitPrice", (result, arg1) -> {
-      if (VariantUtils.isLong(arg1)) {
-        result.accept(OrderPrice.isLimit(arg1.getAsLong()));
-      } else {
-        throw new RuntimeException("Operand must be a LONG number");
-      }
-    });
-
-    ctx.defineFunction("isValidPrice", (result, arg1) -> {
-      if (VariantUtils.isLong(arg1)) {
-        result.accept(OrderPrice.isValid(arg1.getAsLong()));
-      } else {
-        throw new RuntimeException("Operand must be a LONG number");
       }
     });
 

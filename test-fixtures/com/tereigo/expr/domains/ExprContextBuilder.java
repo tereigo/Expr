@@ -6,6 +6,7 @@ import com.tereigo.expr.domains.algo.AlgoDataProvider;
 import com.tereigo.expr.domains.algo.AlgoExprContext;
 import com.tereigo.expr.domains.algo.AlgoExprContextEnricher;
 import com.tereigo.expr.domains.falcon.FalconDataProvider;
+import com.tereigo.expr.domains.falcon.FalconDomain;
 import com.tereigo.expr.domains.falcon.FalconExprContext;
 import com.tereigo.expr.domains.falcon.FalconExprContextEnricher;
 import com.tereigo.expr.domains.order.OrderDomain;
@@ -38,6 +39,7 @@ public class ExprContextBuilder {
         ctx.enrich(new FalconExprContextEnricher(falcon));
         final FalconExprContext falconExprContext = new FalconExprContext(falcon);
         ctx.defineExprContext("falcon", () -> falconExprContext);
+        FalconDomain.defineShortcuts(ctx);
         return this;
     }
 

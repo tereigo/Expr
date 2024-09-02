@@ -1,9 +1,7 @@
 package com.tereigo.expr.algo.customization;
 
-import com.tereigo.expr.falcon.Order;
-
 public interface CustomizationAction {
 
-    void apply(Order order);
+    long apply(final CustomizationParamsList result, Object orderObj);
 
 }

@@ -52,12 +52,14 @@ class ExprScannerTest {
         // wrong input - should we reject it during scanning - no - it's done during parsing
         testScanner("$ric in [1.0, 2]", IDENTIFIER, IN, LEFT_BRACKET, DOUBLE_NUMBER, COMMA, LONG_NUMBER, RIGHT_BRACKET);
         testScanner("$ric in [\"A\", 1]", IDENTIFIER, IN, LEFT_BRACKET, STRING, COMMA, LONG_NUMBER, RIGHT_BRACKET);
+        testScanner("$ric in ['A', 1]", IDENTIFIER, IN, LEFT_BRACKET, STRING, COMMA, LONG_NUMBER, RIGHT_BRACKET);
         testScanner("10 % 3", LONG_NUMBER, MODULUS, LONG_NUMBER);
         testScanner("$now % 2", IDENTIFIER, MODULUS, LONG_NUMBER);
         testScanner("falconRandom()", IDENTIFIER, LEFT_PAREN, RIGHT_PAREN);
         testScanner("now() % 2", IDENTIFIER, LEFT_PAREN, RIGHT_PAREN, MODULUS, LONG_NUMBER);
         testScanner("isEven($productId) % 2", IDENTIFIER, LEFT_PAREN, IDENTIFIER, RIGHT_PAREN, MODULUS, LONG_NUMBER);
         testScanner("isEven(1, 2.0, \"AB\", $tuid, true)", IDENTIFIER, LEFT_PAREN, LONG_NUMBER, COMMA, DOUBLE_NUMBER, COMMA, STRING, COMMA, IDENTIFIER, COMMA, TRUE, RIGHT_PAREN);
+        testScanner("isEven(1, 2.0, 'AB', $tuid, true)", IDENTIFIER, LEFT_PAREN, LONG_NUMBER, COMMA, DOUBLE_NUMBER, COMMA, STRING, COMMA, IDENTIFIER, COMMA, TRUE, RIGHT_PAREN);
         testScanner("(10 % 3 + myFunc(1, $id)) - 2.3", LEFT_PAREN, LONG_NUMBER, MODULUS, LONG_NUMBER, PLUS, IDENTIFIER, LEFT_PAREN, LONG_NUMBER, COMMA, IDENTIFIER, RIGHT_PAREN, RIGHT_PAREN, MINUS, DOUBLE_NUMBER);
     }
 

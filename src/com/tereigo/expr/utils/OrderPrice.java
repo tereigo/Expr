@@ -1,6 +1,6 @@
 package com.tereigo.expr.utils;
 
-public class OrderPrice {
+public final class OrderPrice {
 
     public static final long NO_LIMIT_PRICE = Long.MIN_VALUE;
     public static final long INVALID_PRICE = Long.MIN_VALUE + 1;

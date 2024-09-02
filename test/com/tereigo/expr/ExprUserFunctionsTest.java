@@ -1,10 +1,12 @@
 package com.tereigo.expr;
 
-import com.tereigo.expr.falcon.Order;
-import com.tereigo.expr.falcon.OrderFieldResolver;
+import com.tereigo.expr.domains.order.OrderDomain;
+import com.tereigo.expr.domains.order.OrderFieldResolver;
+import com.tereigo.expr.domains.order.OrderFieldResolverImpl;
 import com.tereigo.expr.falcon.utils.ReferenceDataCache;
+import com.tereigo.expr.order.SampleOrderInstruction;
+import com.tereigo.expr.order.SimpleOrderFieldSupplier;
 import com.tereigo.expr.order.TestOrder;
-import com.tereigo.expr.order.TestOrderFieldSupplier;
 import com.tereigo.expr.utils.ByteBufferUtils;
 import org.junit.jupiter.api.Test;
 
@@ -21,7 +23,7 @@ class ExprUserFunctionsTest extends ExprEvaluatorTestBase {
 
     @Test
     void userFunctionTests() {
-        TestOrderFieldSupplier orderSupplier = new TestOrderFieldSupplier();
+        SimpleOrderFieldSupplier orderSupplier = new SimpleOrderFieldSupplier();
         TestOrder order1 = new TestOrder("VOD.L", 123L, true, constant("CLIENT1"));
         orderSupplier.setOrder(order1);
 
@@ -227,15 +229,21 @@ class ExprUserFunctionsTest extends ExprEvaluatorTestBase {
         when(refData.getTuidByClientId(1)).thenReturn(constant("CLIENT1"));
         when(refData.getTuidByClientId(2)).thenReturn(constant("CLIENT2"));
 
-        final OrderFieldResolver orderResolver = new OrderFieldResolver(refData);
+        OrderDomain.init(refData);
+
+        final OrderFieldResolverImpl orderResolver = new OrderFieldResolverImpl();
         final TestOrderExprContext orderCtx = new TestOrderExprContext(orderResolver);
         ctx.defineExprContext("order", () -> orderCtx);
 
-        Order order1 = new Order(123L, 1);
+        SampleOrderInstruction order1 = new SampleOrderInstruction(123L, 1);
         orderResolver.setOrder(order1);
 
+        assertTrue(evaluateBool("order.ric == 'VOD.L'", ctx));
         assertTrue(evaluateBool("test.nodeName == \"VWAP1\" and test.algoType == \"Vwap\" and order.ric == \"VOD.L\"", ctx));
         assertTrue(evaluateBool("test.nodeName.contains(\"VWAP1\") and order.tuid == \"CLIENT1\"", ctx));
+
+        assertTrue(evaluateBool("test.nodeName() == \"VWAP1\" and test.algoType() == \"Vwap\" and order.ric() == \"VOD.L\"", ctx));
+        assertTrue(evaluateBool("test.nodeName().contains(\"VWAP1\") and order.tuid() == \"CLIENT1\"", ctx));
     }
 
     private interface TuidResolver {

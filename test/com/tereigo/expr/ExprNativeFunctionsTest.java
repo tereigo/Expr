@@ -278,6 +278,11 @@ class ExprNativeFunctionsTest extends ExprEvaluatorTestBase {
         assertEquals(3.141592653589793, evaluateDouble("abs(PI)", ctx), EPS);
         assertEquals(3.141592653589793, evaluateDouble("abs(-PI)", ctx), EPS);
 
+        assertEquals(3.141592653589793, evaluateDouble("pi", ctx), EPS);
+
+        assertEquals(2.718281828459045, evaluateDouble("E", ctx), EPS);
+        assertEquals(2.718281828459045, evaluateDouble("e", ctx), EPS);
+
         assertEquals(3, evaluateLong("round(PI)", ctx));
         assertEquals(3, evaluateLong("roundToNearest(PI)", ctx));
         assertEquals(4, evaluateLong("roundUp(PI)", ctx));
@@ -313,6 +318,7 @@ class ExprNativeFunctionsTest extends ExprEvaluatorTestBase {
         assertFalse(evaluateBool("not(\"\".isEmpty())"));
         assertFalse(evaluateBool("\"A\".isEmpty()"));
         assertTrue(evaluateBool("not(\"A\".isEmpty())"));
+        assertTrue(evaluateBool("not('A'.isEmpty())"));
 
         assertFalse(evaluateBool("isEmpty(\"A\")"));
         assertTrue(evaluateBool("not(isEmpty(\"A\"))"));
@@ -324,6 +330,7 @@ class ExprNativeFunctionsTest extends ExprEvaluatorTestBase {
         assertEquals(3, evaluateLong("\"ABC\".length()"));
 
         assertTrue(evaluateBool("length(\"ABC\") == 3"));
+        assertTrue(evaluateBool("length('ABC') == 3"));
         assertEquals(3, evaluateLong("length(\"ABC\")"));
 
         assertTrue(evaluateBool("\"ABC\".contains(\"ABC\")"));
@@ -334,6 +341,7 @@ class ExprNativeFunctionsTest extends ExprEvaluatorTestBase {
         assertFalse(evaluateBool("\"\".contains(\"abc\")"));
         assertFalse(evaluateBool("\"\".contains(\"ABC\")"));
 
+        assertTrue(evaluateBool("contains('ABC', 'ABC')"));
         assertTrue(evaluateBool("contains(\"ABC\", \"ABC\")"));
         assertFalse(evaluateBool("contains(\"ABC\", \"abc\")"));
         assertFalse(evaluateBool("contains(\"abc\", \"ABC\")"));

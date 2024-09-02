@@ -1,7 +1,7 @@
 package com.tereigo.expr;
 
+import com.tereigo.expr.order.SimpleOrderFieldSupplier;
 import com.tereigo.expr.order.TestOrder;
-import com.tereigo.expr.order.TestOrderFieldSupplier;
 import org.junit.jupiter.api.Test;
 
 import static com.tereigo.expr.utils.ByteBufferUtils.constant;
@@ -43,7 +43,7 @@ class ExprEvaluationWithContextTest extends ExprEvaluatorTestBase {
 
     @Test
     void contextTestsWithOrderSupplier() {
-        TestOrderFieldSupplier orderSupplier = new TestOrderFieldSupplier();
+        SimpleOrderFieldSupplier orderSupplier = new SimpleOrderFieldSupplier();
         TestOrder order1 = new TestOrder("VOD.L", 123L, true, constant("CLIENT1"));
         orderSupplier.setOrder(order1);
         final MutableExprContext ctx = ExprContextFactory.create();
@@ -84,7 +84,7 @@ class ExprEvaluationWithContextTest extends ExprEvaluatorTestBase {
         RuntimeError runErr;
         ParseError err;
 
-        TestOrderFieldSupplier orderSupplier = new TestOrderFieldSupplier();
+        SimpleOrderFieldSupplier orderSupplier = new SimpleOrderFieldSupplier();
         TestOrder order1 = new TestOrder("VOD.L", 123L, true, constant("CLIENT1"));
         orderSupplier.setOrder(order1);
 
@@ -178,6 +178,7 @@ class ExprEvaluationWithContextTest extends ExprEvaluatorTestBase {
         assertFalse(evaluateBool("not($enabled)", ctx));
         assertTrue(evaluateBool("$PI == $PI", ctx));
         assertTrue(evaluateBool("$productId == 123 and $ric == \"VOD.L\"", ctx));
+        assertTrue(evaluateBool("$productId == 123 and $ric == 'VOD.L'", ctx));
         assertTrue(evaluateBool("$productId == 567 or $enabled", ctx));
         assertFalse(evaluateBool("$productId == 567 and $enabled", ctx));
         assertFalse(evaluateBool("$nodeAlgoType == $ric", ctx));
@@ -189,10 +190,12 @@ class ExprEvaluationWithContextTest extends ExprEvaluatorTestBase {
         assertTrue(evaluateBool("$tuid in [\"CLIENT0\", \"CLIENT1\"]", ctx));
         assertFalse(evaluateBool("$tuid != \"CLIENT1\"", ctx));
         assertFalse(evaluateBool("\"CLIENT1\" != $tuid", ctx));
+        assertFalse(evaluateBool("'CLIENT1' != $tuid", ctx));
         assertFalse(evaluateBool("not ($tuid in [\"CLIENT0\", \"CLIENT1\"])", ctx));
         assertFalse(evaluateBool("$tuid == \"CLIENT2\"", ctx));
         assertFalse(evaluateBool("\"CLIENT2\" == $tuid", ctx));
         assertFalse(evaluateBool("$tuid in [\"CLIENT0\", \"CLIENT2\"]", ctx));
+        assertFalse(evaluateBool("$tuid in ['CLIENT0', 'CLIENT2']", ctx));
         assertEquals(constant("CLIENT1"), evaluateByteBuffer("$tuid", ctx));
         assertEquals("CLIENT1", parseString(evaluateByteBuffer("$tuid", ctx)));
     }

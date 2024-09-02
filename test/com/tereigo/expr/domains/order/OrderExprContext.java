@@ -1,8 +1,8 @@
-package com.tereigo.expr.falcon;
+package com.tereigo.expr.domains.order;
 
 import com.tereigo.expr.CustomExprContext;
 
-public final class OrderExprContext extends CustomExprContext {
+public class OrderExprContext extends CustomExprContext {
 
     public OrderExprContext(OrderFieldResolver orderResolver) {
         ctx.defineLong("productId", orderResolver::productId);

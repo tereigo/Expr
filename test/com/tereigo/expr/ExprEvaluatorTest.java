@@ -245,6 +245,13 @@ class ExprEvaluatorTest extends ExprEvaluatorTestBase {
         assertEquals("true", evaluateString("\"true\""));
         assertEquals("A", evaluateString("\"A\""));
         assertEquals("A", evaluateString("(\"A\")"));
+        assertEquals("'A'", evaluateString("\"'A'\""));
+        assertEquals("\"A\"", evaluateString("'\"A\"'"));
+        assertTrue(evaluateBool("'A' == 'A'"));
+        assertTrue(evaluateBool("\"A\" == 'A'"));
+        assertTrue(evaluateBool("\"\" == ''"));
+        assertTrue(evaluateBool("'\"A\"' == '\"A\"'"));
+        assertTrue(evaluateBool("\"'A'\" == \"'A'\""));
         runErr = assertThrows(RuntimeError.class, () -> evaluate("\"A\" + \"B\""));
         assertEquals("Expression evaluation error [line 1, pos 5]: Operands must be numbers in expression '\"A\" + \"B\"'", runErr.getMessage());
         runErr = assertThrows(RuntimeError.class, () -> evaluate("(\"A\") + \"B\""));

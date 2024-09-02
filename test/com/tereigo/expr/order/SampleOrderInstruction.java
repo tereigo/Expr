@@ -1,23 +1,19 @@
 package com.tereigo.expr.order;
 
-import com.tereigo.expr.algo.customization.OrderFieldSupplier;
+import com.tereigo.expr.falcon.msg.EqOrderInstMsgRo;
 
-public class TestOrderFieldSupplier implements OrderFieldSupplier {
+public class SampleOrderInstruction implements EqOrderInstMsgRo {
     private final long productId;
     private final long clientId;
     private final int qty;
     private final long price;
     private String actions = "";
 
-    public TestOrderFieldSupplier() {
-        this(0, 0, 0, 0);
-    }
-
-    public TestOrderFieldSupplier(long productId, long clientId) {
+    public SampleOrderInstruction(long productId, long clientId) {
         this(productId, clientId, 0, 0);
     }
 
-    public TestOrderFieldSupplier(long productId, long clientId, int qty, long price) {
+    public SampleOrderInstruction(long productId, long clientId, int qty, long price) {
         this.productId = productId;
         this.clientId = clientId;
         this.qty = qty;
@@ -25,22 +21,22 @@ public class TestOrderFieldSupplier implements OrderFieldSupplier {
     }
 
     @Override
-    public long productId() {
+    public long getEquityProductId() {
         return productId;
     }
 
     @Override
-    public long clientId() {
+    public long getClientId() {
         return clientId;
     }
 
     @Override
-    public int quantity() {
+    public int getQuantity() {
         return qty;
     }
 
     @Override
-    public long price() {
+    public long getLimitPrice() {
         return price;
     }
 
@@ -55,4 +51,3 @@ public class TestOrderFieldSupplier implements OrderFieldSupplier {
         actions += action;
     }
 }
-

@@ -232,21 +232,19 @@ class ExprContextNativeEnricher implements ExprContextEnricher {
 
     // TODO: add containsIgnoreCase, startsWith, startsWithIgnoreCase, endsWith, endsWithIgnoreCase, indexOf, indexOfIgnoreCase
 
-    // TODO: finish it
-//    ctx.defineFunction("contains", (result, arg1, arg2) -> {
-//      if (VariantUtils.isString(arg1) && VariantUtils.isString(arg2)) {
-//        result.accept(arg1.getAsString().contains(arg2.getAsString()));
-//      } else if (VariantUtils.isString(arg1) && VariantUtils.isByteBuffer(arg2)) {
-//        // TODO: reimplement - generates garbage
-//        result.accept(arg1.getAsString().contains(arg2.getAsByteBuffer().asCharBuffer()));
-//      } else if (VariantUtils.isByteBuffer(arg1) && VariantUtils.isString(arg2)) {
-//        throw new RuntimeException("contains() not implemented for ByteBuffer");
-//      } else if (VariantUtils.isByteBuffer(arg1) && VariantUtils.isByteBuffer(arg2)) {
-//        throw new RuntimeException("contains() not implemented for ByteBuffer");
-//      } else {
-//        throw new RuntimeException("Operand must be a STRING or BYTE_BUFFER");
-//      }
-//    });
+    ctx.defineFunction("contains", (result, arg1, arg2) -> {
+      if (VariantUtils.isString(arg1) && VariantUtils.isString(arg2)) {
+        result.accept(arg1.getAsString().contains(arg2.getAsString()));
+      } else if (VariantUtils.isString(arg1) && VariantUtils.isByteBuffer(arg2)) {
+        result.accept(ByteBufferUtils.contains(arg1.getAsString(), arg2.getAsByteBuffer()));
+      } else if (VariantUtils.isByteBuffer(arg1) && VariantUtils.isString(arg2)) {
+        result.accept(ByteBufferUtils.contains(arg1.getAsByteBuffer(), arg2.getAsString()));
+      } else if (VariantUtils.isByteBuffer(arg1) && VariantUtils.isByteBuffer(arg2)) {
+        result.accept(ByteBufferUtils.contains(arg1.getAsByteBuffer(), arg2.getAsByteBuffer()));
+      } else {
+        throw new RuntimeException("Operand must be a STRING or BYTE_BUFFER");
+      }
+    });
 
     // TODO: finish it
 //    ctx.defineFunction("startsWith", (result, arg1, arg2) -> {

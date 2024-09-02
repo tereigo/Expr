@@ -1,5 +1,8 @@
 package com.tereigo.expr.utils;
 
+import com.tereigo.expr.annotations.GeneratesGarbage;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
+
 import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
@@ -261,10 +264,26 @@ public final class ByteBufferUtils {
         }
     }
 
+    @GeneratesGarbage
     public static String toString(ByteBuffer buffer) {
         StringBuilder sb = new StringBuilder(buffer.remaining());
         toString(buffer, sb);
         return sb.toString();
+    }
+
+    public static boolean contains(String str, ByteBuffer pattern) {
+        // TODO: implement
+        throw new NotImplementedException();
+    }
+
+    public static boolean contains(ByteBuffer str, String pattern) {
+        // TODO: implement
+        throw new NotImplementedException();
+    }
+
+    public static boolean contains(ByteBuffer str, ByteBuffer pattern) {
+        // TODO: implement
+        throw new NotImplementedException();
     }
 }
 

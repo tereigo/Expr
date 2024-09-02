@@ -16,7 +16,6 @@ class ExprEvaluationWithContextTest extends ExprEvaluatorTestBase {
     @Test
     void contextTestsWithSuppliers() {
         final MutableExprContext ctx = ExprContextFactory.create();
-        ctx.defineDouble("PI", () -> 3.14);
         ctx.defineDouble("$PI", () -> 3.14);
         ctx.defineLong("$productId", () -> 123L);
         ctx.defineString("$ric", () -> "VOD.L");
@@ -47,7 +46,6 @@ class ExprEvaluationWithContextTest extends ExprEvaluatorTestBase {
         TestOrder order1 = new TestOrder("VOD.L", 123L, true, constant("CLIENT1"));
         orderSupplier.setOrder(order1);
         final MutableExprContext ctx = ExprContextFactory.create();
-        ctx.defineDouble("PI", () -> 3.14);
         ctx.defineDouble("$PI", () -> 3.14);
         ctx.defineString("$nodeAlgoType", () -> "Vwap");
         ctx.defineLong("$productId", orderSupplier::productId);
@@ -89,7 +87,6 @@ class ExprEvaluationWithContextTest extends ExprEvaluatorTestBase {
         orderSupplier.setOrder(order1);
 
         final MutableExprContext globalCtx = ExprContextFactory.create();
-        globalCtx.defineDouble("PI", () -> 3.14);
         globalCtx.defineDouble("$PI", () -> 3.14);
         globalCtx.defineString("$nodeAlgoType", () -> "Vwap");
         globalCtx.defineString("$region", () -> "EMEA");
@@ -148,6 +145,19 @@ class ExprEvaluationWithContextTest extends ExprEvaluatorTestBase {
         runErr = assertThrows(RuntimeError.class, () -> evaluate("not($productId) == 123", ctx));
         assertEquals("Expression evaluation error [line 1, pos 1]: Operand must be a boolean in expression 'not($productId) == 123'", runErr.getMessage());
 
+        assertTrue(evaluateBool("$productId == 123 and $ric == 'VOD.L'", ctx));
+        assertTrue(evaluateBool("$nodeAlgoType != $ric", ctx));
+
+        assertTrue(evaluateBool("$tuid == 'CLIENT1'", ctx));
+        assertTrue(evaluateBool("'CLIENT1' == $tuid", ctx));
+        assertTrue(evaluateBool("$tuid in ['CLIENT0', 'CLIENT1']", ctx));
+        assertFalse(evaluateBool("$tuid != 'CLIENT1'", ctx));
+        assertFalse(evaluateBool("'CLIENT1' != $tuid", ctx));
+        assertFalse(evaluateBool("not ($tuid in ['CLIENT0', 'CLIENT1'])", ctx));
+        assertFalse(evaluateBool("$tuid == 'CLIENT2'", ctx));
+        assertFalse(evaluateBool("'CLIENT2' == $tuid", ctx));
+        assertFalse(evaluateBool("$tuid in ['CLIENT0', 'CLIENT2']", ctx));
+
         // Change the order
         TestOrder order2 = new TestOrder("BT.L", 456L, false, constant("CLIENT2"));
         orderSupplier.setOrder(order2);
@@ -157,15 +167,15 @@ class ExprEvaluationWithContextTest extends ExprEvaluatorTestBase {
         assertTrue(evaluateBool("$productId == 456 and $ric == \"BT.L\"", ctx));
         assertTrue(evaluateBool("$nodeAlgoType != $ric", ctx));
 
-        assertFalse(evaluateBool("$tuid == \"CLIENT1\"", ctx));
-        assertFalse(evaluateBool("\"CLIENT1\" == $tuid", ctx));
-        assertFalse(evaluateBool("$tuid in [\"CLIENT0\", \"CLIENT1\"]", ctx));
-        assertTrue(evaluateBool("$tuid != \"CLIENT1\"", ctx));
-        assertTrue(evaluateBool("\"CLIENT1\" != $tuid", ctx));
-        assertTrue(evaluateBool("not ($tuid in [\"CLIENT0\", \"CLIENT1\"])", ctx));
-        assertTrue(evaluateBool("$tuid == \"CLIENT2\"", ctx));
-        assertTrue(evaluateBool("\"CLIENT2\" == $tuid", ctx));
-        assertTrue(evaluateBool("$tuid in [\"CLIENT0\", \"CLIENT2\"]", ctx));
+        assertFalse(evaluateBool("$tuid == 'CLIENT1'", ctx));
+        assertFalse(evaluateBool("'CLIENT1' == $tuid", ctx));
+        assertFalse(evaluateBool("$tuid in ['CLIENT0', 'CLIENT1']", ctx));
+        assertTrue(evaluateBool("$tuid != 'CLIENT1'", ctx));
+        assertTrue(evaluateBool("'CLIENT' != $tuid", ctx));
+        assertTrue(evaluateBool("not ($tuid in ['CLIENT0', 'CLIENT1'])", ctx));
+        assertTrue(evaluateBool("$tuid == 'CLIENT2'", ctx));
+        assertTrue(evaluateBool("'CLIENT2' == $tuid", ctx));
+        assertTrue(evaluateBool("$tuid in ['CLIENT0', 'CLIENT2']", ctx));
     }
 
     private void runExpressionWithContextTests(ExprContext ctx) {

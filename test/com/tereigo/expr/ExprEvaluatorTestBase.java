@@ -32,9 +32,9 @@ class ExprEvaluatorTestBase {
         evaluator.evaluateAsObject(ctx);
     }
 
-    protected void evaluateBool(ASTRoot root, ExprContext ctx) {
+    protected boolean evaluateBool(ASTRoot root, ExprContext ctx) {
         ExprEvaluator evaluator = new ExprEvaluator(root);
-        evaluator.evaluateBool(ctx);
+        return evaluator.evaluateBool(ctx);
     }
 
     protected long evaluateLong(String text) {

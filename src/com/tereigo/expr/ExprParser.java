@@ -68,7 +68,7 @@ import static com.tereigo.expr.TokenType.WITHIN;
     comparison : term ( ( ">" | ">=" | "<" | "<=" ) term )* ;
     term       : factor ( ( "-" | "+" ) factor )* ;
     factor     : unary ( ( "/" | "*" | "%" ) unary )* ;
-    unary      : ( "!" | "-" ) unary | call ;
+    unary      : ( "!" | "-" ) call ;
     call       : primary ( "(" arguments? ")" | "." IDENTIFIER "(" arguments? ")" )* ;
     arguments  : expression ( "," expression )* ;
     primary    : BOOLEAN | DOUBLE_NUMBER | LONG_NUMBER | STRING | IDENTIFIER | "(" expression ")" ;
@@ -265,6 +265,11 @@ final class ExprParser {
     while (match(MINUS, PLUS)) {
       Token operator = previous();
       Expr right = factor();
+      // don't allow double minus syntax ("5 -- 2") since it's confusing
+      // it's possible however to write: "5 - (-2)"
+      if (operator.type == MINUS && right instanceof Expr.Unary) {
+        throw error(previous(), "Double minus syntax ('--') is not supported as erroneous");
+      }
       expr = new Expr.Binary(expr, operator, right);
     }
 
@@ -284,15 +289,21 @@ final class ExprParser {
     return expr;
   }
 
-  // unary      : ( "!" | "-" ) unary | call ;
+  // unary      : ( "!" | "-" ) call ;
   private Expr unary() {
     if (match(NOT, MINUS)) {
       Token operator = previous();
-      Expr right = unary();
+      Expr right = call();
       // safety check that "NOT" always followed by "()"
       // This is to avoid runtime errors for syntax: not $ric == "VOD.L" which compiles into AST: not($ric) == "VOD.L"
       if (operator.type == NOT && !(right instanceof Expr.Grouping)) {
         throw error(previous(), "Operator NOT should be applied to the expression in parens '()'");
+      }
+      if (operator.type == MINUS && right instanceof Expr.Literal) {
+        final Variant val = ((Expr.Literal)right).result;
+        if (!VariantUtils.isNumber(val)) {
+          throw error(peek(), "Unary minus is applicable to numbers only");
+        }
       }
       return new Expr.Unary(operator, right);
     }

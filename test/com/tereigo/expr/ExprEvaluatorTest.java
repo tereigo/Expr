@@ -231,11 +231,37 @@ class ExprEvaluatorTest extends ExprEvaluatorTestBase {
     @Test
     void unaryNotTests() {
         assertTrue(evaluateBool("not(false)"));
+        assertFalse(evaluateBool("not(not(false))"));
+        assertTrue(evaluateBool("not(-1 > 1)"));
+        assertFalse(evaluateBool("not(not(-1 > 1))"));
+        assertTrue(evaluateBool("!(false)"));
+        assertTrue(evaluateBool("not((false))"));
+        assertTrue(evaluateBool("not(false) and -5 < -4.0"));
+        assertFalse(evaluateBool("not(-5 < -4.0)"));
+        assertFalse(evaluateBool("!(-5 < -4.0)"));
+        assertTrue(evaluateBool("not(!(-5 < -4.0))"));
+        assertTrue(evaluateBool("!(not(-5 < -4.0))"));
+        assertFalse(evaluateBool("not(-(5) < -4.0)"));
         assertFalse(evaluateBool("!(true)"));
         assertFalse(evaluateBool("not(true)"));
         assertTrue(evaluateBool("not(1 >= 9)"));
-        assertFalse(evaluateBool("not(\"A\" == \"A\")"));
-        assertTrue(evaluateBool("not(\"A\" == \"B\")"));
+        assertFalse(evaluateBool("not('A' == 'A')"));
+        assertTrue(evaluateBool("not('A' == 'B')"));
+    }
+
+    @Test
+    void unaryMinusTests() {
+        assertTrue(evaluateBool("-5 < -4"));
+        assertEquals(-1, evaluateLong("-1"));
+
+        ParseError err;
+        err = assertThrows(ParseError.class, () -> evaluate("--1"));
+        assertEquals("Expression parsing error [line 1, pos 2]: Expect expression in expression '--1'", err.getMessage());
+        err = assertThrows(ParseError.class, () -> evaluateBool("--5 < -4"));
+        assertEquals("Expression parsing error [line 1, pos 2]: Expect expression in expression '--5 < -4'", err.getMessage());
+
+        err = assertThrows(ParseError.class, () -> evaluate("5 -- 2"));
+        assertEquals("Expression parsing error [line 1, pos 6]: Double minus syntax ('--') is not supported as erroneous in expression '5 -- 2'", err.getMessage());
     }
 
     @Test
@@ -385,6 +411,8 @@ class ExprEvaluatorTest extends ExprEvaluatorTestBase {
         RuntimeError runErr;
         err = assertThrows(ParseError.class, () -> evaluate(""));
         assertEquals("Expression parsing error [line 1, pos 1]: Expect expression in expression ''", err.getMessage());
+        err = assertThrows(ParseError.class, () -> evaluate("not(or true)"));
+        assertEquals("Expression parsing error [line 1, pos 5]: Expect expression in expression 'not(or true)'", err.getMessage());
         err = assertThrows(ParseError.class, () -> evaluate("'B' in ['A', 1]"));
         assertEquals("Expression parsing error [line 1, pos 15]: Different value types in IN operator list: STRING and LONG in expression ''B' in ['A', 1]'", err.getMessage());
         err = assertThrows(ParseError.class, () -> evaluate("'B' in ['A', 1.0]"));
@@ -459,6 +487,18 @@ class ExprEvaluatorTest extends ExprEvaluatorTestBase {
         assertEquals("Expression parsing error [line 1, pos 13]: Expect 2 values separated by ',' in range operator in expression '1 between [2]'", err.getMessage());
         err = assertThrows(ParseError.class, () -> evaluate("1 between [2, 3, 4]"));
         assertEquals("Expression parsing error [line 1, pos 16]: Expect ']' after '[' and 2 numbers in expression '1 between [2, 3, 4]'", err.getMessage());
+        err = assertThrows(ParseError.class, () -> evaluate("-not(true)"));
+        assertEquals("Expression parsing error [line 1, pos 2]: Expect expression in expression '-not(true)'", err.getMessage());
+        err = assertThrows(ParseError.class, () -> evaluate("not-true"));
+        assertEquals("Expression parsing error [line 1, pos 4]: Expect expression in expression 'not-true'", err.getMessage());
+        err = assertThrows(ParseError.class, () -> evaluate("5 -- 2"));
+        assertEquals("Expression parsing error [line 1, pos 6]: Double minus syntax ('--') is not supported as erroneous in expression '5 -- 2'", err.getMessage());
+        err = assertThrows(ParseError.class, () -> evaluate("-true"));
+        assertEquals("Expression parsing error [line 1, pos 2]: Unary minus is applicable to numbers only in expression '-true'", err.getMessage());
+        err = assertThrows(ParseError.class, () -> evaluate("-'A'"));
+        assertEquals("Expression parsing error [line 1, pos 2]: Unary minus is applicable to numbers only in expression '-'A''", err.getMessage());
+        err = assertThrows(ParseError.class, () -> evaluate("not(-true)"));
+        assertEquals("Expression parsing error [line 1, pos 10]: Unary minus is applicable to numbers only in expression 'not(-true)'", err.getMessage());
 
         // Evaluation errors
         runErr = assertThrows(RuntimeError.class, () -> evaluate("!(1 + 2)"));
@@ -574,6 +614,9 @@ class ExprEvaluatorTest extends ExprEvaluatorTestBase {
         // error: Expects Long parameter instead of Double
         runErr = assertThrows(RuntimeError.class, () -> evaluate("isEven(1.0)", ctx));
         assertEquals("Expression evaluation error [line 1, pos 1]: RuntimeException in function 'isEven': Variant type mismatch: DOUBLE, expected: LONG in expression 'isEven(1.0)'", runErr.getMessage());
+
+        runErr = assertThrows(RuntimeError.class, () -> evaluate("-isEven(1)", ctx));
+        assertEquals("Expression evaluation error [line 1, pos 1]: Operand must be a number in expression '-isEven(1)'", runErr.getMessage());
 
         runErr = assertThrows(RuntimeError.class, () -> evaluate("isEven(\"\")", ctx));
         assertEquals("Expression evaluation error [line 1, pos 1]: RuntimeException in function 'isEven': Variant type mismatch: STRING, expected: LONG in expression 'isEven(\"\")'", runErr.getMessage());

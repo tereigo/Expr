@@ -803,19 +803,36 @@ class ExprArithmeticTest extends ExprEvaluatorTestBase {
 
     @Test
     void unaryMinusTests() {
-        RuntimeError runErr;
-        runErr = assertThrows(RuntimeError.class, () -> evaluate("-true"));
-        assertEquals("Expression evaluation error [line 1, pos 1]: Operand must be a number in expression '-true'", runErr.getMessage());
+        ParseError err;
         assertEquals(-1, evaluateLong("-1"));
-        assertEquals(1, evaluateLong("--1"));
         assertEquals(1, evaluateLong("-(-1)"));
         assertEquals(0, evaluateLong("-0"));
         assertEquals(-1.0, evaluateDouble("-1.0"), EPS);
-        assertEquals(1.0, evaluateDouble("--1.0"), EPS);
         assertEquals(1.0, evaluateDouble("-(-1.0)"), EPS);
         assertEquals(0.0, evaluateDouble("-0.0"), EPS);
-        runErr = assertThrows(RuntimeError.class, () -> evaluate("-\"A\""));
-        assertEquals("Expression evaluation error [line 1, pos 1]: Operand must be a number in expression '-\"A\"'", runErr.getMessage());
+        assertEquals(7, evaluateLong("5 - (-2)"));
+        assertEquals(-3.141592653589793, evaluateDouble("-pi"), EPS);
+
+        err = assertThrows(ParseError.class, () -> evaluate("-true"));
+        assertEquals("Expression parsing error [line 1, pos 2]: Unary minus is applicable to numbers only in expression '-true'", err.getMessage());
+
+        err = assertThrows(ParseError.class, () -> evaluate("5 -- 2"));
+        assertEquals("Expression parsing error [line 1, pos 6]: Double minus syntax ('--') is not supported as erroneous in expression '5 -- 2'", err.getMessage());
+
+        err = assertThrows(ParseError.class, () -> evaluate("5 - -2"));
+        assertEquals("Expression parsing error [line 1, pos 6]: Double minus syntax ('--') is not supported as erroneous in expression '5 - -2'", err.getMessage());
+
+        err = assertThrows(ParseError.class, () -> evaluate("5 (--2)"));
+        assertEquals("Expression parsing error [line 1, pos 1]: Function name should be an identifier in expression '5 (--2)'", err.getMessage());
+
+        err = assertThrows(ParseError.class, () -> evaluate("-'A'"));
+        assertEquals("Expression parsing error [line 1, pos 2]: Unary minus is applicable to numbers only in expression '-'A''", err.getMessage());
+
+        err = assertThrows(ParseError.class, () -> evaluate("--1"));
+        assertEquals("Expression parsing error [line 1, pos 2]: Expect expression in expression '--1'", err.getMessage());
+
+        err = assertThrows(ParseError.class, () -> evaluateDouble("--1.0"));
+        assertEquals("Expression parsing error [line 1, pos 2]: Expect expression in expression '--1.0'", err.getMessage());
     }
 
     @Test

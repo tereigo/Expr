@@ -67,8 +67,9 @@ import static com.tereigo.expr.TokenType.WITHIN;
     equality   : comparison ( ( "!=" | "==" ) comparison )* ;
     comparison : term ( ( ">" | ">=" | "<" | "<=" ) term )* ;
     term       : factor ( ( "-" | "+" ) factor )* ;
-    factor     : unary ( ( "/" | "*" | "%" ) unary )* ;
-    unary      : ( "!" | "-" ) call ;
+    factor     : unary_minus ( ( "/" | "*" | "%" ) unary_minus )* ;
+    unary_minus: ( "-" call ) | unary_not ;
+    unary_not  : ( "!" "(" expression ")" ) | call;
     call       : primary ( "(" arguments? ")" | "." IDENTIFIER "(" arguments? ")" )* ;
     arguments  : expression ( "," expression )* ;
     primary    : BOOLEAN | DOUBLE_NUMBER | LONG_NUMBER | STRING | IDENTIFIER | "(" expression ")" ;
@@ -276,29 +277,24 @@ final class ExprParser {
     return expr;
   }
 
-  // factor     : unary ( ( "/" | "*" | "%" ) unary )* ;
+  // factor     : unary_minus ( ( "/" | "*" | "%" ) unary_minus )* ;
   private Expr factor() {
-    Expr expr = unary();
+    Expr expr = unary_minus();
 
     while (match(DIV, MUL, MODULUS)) {
       Token operator = previous();
-      Expr right = unary();
+      Expr right = unary_minus();
       expr = new Expr.Binary(expr, operator, right);
     }
 
     return expr;
   }
 
-  // unary      : ( "!" | "-" ) call ;
-  private Expr unary() {
-    if (match(NOT, MINUS)) {
+  // unary_minus: ( "-" call ) | unary_not ;
+  private Expr unary_minus() {
+    if (match(MINUS)) {
       Token operator = previous();
       Expr right = call();
-      // safety check that "NOT" always followed by "()"
-      // This is to avoid runtime errors for syntax: not $ric == "VOD.L" which compiles into AST: not($ric) == "VOD.L"
-      if (operator.type == NOT && !(right instanceof Expr.Grouping)) {
-        throw error(previous(), "Operator NOT should be applied to the expression in parens '()'");
-      }
       if (operator.type == MINUS && right instanceof Expr.Literal) {
         final Variant val = ((Expr.Literal)right).result;
         if (!VariantUtils.isNumber(val)) {
@@ -307,7 +303,21 @@ final class ExprParser {
       }
       return new Expr.Unary(operator, right);
     }
+    return unary_not();
+  }
 
+  // unary_not  : ( "!" "(" expression ")" ) | call;
+  private Expr unary_not() {
+    if (match(NOT)) {
+      Token operator = previous();
+      if (match(LEFT_PAREN)) {
+        Expr right = expression();
+        consume(RIGHT_PAREN, "Expect ')' after '('");
+        return new Expr.Unary(operator, right);
+      } else {
+        throw error(peek(), "Operator NOT should be applied to the expression in parens '()'");
+      }
+    }
     return call();
   }
 

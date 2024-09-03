@@ -490,7 +490,7 @@ class ExprEvaluatorTest extends ExprEvaluatorTestBase {
         err = assertThrows(ParseError.class, () -> evaluate("-not(true)"));
         assertEquals("Expression parsing error [line 1, pos 2]: Expect expression in expression '-not(true)'", err.getMessage());
         err = assertThrows(ParseError.class, () -> evaluate("not-true"));
-        assertEquals("Expression parsing error [line 1, pos 4]: Expect expression in expression 'not-true'", err.getMessage());
+        assertEquals("Expression parsing error [line 1, pos 4]: Operator NOT should be applied to the expression in parens '()' in expression 'not-true'", err.getMessage());
         err = assertThrows(ParseError.class, () -> evaluate("5 -- 2"));
         assertEquals("Expression parsing error [line 1, pos 6]: Double minus syntax ('--') is not supported as erroneous in expression '5 -- 2'", err.getMessage());
         err = assertThrows(ParseError.class, () -> evaluate("-true"));

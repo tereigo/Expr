@@ -811,6 +811,9 @@ class ExprArithmeticTest extends ExprEvaluatorTestBase {
         assertEquals(1.0, evaluateDouble("-(-1.0)"), EPS);
         assertEquals(0.0, evaluateDouble("-0.0"), EPS);
         assertEquals(7, evaluateLong("5 - (-2)"));
+        assertEquals(7, evaluateLong("5 - ((-2))"));
+        assertEquals(7, evaluateLong("5 - (((-2)))"));
+        assertEquals(3, evaluateLong("5 - (-(-2))"));
         assertEquals(-3.141592653589793, evaluateDouble("-pi"), EPS);
 
         err = assertThrows(ParseError.class, () -> evaluate("-true"));

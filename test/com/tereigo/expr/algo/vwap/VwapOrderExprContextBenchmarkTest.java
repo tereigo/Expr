@@ -1,0 +1,99 @@
+package com.tereigo.expr.algo.vwap;
+
+import com.tereigo.expr.ExprContextFactory;
+import com.tereigo.expr.ExprEvaluator;
+import com.tereigo.expr.MutableExprContext;
+import com.tereigo.expr.domains.ExprContextBuilder;
+import com.tereigo.expr.domains.order.OrderDomain;
+import com.tereigo.expr.domains.order.OrderFieldResolverImpl;
+import com.tereigo.expr.falcon.utils.ReferenceDataCacheImpl;
+import com.tereigo.expr.order.TestVwapOrder;
+import com.tereigo.expr.utils.ByteBufferUtils;
+import org.openjdk.jmh.annotations.Benchmark;
+import org.openjdk.jmh.annotations.BenchmarkMode;
+import org.openjdk.jmh.annotations.Fork;
+import org.openjdk.jmh.annotations.Measurement;
+import org.openjdk.jmh.annotations.Mode;
+import org.openjdk.jmh.annotations.OutputTimeUnit;
+import org.openjdk.jmh.annotations.Scope;
+import org.openjdk.jmh.annotations.Setup;
+import org.openjdk.jmh.annotations.State;
+import org.openjdk.jmh.annotations.Warmup;
+
+import java.util.concurrent.TimeUnit;
+
+public class VwapOrderExprContextBenchmarkTest {
+
+    @State(Scope.Benchmark)
+    public static class BenchmarkState {
+        MutableExprContext ctx = ExprContextFactory.create();
+        ExprEvaluator evaluator;
+
+        @Setup
+        public void prepare() {
+            final ReferenceDataCacheImpl refData = new ReferenceDataCacheImpl();
+
+            OrderFieldResolverImpl orderFieldResolver;
+
+            final TestVwapOrder order1 = TestVwapOrder.create()
+                    .withProductId(123).withClientId(1).withVolumeLimit(0.1);
+            final TestVwapOrder order2 = TestVwapOrder.create()
+                    .withProductId(124).withClientId(2).withVolumeLimit(0.2);
+            final TestVwapOrder order3 = TestVwapOrder.create()
+                    .withProductId(124).withClientId(3).withVolumeLimit(0.2);
+
+            refData.addTuid(1, ByteBufferUtils.constant("CLIENT1"));
+            refData.addTuid(2, ByteBufferUtils.constant("CLIENT2"));
+
+            refData.addRic(123, ByteBufferUtils.constant("VOD.L"));
+            refData.addRic(124, ByteBufferUtils.constant("BP.L"));
+
+            OrderDomain.init(refData);
+
+            orderFieldResolver = new OrderFieldResolverImpl();
+            ctx = ExprContextBuilder.start().orderWithShortcuts(orderFieldResolver).build();
+            VwapOrderExprContextCreator creator = new VwapOrderExprContextCreator();
+            creator.enrich(orderFieldResolver, ctx);
+
+            orderFieldResolver.setOrder(order1);
+
+            // 232000
+//            evaluator = new ExprEvaluator("true");
+            // 14300
+//            evaluator = new ExprEvaluator("vwap.volumeLimit == 0.1");
+            // 13000
+//            evaluator = new ExprEvaluator("(vwap.volumeLimit == 0.1)");
+            // 16600
+//            evaluator = new ExprEvaluator("ric in ['BT.L', 'VOD.L', 'TSCO.L']");
+            // 15400
+//            evaluator = new ExprEvaluator("(ric in ['BT.L', 'VOD.L', 'TSCO.L'])");
+            // 6735 +- 355
+            evaluator = new ExprEvaluator("(vwap.volumeLimit == 0.1) and (ric in ['BT.L', 'VOD.L', 'TSCO.L'])");
+            // 7152 +- 427
+//            evaluator = new ExprEvaluator("vwap.volumeLimit == 0.1 and ric in ['BT.L', 'VOD.L', 'TSCO.L']");
+            // 1460
+//            evaluator = new ExprEvaluator("(vwap.volumeLimit == 0.1) and (vwap.ric == 'VOD.L') and (order.ric == 'VOD.L') and (ric == 'VOD.L') and (vwap.tuid == 'CLIENT1') and (order.tuid == 'CLIENT1') and (tuid == 'CLIENT1') and (ric in ['BT.L', 'VOD.L', 'TSCO.L'])");
+        }
+    }
+
+    @Benchmark
+    @BenchmarkMode(Mode.Throughput)
+    @OutputTimeUnit(TimeUnit.MILLISECONDS)
+    @Fork(value = 3)
+    @Warmup(iterations = 3, timeUnit = TimeUnit.MILLISECONDS, time = 5000)
+    @Measurement(iterations = 3, timeUnit = TimeUnit.MILLISECONDS, time = 5000)
+//    @Warmup(iterations = 5, timeUnit = TimeUnit.MILLISECONDS, time = 10000)
+//    @Measurement(iterations = 5, timeUnit = TimeUnit.MILLISECONDS, time = 10000)
+    public void benchmarkSimpleExpression(BenchmarkState state) {
+        state.evaluator.evaluateBool(state.ctx);
+    }
+
+//    @Test
+//    public void runBenchmarks() throws RunnerException {
+//        Options options = new OptionsBuilder()
+//                .include(this.getClass().getName() + ".benchmark*")
+//                .build();
+//
+//        new Runner(options).run();
+//    }
+}

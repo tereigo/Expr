@@ -33,6 +33,7 @@ final class ExprInterpreter implements Expr.Visitor<Variant> {
   }
 
   Variant evaluate(final ExprContext ctx) {
+    // TODO: if we make sure ExprContext always contains native context then we won't need to have 2
     this.ctx.init(ExprContextNative.get(), ctx);
     return evaluate(expression);
   }

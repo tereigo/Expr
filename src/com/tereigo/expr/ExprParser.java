@@ -388,16 +388,19 @@ final class ExprParser {
     if (match(LEFT_PAREN)) {
       Expr expr = expression();
       consume(RIGHT_PAREN, "Expect ')' after expression");
-      return new Expr.Grouping(expr);
-      // TODO: see if we can return just Expr here
-      //return expr;
-      // it doesn't affect the evaluation result however...
-      // to do that we need to come up with the way to make this safety check still:
-      // safety check that "NOT" always followed by "()"
-      // This is to avoid runtime errors for syntax: not $ric == "VOD.L" which compiles into AST: not($ric) == "VOD.L"
-//      if (operator.type == NOT && !(right instanceof Expr.Grouping)) {
-//        throw error(previous(), "Operator NOT should be applied to the expression in parens '()'");
-//      }
+      // this is to handle this example: "5 - (-2)", the expected result is 7
+      // in this case if we remove grouping then we'll end up with "5 -- 2" and this double minus syntax is not allowed
+      // hence we have to preserve grouping for such case
+      if (expr instanceof Expr.Unary) {
+        final Token token = ((Expr.Unary) expr).operator;
+        if (token.type == MINUS) {
+          return new Expr.Grouping(expr);
+        } else {
+          return expr;
+        }
+      } else {
+        return expr;
+      }
     }
 
     throw error(peek(), "Expect expression");

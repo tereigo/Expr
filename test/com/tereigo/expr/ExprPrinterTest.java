@@ -156,11 +156,11 @@ class ExprPrinterTest extends ExprEvaluatorTestBase {
         assertEquals("(- 2)", printer.print(ExprCompiler.compile("-2")));
         assertEquals("true", printer.print(ExprCompiler.compile("true")));
         assertEquals("a", printer.print(ExprCompiler.compile("\"a\"")));
-        assertEquals("(group (not true))", printer.print(ExprCompiler.compile("(not(true))")));
+        assertEquals("(not true)", printer.print(ExprCompiler.compile("(not(true))")));
         assertEquals("(+ 1.0 2)", printer.print(ExprCompiler.compile("1.0 + 2")));
         assertEquals("(% 3 2)", printer.print(ExprCompiler.compile("3 % 2")));
-        assertEquals("(group (+ 1.0 (group 2)))", printer.print(ExprCompiler.compile("(1.0 + (2))")));
-        assertEquals("(or (group (+ 1.0 (group 2))) (and true (group (== A B))))", printer.print(ExprCompiler.compile("(1.0 + (2)) or true and (\"A\" == \"B\")")));
+        assertEquals("(+ 1.0 2)", printer.print(ExprCompiler.compile("(1.0 + (2))")));
+        assertEquals("(or (+ 1.0 2) (and true (== A B)))", printer.print(ExprCompiler.compile("(1.0 + (2)) or true and (\"A\" == \"B\")")));
         assertEquals("(in 1.0 [2.0, 3.0])", printer.print(ExprCompiler.compile("1.0 in [2.0, 3.0]")));
         assertEquals("(in 1 [2])", printer.print(ExprCompiler.compile("1 in [2]")));
         assertEquals("(in A [A, B])", printer.print(ExprCompiler.compile("\"A\" in [\"A\", \"B\"]")));
@@ -171,30 +171,30 @@ class ExprPrinterTest extends ExprEvaluatorTestBase {
         assertEquals("obj call ABC.contains($id)", printer.print(ExprCompiler.compile("\"ABC\".contains($id)")));
         assertEquals("true(? 1 2)", printer.print(ExprCompiler.compile("true?1:2")));
         assertEquals("(== 1 2)(? 3 4)", printer.print(ExprCompiler.compile("1 == 2 ? 3 : 4")));
-        assertEquals("(group (!= 1 2))(? 3 4)", printer.print(ExprCompiler.compile("(1 != 2) ? 3 : 4")));
-        assertEquals("(+ 5 (group (== 1 2)(? 3 4)))", printer.print(ExprCompiler.compile("5 + (1 == 2 ? 3 : 4)")));
-        assertEquals("(+ 5 (group (group (== 1 2))(? 3 4)))", printer.print(ExprCompiler.compile("5 + ((1 == 2) ? 3 : 4)")));
+        assertEquals("(!= 1 2)(? 3 4)", printer.print(ExprCompiler.compile("(1 != 2) ? 3 : 4")));
+        assertEquals("(+ 5 (== 1 2)(? 3 4))", printer.print(ExprCompiler.compile("5 + (1 == 2 ? 3 : 4)")));
+        assertEquals("(+ 5 (== 1 2)(? 3 4))", printer.print(ExprCompiler.compile("5 + ((1 == 2) ? 3 : 4)")));
     }
 
     @Test
     void testAstPrinterTheSameExpression() {
         AstPolishPrinter printer = new AstPolishPrinter();
         ASTRoot expr = ExprCompiler.compile("(1.0+2.0)");
-        assertEquals("(group (+ 1.0 2.0))", printer.print(expr));
+        assertEquals("(+ 1.0 2.0)", printer.print(expr));
         ExprEvaluator exprEvaluator = new ExprEvaluator(expr);
         assertEquals(3.0, exprEvaluator.evaluateDouble(), EPS);
-        assertEquals("(group (+ 1.0 2.0))", printer.print(expr));
+        assertEquals("(+ 1.0 2.0)", printer.print(expr));
         assertEquals(3.0, exprEvaluator.evaluateDouble(), EPS);
-        assertEquals("(group (+ 1.0 2.0))", printer.print(expr));
+        assertEquals("(+ 1.0 2.0)", printer.print(expr));
         assertEquals(3.0, exprEvaluator.evaluateDouble(), EPS);
 
         expr = ExprCompiler.compile("not (true) and (not (false or true)) or 1==2");
         exprEvaluator = new ExprEvaluator(expr);
-        assertEquals("(or (and (not true) (group (not (or false true)))) (== 1 2))", printer.print(expr));
+        assertEquals("(or (and (not true) (not (or false true))) (== 1 2))", printer.print(expr));
         assertFalse(exprEvaluator.evaluateBool());
-        assertEquals("(or (and (not true) (group (not (or false true)))) (== 1 2))", printer.print(expr));
+        assertEquals("(or (and (not true) (not (or false true))) (== 1 2))", printer.print(expr));
         assertFalse(exprEvaluator.evaluateBool());
-        assertEquals("(or (and (not true) (group (not (or false true)))) (== 1 2))", printer.print(expr));
+        assertEquals("(or (and (not true) (not (or false true))) (== 1 2))", printer.print(expr));
         assertFalse(exprEvaluator.evaluateBool());
     }
 }

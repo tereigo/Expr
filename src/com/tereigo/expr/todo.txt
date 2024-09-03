@@ -28,18 +28,6 @@ do it once and store it for reuse
 
 9. "in" should have expressions inside []!
 
-10. can we remove optimize out Grouping after parsing?
-    After all it's just a proxy to the underlying expression
- static class Grouping extends Expr {
-    // Grouping is really a proxy to the underlying expression so it doesn't require Variant to store the result
-    <R> R accept(Visitor<R> visitor) {
-      return visitor.visitGroupingExpr(this);
-    }
-    final Expr expression;
-  }
-
-  the only drawback is that hierarchy printers will not produce the correct output
-
   11. PI and E convert to Literals, not as Functions
 
 
@@ -193,3 +181,15 @@ Potential syntax:
 if substring in fullstring:
 if fullstring.find(substring) != -1:
 if search(substring, fullstring):   - regexp
+
+10. can we remove optimize out Grouping after parsing?
+    After all it's just a proxy to the underlying expression
+ static class Grouping extends Expr {
+    // Grouping is really a proxy to the underlying expression so it doesn't require Variant to store the result
+    <R> R accept(Visitor<R> visitor) {
+      return visitor.visitGroupingExpr(this);
+    }
+    final Expr expression;
+  }
+
+  the only drawback is that hierarchy printers will not produce the correct output

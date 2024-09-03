@@ -23,6 +23,8 @@ import static com.tereigo.expr.TokenType.LEFT_PAREN;
 import static com.tereigo.expr.TokenType.LESS;
 import static com.tereigo.expr.TokenType.LESS_EQUAL;
 import static com.tereigo.expr.TokenType.LONG_NUMBER;
+import static com.tereigo.expr.TokenType.MATH_E;
+import static com.tereigo.expr.TokenType.MATH_PI;
 import static com.tereigo.expr.TokenType.MINUS;
 import static com.tereigo.expr.TokenType.MODULUS;
 import static com.tereigo.expr.TokenType.MUL;
@@ -54,6 +56,8 @@ final class ExprScanner {
     KEYWORDS.put("between", BETWEEN);
     KEYWORDS.put("false",  FALSE);
     KEYWORDS.put("true",   TRUE);
+    KEYWORDS.put("pi",     MATH_PI);
+    KEYWORDS.put("e",      MATH_E);
   }
   private final String source;
   private final List<Token> tokens = new ArrayList<>();

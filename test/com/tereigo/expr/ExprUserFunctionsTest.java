@@ -157,8 +157,8 @@ class ExprUserFunctionsTest extends ExprEvaluatorTestBase {
         assertFalse(evaluateBool("func3(1, 10.0, false)", ctx));
         assertTrue(evaluateBool("func3(10, 1.0, true) == true", ctx));
 
-        assertFalse(evaluateBool("func3($productId, PI(), $enabled)", ctx));
-        assertTrue(evaluateBool("func3($productId, PI(), not($enabled))", ctx));
+        assertFalse(evaluateBool("func3($productId, PI, $enabled)", ctx));
+        assertTrue(evaluateBool("func3($productId, PI, not($enabled))", ctx));
 
         assertTrue(evaluateBool("func4(10, 1.0, true, \"A\")", ctx));
         assertFalse(evaluateBool("func4(10, 1.0, true, \"\")", ctx));
@@ -168,14 +168,14 @@ class ExprUserFunctionsTest extends ExprEvaluatorTestBase {
         assertFalse(evaluateBool("func4(1, 10.0, true, \"\")", ctx));
         assertTrue(evaluateBool("func4(10, 1.0, true, \"A\") == true", ctx));
 
-        assertFalse(evaluateBool("func4($productId, PI(), $enabled, $ric)", ctx));
-        assertFalse(evaluateBool("func4($productId, PI(), $enabled, $tuid)", ctx));
-        assertTrue(evaluateBool("func4($productId, PI(), not($enabled), $ric)", ctx));
-        assertTrue(evaluateBool("func4($productId, PI(), not($enabled), $tuid)", ctx));
-        assertFalse(evaluateBool("func4($productId, PI(), $enabled, \"\")", ctx));
-        assertFalse(evaluateBool("func4($productId, PI(), $enabled, \"\")", ctx));
-        assertFalse(evaluateBool("func4($productId, PI(), not($enabled), \"\")", ctx));
-        assertFalse(evaluateBool("func4($productId, PI(), not($enabled), \"\")", ctx));
+        assertFalse(evaluateBool("func4($productId, PI, $enabled, $ric)", ctx));
+        assertFalse(evaluateBool("func4($productId, PI, $enabled, $tuid)", ctx));
+        assertTrue(evaluateBool("func4($productId, PI, not($enabled), $ric)", ctx));
+        assertTrue(evaluateBool("func4($productId, PI, not($enabled), $tuid)", ctx));
+        assertFalse(evaluateBool("func4($productId, PI, $enabled, \"\")", ctx));
+        assertFalse(evaluateBool("func4($productId, PI, $enabled, \"\")", ctx));
+        assertFalse(evaluateBool("func4($productId, PI, not($enabled), \"\")", ctx));
+        assertFalse(evaluateBool("func4($productId, PI, not($enabled), \"\")", ctx));
 
         assertTrue(evaluateBool("func5(10, 1.0, true, \"A\", $tuid)", ctx));
         assertFalse(evaluateBool("func5(10, 1.0, true, \"\", $tuid)", ctx));
@@ -185,13 +185,13 @@ class ExprUserFunctionsTest extends ExprEvaluatorTestBase {
         assertFalse(evaluateBool("func5(1, 10.0, true, \"\", $tuid)", ctx));
         assertTrue(evaluateBool("func5(10, 1.0, true, \"A\", $tuid) == true", ctx));
 
-        assertFalse(evaluateBool("func5($productId, PI(), $enabled, $ric, $tuid)", ctx));
-        assertTrue(evaluateBool("func5($productId, PI(), not($enabled), $ric, $tuid)", ctx));
-        assertFalse(evaluateBool("func5($productId, PI(), $enabled, \"\", $tuid)", ctx));
-        assertFalse(evaluateBool("func5($productId, PI(), $enabled, \"\", $tuid)", ctx));
-        assertFalse(evaluateBool("func5($productId, PI(), not($enabled), \"\", $tuid)", ctx));
-        assertFalse(evaluateBool("func5($productId, PI(), not($enabled), \"\", $tuid)", ctx));
-        assertTrue(evaluateBool("func5(func1(100), func2(func1(10), PI()), not($enabled), $ric, $tuid)", ctx));
+        assertFalse(evaluateBool("func5($productId, PI, $enabled, $ric, $tuid)", ctx));
+        assertTrue(evaluateBool("func5($productId, PI, not($enabled), $ric, $tuid)", ctx));
+        assertFalse(evaluateBool("func5($productId, PI, $enabled, \"\", $tuid)", ctx));
+        assertFalse(evaluateBool("func5($productId, PI, $enabled, \"\", $tuid)", ctx));
+        assertFalse(evaluateBool("func5($productId, PI, not($enabled), \"\", $tuid)", ctx));
+        assertFalse(evaluateBool("func5($productId, PI, not($enabled), \"\", $tuid)", ctx));
+        assertTrue(evaluateBool("func5(func1(100), func2(func1(10), PI), not($enabled), $ric, $tuid)", ctx));
         assertTrue(evaluateBool("func5(func1(100), func2(func1(10), func2(10, 1.0)), not($enabled), $ric, $tuid)", ctx));
         assertTrue(evaluateBool("func5(func1(100), func2(func1(10), func2(10, 1)), not($enabled), $ric, $tuid)", ctx));
     }

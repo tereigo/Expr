@@ -25,6 +25,8 @@ import static com.tereigo.expr.TokenType.LEFT_PAREN;
 import static com.tereigo.expr.TokenType.LESS;
 import static com.tereigo.expr.TokenType.LESS_EQUAL;
 import static com.tereigo.expr.TokenType.LONG_NUMBER;
+import static com.tereigo.expr.TokenType.MATH_E;
+import static com.tereigo.expr.TokenType.MATH_PI;
 import static com.tereigo.expr.TokenType.MINUS;
 import static com.tereigo.expr.TokenType.MODULUS;
 import static com.tereigo.expr.TokenType.MUL;
@@ -371,6 +373,12 @@ final class ExprParser {
     }
     if (match(TRUE)) {
       return Expr.Literal.BOOL_TRUE;
+    }
+    if (match(MATH_PI)) {
+      return Expr.Literal.PI;
+    }
+    if (match(MATH_E)) {
+      return Expr.Literal.E;
     }
 
     if (match(DOUBLE_NUMBER)) {

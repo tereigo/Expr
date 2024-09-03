@@ -39,6 +39,8 @@ enum TokenType {
   BETWEEN,          // 'between'
   FALSE,
   TRUE,
+  MATH_PI,
+  MATH_E,
 
   EOF
 }

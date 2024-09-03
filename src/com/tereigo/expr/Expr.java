@@ -122,6 +122,9 @@ abstract class Expr {
     static final Literal BOOL_TRUE = new Expr.Literal(true);
     static final Literal BOOL_FALSE = new Expr.Literal(false);
 
+    static final Literal PI = new Expr.Literal(Math.PI);
+    static final Literal E = new Expr.Literal(Math.E);
+
     // for Literal it's Variant because it's immutable
     final Variant result;
 

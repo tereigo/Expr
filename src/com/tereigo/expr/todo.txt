@@ -3,7 +3,6 @@
 2. Support scientific input for Doubles: 1e6
 3. Add tests for VariantImpl equals / hashCode
 4. add git hash tag / gitVersion / gitDate functions
-5. Add Expr cache
 6. Optimize expressions by caching the functions so that instead of fetching a function from the map:
    if (isExprContext(objResult)) {
       // then fetch the function from that ExprContext
@@ -13,7 +12,7 @@
     // otherwise it's a normal/native function call -> get the function from the global context
     Object funcObj = ctx.getFunction(expr.operator.lexeme);
 
-do it once and store it for reuse
+do it once and store the function directly for reuse to avoid look ups by name during evaluation
 
 7. Can we merge contexts to avoid 2 lookups in this function in ExprContextCombined?
     public MutableVariant get(String name, MutableVariant result) {
@@ -23,12 +22,7 @@ do it once and store it for reuse
 
     if contexts don't change at runtime then we are allowed to merge them
 
-
-8. Introduce performance test for evaluation
-
-9. "in" should have expressions inside []!
-
-  11. PI and E convert to Literals, not as Functions
+8. Extract performance tests as a separate target
 
 
 4. May be enforce supplying ExprContext during expression compilation to make sure that it's not changed during evaluation?
@@ -193,3 +187,7 @@ if search(substring, fullstring):   - regexp
   }
 
   the only drawback is that hierarchy printers will not produce the correct output
+
+5. Add Expr cache
+8. Introduce performance test for evaluation
+11. PI and E convert to Literals, not as Functions

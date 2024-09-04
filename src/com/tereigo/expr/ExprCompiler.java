@@ -5,17 +5,17 @@ import com.tereigo.expr.utils.ByteBufferUtils;
 import java.nio.ByteBuffer;
 import java.util.List;
 
-public final class ExprCompiler {
+final class ExprCompiler {
 
     private ExprCompiler() {}
 
-    public static ASTRoot compile(String source) {
+    static ASTRoot compile(String source) {
         return compile(ByteBufferUtils.constant(source));
     }
 
     // Convert Expression into AST
     @SuppressWarnings("UnnecessaryLocalVariable")
-    public static ASTRoot compile(ByteBuffer source) {
+    static ASTRoot compile(ByteBuffer source) {
         final String strSource = ByteBufferUtils.toString(source);
         try {
             final ExprScanner scanner = new ExprScanner(strSource);

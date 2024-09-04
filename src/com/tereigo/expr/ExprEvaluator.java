@@ -1,5 +1,6 @@
 package com.tereigo.expr;
 
+import com.tereigo.expr.annotations.GeneratesGarbage;
 import com.tereigo.expr.variant.Variant;
 
 import java.nio.ByteBuffer;
@@ -30,7 +31,7 @@ public final class ExprEvaluator {
         this(ExprCompiler.compile(source));
     }
 
-    public ExprEvaluator(final ASTRoot root) {
+    ExprEvaluator(final ASTRoot root) {
         this.source = root.source();
         this.interpreter = new ExprInterpreter(root.expr());
     }
@@ -90,6 +91,7 @@ public final class ExprEvaluator {
         return result.getAsObject();
     }
 
+    @GeneratesGarbage
     public Object evaluateAsObject(final ExprContext ctx) {
         Variant result = evaluateImpl(ctx);
         return result.getAsObject();

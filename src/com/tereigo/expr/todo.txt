@@ -1,5 +1,15 @@
  TODO:
+7. Can we merge contexts to avoid 2 lookups in this function in ExprContextCombined?
+    public MutableVariant get(String name, MutableVariant result) {
+        MutableVariant res = ctx1.get(name, result);
+        return res != null ? res : ctx2 != null ? ctx2.get(name, result) : null;
+    }
+
+    if contexts don't change at runtime then we are allowed to merge them
+
+8. Extract performance tests as a separate target
 2. Support scientific input for Doubles: 1e6
+
 3. Add tests for VariantImpl equals / hashCode
 4. add git hash tag / gitVersion / gitDate functions
 6. Optimize expressions by caching the functions so that instead of fetching a function from the map:
@@ -13,15 +23,6 @@
 
 do it once and store the function directly for reuse to avoid look ups by name during evaluation
 
-7. Can we merge contexts to avoid 2 lookups in this function in ExprContextCombined?
-    public MutableVariant get(String name, MutableVariant result) {
-        MutableVariant res = ctx1.get(name, result);
-        return res != null ? res : ctx2 != null ? ctx2.get(name, result) : null;
-    }
-
-    if contexts don't change at runtime then we are allowed to merge them
-
-8. Extract performance tests as a separate target
 
 
 7. Add string operators:

@@ -10,16 +10,16 @@ import java.util.Map;
 
 // TODO: test
 final class ExprEvaluatorCache {
-    private final Map<ByteBuffer, ExprEvaluator> compiledExpressions = new HashMap<>();
+    private final Map<ByteBuffer, ExprEvaluator> cache = new HashMap<>();
 
     @GeneratesGarbage
     @NotNull
     public ExprEvaluator getExprEvaluator(final ByteBuffer expr) {
-        ExprEvaluator entry = compiledExpressions.get(expr);
+        ExprEvaluator entry = cache.get(expr);
         if (entry == null) {
             final ByteBuffer exprClone = ByteBufferUtils.clone(expr);
             entry = new ExprEvaluator(exprClone);
-            compiledExpressions.put(exprClone, entry);
+            cache.put(exprClone, entry);
         }
         return entry;
     }

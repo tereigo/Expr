@@ -249,15 +249,15 @@ final class ExprScanner {
     return source.charAt(current + 1);
   }
 
-  private boolean isAlpha(char c) {
+  private static boolean isAlpha(char c) {
     return Character.isLetter(c) || c == '_' || c == '$';
   }
 
-  private boolean isAlphaNumeric(char c) {
+  private static boolean isAlphaNumeric(char c) {
     return Character.isLetterOrDigit(c);
   }
 
-  private boolean isDigit(char c) {
+  private static boolean isDigit(char c) {
     return Character.isDigit(c);
   }
 

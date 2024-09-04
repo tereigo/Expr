@@ -1,5 +1,4 @@
  TODO:
-1. add "not in / not within / not between" operators
 2. Support scientific input for Doubles: 1e6
 3. Add tests for VariantImpl equals / hashCode
 4. add git hash tag / gitVersion / gitDate functions
@@ -24,19 +23,6 @@ do it once and store the function directly for reuse to avoid look ups by name d
 
 8. Extract performance tests as a separate target
 
-
-4. May be enforce supplying ExprContext during expression compilation to make sure that it's not changed during evaluation?
-   It ensures that a client will not apply any GC-type ops to ExprContext during evaluation
-   It also means that the original expression and it's Expr context are "immutable" after compilation.
-   Not "totally immutable" because you can substitute an order still in Supplier but both both Compiled expr and its ExprContext are bound together.
-   "evaluate()" will not have "ctx" in that case and it goes into ExprEvaluator constructor:
-        ASTRoot root = ExprCompiler.compile("$ric == \"VOD.L\" and $productId == 123 or 5 != 2");
-        ExprEvaluator exprEvaluator = new ExprEvaluator(root, ctx);
-
-        exprEvaluator.evaluateBool();
-
-   Cons:
-   You need to have ExprContext to be able to compile the expression which is not always available. especially when you compile in front-end
 
 7. Add string operators:
  startsWith
@@ -84,14 +70,27 @@ and all other functions well be available via reflection
   falconRnd
   falconRandom
   falconEnv (PROD, UAT, QA)
-  falconDeployment ALGO/GSX/ACM/MOMIC/...
+  falconDeployment ALGO/CROSSING/...
   falconRegion
   falconNodeAlgoType
   falconNodeName
   falconReleaseVersion
 
 9. Do we NIL ?
-12.
+
+4. May be enforce supplying ExprContext during expression compilation to make sure that it's not changed during evaluation?
+   It ensures that a client will not apply any GC-type ops to ExprContext during evaluation
+   It also means that the original expression and it's Expr context are "immutable" after compilation.
+   Not "totally immutable" because you can substitute an order still in Supplier but both both Compiled expr and its ExprContext are bound together.
+   "evaluate()" will not have "ctx" in that case and it goes into ExprEvaluator constructor:
+        ASTRoot root = ExprCompiler.compile("$ric == \"VOD.L\" and $productId == 123 or 5 != 2");
+        ExprEvaluator exprEvaluator = new ExprEvaluator(root, ctx);
+
+        exprEvaluator.evaluateBool();
+
+   Cons:
+   You need to have ExprContext to be able to compile the expression which is not always available. especially when you compile in front-end
+
 
 
 
@@ -191,3 +190,4 @@ if search(substring, fullstring):   - regexp
 5. Add Expr cache
 8. Introduce performance test for evaluation
 11. PI and E convert to Literals, not as Functions
+1. add "not in / not within / not between" operators

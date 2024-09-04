@@ -49,9 +49,12 @@ import static com.tereigo.expr.TokenType.WITHIN;
     It's been refactored significantly to introduce the following main features:
     1. Support Long values
     2. Support ByteBuffer values
-    3. Support "IN / WITHIN / BETWEEN" operator
+    3. Support "IN / WITHIN / BETWEEN" operators
     4. Make expression evaluation garbage-free
     5. Hierarchical AST graph output
+    6. Ternary operator
+    7. Domains
+    8. Extendable custom Expression contexts
 
     But conceptually and architecturally it's an exact replica of what's presented in the book
 
@@ -64,8 +67,8 @@ import static com.tereigo.expr.TokenType.WITHIN;
     logic_or   : logic_and ( "or" logic_and )* ;
     logic_and  : ternary_if ( "and" in_operator )* ;
     ternary_if  : in_operator ( "?" expression ":" expression ) ;
-    in_operator: range_operator ( "in" "[" expression ( "," expression )* "]" ) ;
-    range_operator: equality ( ("within" | "between") "[" expression "," expression "]" ) ;
+    in_operator: range_operator ( ( "in" | "not in" ) ) "[" expression ( "," expression )* "]" ) ;
+    range_operator: equality ( ("within" | "between" | "not within" | "not between") "[" expression "," expression "]" ) ;
     equality   : comparison ( ( "!=" | "==" ) comparison )* ;
     comparison : term ( ( ">" | ">=" | "<" | "<=" ) term )* ;
     term       : factor ( ( "-" | "+" ) factor )* ;
@@ -148,21 +151,31 @@ final class ExprParser {
     return expr;
   }
 
-  // in_operator: range_operator ( "in" "[" expression ( "," expression )* "]" ) ;
+  // in_operator: range_operator ( ( "in" | "not in" ) ) "[" expression ( "," expression )* "]" ) ;
   private Expr in_operator() {
     Expr expr = range_operator();
+    // "not in"
+    if (peek().type == NOT && next(1) != null && next(1).type == IN) {
+      Token not_operator = consume(NOT, "Expected NOT operator");
+      consume(IN, "Expected IN operator");
+      return new Expr.Unary(not_operator, parseInOperands(expr));
+    }
     if (match(IN)) {
-      Token operator = previous();
-      if (match(LEFT_BRACKET)) {
-        List<Expr> values = list();
-        consume(RIGHT_BRACKET, "Expect ']' after '['");
-        validateInValues(values);
-        return new Expr.InOperator(expr, operator, values);
-      } else {
-        throw error(peek(), "Expect '[' after IN operator");
-      }
+      return parseInOperands(expr);
     }
     return expr;
+  }
+
+  private Expr.InOperator parseInOperands(Expr expr) {
+    Token operator = previous();
+    if (match(LEFT_BRACKET)) {
+      List<Expr> values = list();
+      consume(RIGHT_BRACKET, "Expect ']' after '['");
+      validateInValues(values);
+      return new Expr.InOperator(expr, operator, values);
+    } else {
+      throw error(peek(), "Expect '[' after IN operator");
+    }
   }
 
   private void validateInValues(List<Expr> values) {
@@ -201,27 +214,37 @@ final class ExprParser {
     return values;
   }
 
-  // range_operator: equality ( ("within" | "between") "[" expression "," expression "]" ) ;
+  // range_operator: equality ( ("within" | "between" | "not within" | "not between") "[" expression "," expression "]" ) ;
   private Expr range_operator() {
     Expr expr = equality();
 
-    if (match(WITHIN) || match(BETWEEN)) {
-      Token operator = previous();
-      if (match(LEFT_BRACKET)) {
-        final Expr val1 = range_entry();
-        consume(COMMA, "Expect 2 values separated by ',' in range operator");
-        final Expr val2 = range_entry();
-        consume(RIGHT_BRACKET, "Expect ']' after '[' and 2 numbers");
-        if (operator.type == WITHIN) {
-          return new Expr.WithinOperator(expr, operator, val1, val2);
-        } else {
-          return new Expr.BetweenOperator(expr, operator, val1, val2);
-        }
-      } else {
-        throw error(peek(), "Expect '[' after WITHIN/BETWEEN operator");
-      }
+    // "not within/between"
+    if (peek().type == NOT && next(1) != null && (next(1).type == WITHIN || next(1).type == BETWEEN)) {
+      Token not_operator = consume(NOT, "Expected NOT operator");
+      match(WITHIN, BETWEEN);
+      return new Expr.Unary(not_operator, parseRangeOperands(expr));
+    }
+    if (match(WITHIN, BETWEEN)) {
+      return parseRangeOperands(expr);
     }
     return expr;
+  }
+
+  private Expr.BaseExpr parseRangeOperands(Expr expr) {
+    Token operator = previous();
+    if (match(LEFT_BRACKET)) {
+      final Expr val1 = range_entry();
+      consume(COMMA, "Expect 2 values separated by ',' in range operator");
+      final Expr val2 = range_entry();
+      consume(RIGHT_BRACKET, "Expect ']' after '[' and 2 numbers");
+      if (operator.type == WITHIN) {
+        return new Expr.WithinOperator(expr, operator, val1, val2);
+      } else {
+        return new Expr.BetweenOperator(expr, operator, val1, val2);
+      }
+    } else {
+      throw error(peek(), "Expect '[' after WITHIN/BETWEEN operator");
+    }
   }
 
   private Expr range_entry() {
@@ -451,6 +474,13 @@ final class ExprParser {
 
   private Token peek() {
     return tokens.get(current);
+  }
+
+  private Token next(int forward) {
+    if (current + forward >= tokens.size()) {
+      return null;
+    }
+    return tokens.get(current + forward);
   }
 
   private Token previous() {

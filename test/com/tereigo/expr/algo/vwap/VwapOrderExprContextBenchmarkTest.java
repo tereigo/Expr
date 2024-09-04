@@ -67,19 +67,19 @@ public class VwapOrderExprContextBenchmarkTest {
 //            evaluator = new ExprEvaluator("ric in ['BT.L', 'VOD.L', 'TSCO.L']");
             // 15400
 //            evaluator = new ExprEvaluator("(ric in ['BT.L', 'VOD.L', 'TSCO.L'])");
-            // 6735 +- 355
-            evaluator = new ExprEvaluator("(vwap.volumeLimit == 0.1) and (ric in ['BT.L', 'VOD.L', 'TSCO.L'])");
+            // 7366 +- 262
+//            evaluator = new ExprEvaluator("(vwap.volumeLimit == 0.1) and (ric in ['BT.L', 'VOD.L', 'TSCO.L'])");
             // 7152 +- 427
 //            evaluator = new ExprEvaluator("vwap.volumeLimit == 0.1 and ric in ['BT.L', 'VOD.L', 'TSCO.L']");
-            // 1460
-//            evaluator = new ExprEvaluator("(vwap.volumeLimit == 0.1) and (vwap.ric == 'VOD.L') and (order.ric == 'VOD.L') and (ric == 'VOD.L') and (vwap.tuid == 'CLIENT1') and (order.tuid == 'CLIENT1') and (tuid == 'CLIENT1') and (ric in ['BT.L', 'VOD.L', 'TSCO.L'])");
+            // 1553
+            evaluator = new ExprEvaluator("(vwap.volumeLimit == 0.1) and (vwap.ric == 'VOD.L') and (order.ric == 'VOD.L') and (ric == 'VOD.L') and (vwap.tuid == 'CLIENT1') and (order.tuid == 'CLIENT1') and (tuid == 'CLIENT1') and (ric in ['BT.L', 'VOD.L', 'TSCO.L'])");
         }
     }
 
     @Benchmark
     @BenchmarkMode(Mode.Throughput)
     @OutputTimeUnit(TimeUnit.MILLISECONDS)
-    @Fork(value = 3)
+    @Fork(value = 1)
     @Warmup(iterations = 3, timeUnit = TimeUnit.MILLISECONDS, time = 5000)
     @Measurement(iterations = 3, timeUnit = TimeUnit.MILLISECONDS, time = 5000)
 //    @Warmup(iterations = 5, timeUnit = TimeUnit.MILLISECONDS, time = 10000)

@@ -325,7 +325,6 @@ class ExprEvaluatorTest extends ExprEvaluatorTestBase {
         assertTrue(evaluateBool("\"B\" in [\"A\", \"B\", \"A\", \"B\"]"));
         assertTrue(evaluateBool("'A' in ['A']"));
         assertTrue(evaluateBool("1 in [1]"));
-//        assertTrue(evaluateBool("1 not in [1]")); // TODO: implement "not in"
         assertTrue(evaluateBool("(1 == 1) and (1 in [1])"));
         assertFalse(evaluateBool("1 in [2,3]"));
         assertTrue(evaluateBool("1 in [2,3,1]"));
@@ -346,6 +345,14 @@ class ExprEvaluatorTest extends ExprEvaluatorTestBase {
         assertTrue(evaluateBool("PI in [PI, E]"));
         assertTrue(evaluateBool("3 in [2, 3.0]"));
         assertTrue(evaluateBool("3.0 in [2.0, 3]"));
+    }
+
+    @Test
+    void operatorNotInTest() {
+        assertTrue(evaluateBool("1 not in [2]"));
+        assertTrue(evaluateBool("(1 not in [2]) == not(1 in [2])"));
+        assertFalse(evaluateBool("1 not in [1]"));
+        assertTrue(evaluateBool("(1 not in [1]) == not(1 in [1])"));
     }
 
     @Test
@@ -374,6 +381,16 @@ class ExprEvaluatorTest extends ExprEvaluatorTestBase {
         assertTrue(evaluateBool("3 within [PI - 1, PI]"));
         assertTrue(evaluateBool("3 within [E, PI]"));
         assertTrue(evaluateBool("3 within [e, pi]"));
+    }
+
+    @Test
+    void operatorNotWithinTest() {
+        assertTrue(evaluateBool("1 not within [2, 3]"));
+        assertTrue(evaluateBool("(1 not within [2, 3]) == not(1 within [2, 3])"));
+        assertFalse(evaluateBool("2.5 not within [2, 3]"));
+        assertTrue(evaluateBool("(2.5 not within [2, 3]) == not(2.5 within [2, 3])"));
+        assertFalse(evaluateBool("2 not within [2, 3]"));
+        assertTrue(evaluateBool("(2 not within [2, 3]) == not(2 within [2, 3])"));
     }
 
     @Test
@@ -406,6 +423,16 @@ class ExprEvaluatorTest extends ExprEvaluatorTestBase {
     }
 
     @Test
+    void operatorNotBetweenTest() {
+        assertTrue(evaluateBool("1 not between [2, 3]"));
+        assertTrue(evaluateBool("(1 not between [2, 3]) == not(1 between [2, 3])"));
+        assertFalse(evaluateBool("2.5 not between [2, 3]"));
+        assertTrue(evaluateBool("(2.5 not between [2, 3]) == not(2.5 between [2, 3])"));
+        assertTrue(evaluateBool("2 not between [2, 3]"));
+        assertTrue(evaluateBool("(2 not between [2, 3]) == not(2 between [2, 3])"));
+    }
+
+    @Test
     void testMalformedExpressions() {
         ParseError err;
         RuntimeError runErr;
@@ -415,6 +442,12 @@ class ExprEvaluatorTest extends ExprEvaluatorTestBase {
         assertEquals("Expression parsing error [line 1, pos 5]: Expect expression in expression 'not(or true)'", err.getMessage());
         err = assertThrows(ParseError.class, () -> evaluate("'B' in ['A', 1]"));
         assertEquals("Expression parsing error [line 1, pos 15]: Different value types in IN operator list: STRING and LONG in expression ''B' in ['A', 1]'", err.getMessage());
+        err = assertThrows(ParseError.class, () -> evaluate("1 not (in [1])"));
+        assertEquals("Expression parsing error [line 1, pos 3]: Malformed expression: parsing ended prematurely in expression '1 not (in [1])'", err.getMessage());
+        err = assertThrows(ParseError.class, () -> evaluate("1 (not in [1])"));
+        assertEquals("Expression parsing error [line 1, pos 1]: Function name should be an identifier in expression '1 (not in [1])'", err.getMessage());
+        err = assertThrows(ParseError.class, () -> evaluate("1 not in ([1])"));
+        assertEquals("Expression parsing error [line 1, pos 10]: Expect '[' after IN operator in expression '1 not in ([1])'", err.getMessage());
         err = assertThrows(ParseError.class, () -> evaluate("'B' in ['A', 1.0]"));
         assertEquals("Expression parsing error [line 1, pos 17]: Different value types in IN operator list: STRING and DOUBLE in expression ''B' in ['A', 1.0]'", err.getMessage());
         err = assertThrows(ParseError.class, () -> evaluate("1 in ['A', 1]"));

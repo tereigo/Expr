@@ -27,12 +27,8 @@ class ExprContextNativeEnricher implements ExprContextEnricher {
     ctx.defineFunction("min", (result, arg1, arg2) -> {
       if (VariantUtils.isLong(arg1) && VariantUtils.isLong(arg2)) {
         result.accept(Math.min(arg1.getAsLong(), arg2.getAsLong()));
-      } else if (VariantUtils.isLong(arg1) && VariantUtils.isDouble(arg2)) {
-        result.accept(Math.min(arg1.getAsLong(), arg2.getAsDouble()));
-      } else if (VariantUtils.isDouble(arg1) && VariantUtils.isLong(arg2)) {
-        result.accept(Math.min(arg1.getAsDouble(), arg2.getAsLong()));
-      } else if (VariantUtils.isDouble(arg1) && VariantUtils.isDouble(arg2)) {
-        result.accept(Math.min(arg1.getAsDouble(), arg2.getAsDouble()));
+      } else if (VariantUtils.isNumber(arg1) && VariantUtils.isNumber(arg2)) {
+        result.accept(Math.min(arg1.getAsNumber(), arg2.getAsNumber()));
       } else {
         throw new RuntimeException("Operands must be numbers");
       }
@@ -41,12 +37,8 @@ class ExprContextNativeEnricher implements ExprContextEnricher {
     ctx.defineFunction("max", (result, arg1, arg2) -> {
       if (VariantUtils.isLong(arg1) && VariantUtils.isLong(arg2)) {
         result.accept(Math.max(arg1.getAsLong(), arg2.getAsLong()));
-      } else if (VariantUtils.isLong(arg1) && VariantUtils.isDouble(arg2)) {
-        result.accept(Math.max(arg1.getAsLong(), arg2.getAsDouble()));
-      } else if (VariantUtils.isDouble(arg1) && VariantUtils.isLong(arg2)) {
-        result.accept(Math.max(arg1.getAsDouble(), arg2.getAsLong()));
-      } else if (VariantUtils.isDouble(arg1) && VariantUtils.isDouble(arg2)) {
-        result.accept(Math.max(arg1.getAsDouble(), arg2.getAsDouble()));
+      } else if (VariantUtils.isNumber(arg1) && VariantUtils.isNumber(arg2)) {
+        result.accept(Math.max(arg1.getAsNumber(), arg2.getAsNumber()));
       } else {
         throw new RuntimeException("Operands must be numbers");
       }

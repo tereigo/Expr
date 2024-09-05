@@ -67,16 +67,22 @@ abstract class Expr {
     }
   }
 
-  static class WithinOperator extends BaseExpr {
+  abstract static class RangeOperator extends BaseExpr {
     final Expr operand;
     final Expr min;
     final Expr max;
 
-    WithinOperator(Expr operand, Token operator, Expr min, Expr max) {
+    RangeOperator(Expr operand, Token operator, Expr min, Expr max) {
       super(operator);
       this.operand = operand;
       this.min = min;
       this.max = max;
+    }
+  }
+
+  static class WithinOperator extends RangeOperator {
+    WithinOperator(Expr operand, Token operator, Expr min, Expr max) {
+      super(operand, operator, min, max);
     }
 
     @Override
@@ -85,16 +91,9 @@ abstract class Expr {
     }
   }
 
-  static class BetweenOperator extends BaseExpr {
-    final Expr operand;
-    final Expr min;
-    final Expr max;
-
+  static class BetweenOperator extends RangeOperator {
     BetweenOperator(Expr operand, Token operator, Expr min, Expr max) {
-      super(operator);
-      this.operand = operand;
-      this.min = min;
-      this.max = max;
+      super(operand, operator, min, max);
     }
 
     @Override

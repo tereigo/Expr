@@ -106,10 +106,8 @@ class ExprContextNativeEnricher implements ExprContextEnricher {
     });
 
     ctx.defineFunction("toDouble", (result, arg1) -> {
-      if (VariantUtils.isLong(arg1)) {
-        result.accept((double)arg1.getAsLong());
-      } else if (VariantUtils.isDouble(arg1)) {
-        result.accept(arg1.getAsDouble());
+      if (VariantUtils.isNumber(arg1)) {
+        result.accept(arg1.getAsNumber());
       } else {
         throw new RuntimeException("Operand must be a number");
       }

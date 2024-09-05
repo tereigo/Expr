@@ -204,6 +204,7 @@ class ExprUserFunctionsTest extends ExprEvaluatorTestBase {
         ctx.defineFunction("stringFunc", (result, arg1) -> result.accept(arg1.getAsString()));
         ctx.defineFunction("byteBufferFunc", (result, arg1) -> result.accept(arg1.getAsByteBuffer()));
 
+        assertTrue(evaluateBool("region.contains('EMEA')", ctx));
         assertFalse(evaluateBool("stringFunc(stringFunc(stringFunc(region))).isEmpty()", ctx));
         assertFalse(evaluateBool("stringFunc(stringFunc(stringFunc(\"ABC\"))).isEmpty()", ctx));
         assertFalse(evaluateBool("byteBufferFunc(byteBufferFunc(algoType())).isEmpty()", ctx));

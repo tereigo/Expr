@@ -4,18 +4,18 @@ import com.tereigo.expr.ExprContextEnricher;
 import com.tereigo.expr.MutableExprContext;
 
 /*
-  Provides access to global functions
+  Provides access to Falcon functions in the global context
  */
-public class FalconExprContextEnricher implements ExprContextEnricher {
+public class FalconGlobalExprContextEnricher implements ExprContextEnricher {
     private final FalconDataProvider falconDataProvider;
 
-    public FalconExprContextEnricher(final FalconDataProvider falconDataProvider) {
+    public FalconGlobalExprContextEnricher(final FalconDataProvider falconDataProvider) {
         this.falconDataProvider = falconDataProvider;
     }
 
     @Override
     public void enrich(MutableExprContext ctx) {
-        ctx.defineFunction("falconEngineTime", result -> result.accept(falconDataProvider.getEngineTime()));
+        ctx.defineFunction("falconEngineTimeMs", result -> result.accept(falconDataProvider.getEngineTimeMs()));
 
         ctx.defineFunction("falconRandom", result -> result.accept(falconDataProvider.getNextRandom()));
 

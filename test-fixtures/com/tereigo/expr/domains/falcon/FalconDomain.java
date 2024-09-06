@@ -7,7 +7,7 @@ import com.tereigo.expr.variant.VariantUtils;
 
 public final class FalconDomain {
 
-    public static void defineShortcuts(final MutableExprContext ctx) {
+    public static void defineFunctions(final MutableExprContext ctx) {
         ctx.defineFunction("ltod", (result, arg1) -> {
             if (VariantUtils.isLong(arg1)) {
                 result.accept(PriceUtils.ltod(arg1.getAsLong()));
@@ -18,7 +18,9 @@ public final class FalconDomain {
 
         ctx.defineFunction("dtol", (result, arg1) -> {
             if (VariantUtils.isDouble(arg1)) {
-                result.accept((long)PriceUtils.dtol(arg1.getAsDouble()));
+                result.accept(PriceUtils.dtol(arg1.getAsDouble()));
+            } else if (VariantUtils.isLong(arg1)) {
+                result.accept(PriceUtils.dtol(arg1.getAsLong()));
             } else {
                 throw new RuntimeException("Operand must be a DOUBLE number");
             }

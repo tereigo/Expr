@@ -25,8 +25,8 @@ public class FalconDataProvider {
         this.nodeName = nodeName;
     }
 
-    public long getEngineTime() {
-      return timeProvider.getEngineTimeNanos();
+    public long getEngineTimeMs() {
+      return timeProvider.getEngineTimeMs();
   }
 
     public ReferenceDataCache getRefData() {

@@ -5,7 +5,7 @@ public final class PriceUtils {
         return v / 1e6;
     }
 
-    public static double dtol(double v) {
-        return v * 1e6;
+    public static long dtol(double v) {
+        return (long)(v * 1e6);
     }
 }

@@ -8,7 +8,7 @@ class ExprContextNative {
   private static final MutableExprContext INSTANCE = ExprContextFactory.createNative();
 
   public static MutableExprContext get() {
-    return INSTANCE;
+      return INSTANCE;
   }
 
 }

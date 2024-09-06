@@ -8,7 +8,7 @@ import java.util.List;
   │
   ├── 1.0
   │
-  ├── 2"
+  ├── 2
  */
 final class AstHierarchyPrinter implements Expr.Visitor<String> {
   private int level = 0;

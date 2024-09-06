@@ -16,7 +16,7 @@ class FalconDomainTest extends ExprEvaluatorTestBase {
         RuntimeError runErr;
 
         final MutableExprContext ctx = ExprContextFactory.create();
-        FalconDomain.defineShortcuts(ctx);
+        FalconDomain.defineFunctions(ctx);
 
         // ltod
         assertEquals(0.0, evaluateDouble("ltod(0)", ctx), EPS);
@@ -34,8 +34,7 @@ class FalconDomainTest extends ExprEvaluatorTestBase {
         assertEquals(100_000_000L, evaluateLong("dtol(100.0)", ctx));
         assertEquals(-100_000_000L, evaluateLong("dtol(-100.0)", ctx));
         assertEquals(123_456_000L, evaluateLong("dtol(123.456)", ctx));
-        runErr = assertThrows(RuntimeError.class, () -> evaluate("dtol(1000000)", ctx));
-        assertEquals("Expression evaluation error [line 1, pos 1]: RuntimeException in function 'dtol': Operand must be a DOUBLE number in expression 'dtol(1000000)'", runErr.getMessage());
+        assertEquals(10_000_000L, evaluateLong("dtol(10)", ctx));
         runErr = assertThrows(RuntimeError.class, () -> evaluate("dtol(\"A\")", ctx));
         assertEquals("Expression evaluation error [line 1, pos 1]: RuntimeException in function 'dtol': Operand must be a DOUBLE number in expression 'dtol(\"A\")'", runErr.getMessage());
         runErr = assertThrows(RuntimeError.class, () -> evaluate("dtol(true)", ctx));

@@ -6,11 +6,11 @@ import com.tereigo.expr.MutableExprContext;
 /*
   Provides access to order functions
  */
-public class OrderExprContextEnricher implements ExprContextEnricher {
+public class OrderGlobalExprContextEnricher implements ExprContextEnricher {
     private final OrderFieldResolver orderFieldResolver;
 
-    public OrderExprContextEnricher(final OrderFieldResolver orderFieldResolver) {
-      this.orderFieldResolver = orderFieldResolver;
+    public OrderGlobalExprContextEnricher(final OrderFieldResolver orderFieldResolver) {
+        this.orderFieldResolver = orderFieldResolver;
     }
 
     @Override

@@ -40,38 +40,32 @@ final class ExprContextImpl implements ExprContext, MutableExprContext {
   @Override
   public void defineLong(String name, LongSupplier supplier) {
     // we wrap all value providers into a function from 0 parameters (Function0)
-    validateName(name);
-    functions.put(name, (Function0) result -> result.accept(supplier.getAsLong()));
+    defineFunction(name, result -> result.accept(supplier.getAsLong()));
   }
 
   @Override
   public void defineDouble(String name, DoubleSupplier supplier) {
-    validateName(name);
-    functions.put(name, (Function0) result -> result.accept(supplier.getAsDouble()));
+    defineFunction(name, result -> result.accept(supplier.getAsDouble()));
   }
 
   @Override
   public void defineString(String name, StringSupplier supplier) {
-    validateName(name);
-    functions.put(name, (Function0) result -> result.accept(supplier.getAsString()));
+    defineFunction(name, result -> result.accept(supplier.getAsString()));
   }
 
   @Override
   public void defineByteBuffer(String name, ByteBufferSupplier supplier) {
-    validateName(name);
-    functions.put(name, (Function0) result -> result.accept(supplier.getAsByteBuffer()));
+    defineFunction(name, result -> result.accept(supplier.getAsByteBuffer()));
   }
 
   @Override
   public void defineBool(String name, BooleanSupplier supplier) {
-    validateName(name);
-    functions.put(name, (Function0) result -> result.accept(supplier.getAsBoolean()));
+    defineFunction(name, result -> result.accept(supplier.getAsBoolean()));
   }
 
   @Override
   public void defineExprContext(String name, ExprContextSupplier supplier) {
-    validateName(name);
-    functions.put(name, (Function0) result -> result.accept(supplier.getAsExprContext()));
+    defineFunction(name, result -> result.accept(supplier.getAsExprContext()));
   }
 
   @Override

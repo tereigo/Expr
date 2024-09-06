@@ -1,4 +1,5 @@
  TODO:
+1. add ability to add new native functions into native context, like dtol/ltod
 7. Can we merge contexts to avoid 2 lookups in this function in ExprContextCombined?
     public MutableVariant get(String name, MutableVariant result) {
         MutableVariant res = ctx1.get(name, result);

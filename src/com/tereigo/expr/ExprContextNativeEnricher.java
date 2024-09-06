@@ -164,14 +164,6 @@ class ExprContextNativeEnricher implements ExprContextEnricher {
       }
     });
 
-    ctx.defineFunction("contains", (result, arg1, arg2) -> {
-      if (VariantUtils.isString(arg1) && VariantUtils.isString(arg2)) {
-        result.accept(arg1.getAsString().contains(arg2.getAsString()));
-      } else {
-        throw new RuntimeException("Operand must be a STRING");
-      }
-    });
-
     // TODO: add containsIgnoreCase, startsWith, startsWithIgnoreCase, endsWith, endsWithIgnoreCase, indexOf, indexOfIgnoreCase
 
     ctx.defineFunction("contains", (result, arg1, arg2) -> {

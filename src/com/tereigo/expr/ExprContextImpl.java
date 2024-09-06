@@ -40,61 +40,73 @@ final class ExprContextImpl implements ExprContext, MutableExprContext {
   @Override
   public void defineLong(String name, LongSupplier supplier) {
     // we wrap all value providers into a function from 0 parameters (Function0)
+    validateName(name);
     functions.put(name, (Function0) result -> result.accept(supplier.getAsLong()));
   }
 
   @Override
   public void defineDouble(String name, DoubleSupplier supplier) {
+    validateName(name);
     functions.put(name, (Function0) result -> result.accept(supplier.getAsDouble()));
   }
 
   @Override
   public void defineString(String name, StringSupplier supplier) {
+    validateName(name);
     functions.put(name, (Function0) result -> result.accept(supplier.getAsString()));
   }
 
   @Override
   public void defineByteBuffer(String name, ByteBufferSupplier supplier) {
+    validateName(name);
     functions.put(name, (Function0) result -> result.accept(supplier.getAsByteBuffer()));
   }
 
   @Override
   public void defineBool(String name, BooleanSupplier supplier) {
+    validateName(name);
     functions.put(name, (Function0) result -> result.accept(supplier.getAsBoolean()));
   }
 
   @Override
   public void defineExprContext(String name, ExprContextSupplier supplier) {
+    validateName(name);
     functions.put(name, (Function0) result -> result.accept(supplier.getAsExprContext()));
   }
 
   @Override
   public void defineFunction(String name, Function0 func) {
+    validateName(name);
     functions.put(name, func);
   }
 
   @Override
   public void defineFunction(String name, Function1 func) {
+    validateName(name);
     functions.put(name, func);
   }
 
   @Override
   public void defineFunction(String name, Function2 func) {
+    validateName(name);
     functions.put(name, func);
   }
 
   @Override
   public void defineFunction(String name, Function3 func) {
+    validateName(name);
     functions.put(name, func);
   }
 
   @Override
   public void defineFunction(String name, Function4 func) {
+    validateName(name);
     functions.put(name, func);
   }
 
   @Override
   public void defineFunction(String name, Function5 func) {
+    validateName(name);
     functions.put(name, func);
   }
 
@@ -110,6 +122,7 @@ final class ExprContextImpl implements ExprContext, MutableExprContext {
     if (val == null) {
       throw new RuntimeException("Unknown identifier '" + name + "' for alias '" + alias + "'");
     }
+    validateName(alias);
     functions.put(alias, val);
   }
 
@@ -125,4 +138,9 @@ final class ExprContextImpl implements ExprContext, MutableExprContext {
     return "functions: " + functions.keySet();
   }
 
+  private void validateName(final String name) {
+    if (functions.containsKey(name)) {
+      throw new RuntimeException("Function '" + name + "' is already defined");
+    }
+  }
 }

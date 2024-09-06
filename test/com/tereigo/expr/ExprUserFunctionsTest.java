@@ -213,7 +213,7 @@ class ExprUserFunctionsTest extends ExprEvaluatorTestBase {
     @Test
     void userFunctionWithObjects() {
         TuidResolver tuidResolver = new TestTuidResolver();
-        final TestObjExprContext testCtx = new TestObjExprContext("VWAP1", constant("Vwap"), tuidResolver);
+        final ExprContext testCtx = createTestObjExprContext("VWAP1", constant("Vwap"), tuidResolver);
 
         final MutableExprContext ctx = ExprContextFactory.create();
         ctx.defineExprContext("test", () -> testCtx);
@@ -232,7 +232,7 @@ class ExprUserFunctionsTest extends ExprEvaluatorTestBase {
         OrderDomain.init(refData);
 
         final OrderFieldResolverImpl orderResolver = new OrderFieldResolverImpl();
-        final TestOrderExprContext orderCtx = new TestOrderExprContext(orderResolver);
+        final ExprContext orderCtx = createTestOrderExprContext(orderResolver);
         ctx.defineExprContext("order", () -> orderCtx);
 
         SampleOrderInstruction order1 = new SampleOrderInstruction(123L, 1);
@@ -257,22 +257,22 @@ class ExprUserFunctionsTest extends ExprEvaluatorTestBase {
         }
     }
 
-    private static class TestObjExprContext extends CustomExprContext {
-        public TestObjExprContext(String nodeName, ByteBuffer algoType, TuidResolver tuidResolver) {
-            ctx.defineString("nodeName", () -> nodeName);
-            ctx.defineByteBuffer("algoType", () -> algoType);
+    private static ExprContext createTestObjExprContext(String nodeName, ByteBuffer algoType, TuidResolver tuidResolver) {
+        final MutableExprContext ctx = ExprContextFactory.createLocalContext();
+        ctx.defineString("nodeName", () -> nodeName);
+        ctx.defineByteBuffer("algoType", () -> algoType);
 
-            ctx.defineFunction("tuidByClientId", (result, clientId) ->
-                    result.accept(tuidResolver.getTuidByClientId((int)clientId.getAsLong()))
-            );
-        }
+        ctx.defineFunction("tuidByClientId", (result, clientId) ->
+                result.accept(tuidResolver.getTuidByClientId((int)clientId.getAsLong()))
+        );
+        return ctx;
     }
 
-    private static class TestOrderExprContext extends CustomExprContext {
-        public TestOrderExprContext(OrderFieldResolver orderResolver) {
-            ctx.defineLong("productId", orderResolver::productId);
-            ctx.defineByteBuffer("ric", orderResolver::ric);
-            ctx.defineByteBuffer("tuid", orderResolver::tuid);
-        }
+    private static ExprContext createTestOrderExprContext(OrderFieldResolver orderResolver) {
+        final MutableExprContext ctx = ExprContextFactory.createLocalContext();
+        ctx.defineLong("productId", orderResolver::productId);
+        ctx.defineByteBuffer("ric", orderResolver::ric);
+        ctx.defineByteBuffer("tuid", orderResolver::tuid);
+        return ctx;
     }
 }

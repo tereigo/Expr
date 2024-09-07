@@ -44,8 +44,8 @@ final class ExprInterpreter implements Expr.Visitor<Variant> {
 
   @Override
   public Variant visitBinaryExpr(final Expr.Binary expr) {
-    Variant left = evaluate(expr.left);
-    Variant right = evaluate(expr.right);
+    final Variant left = evaluate(expr.left);
+    final Variant right = evaluate(expr.right);
 
     try {
       switch (expr.operator.type) {
@@ -97,7 +97,7 @@ final class ExprInterpreter implements Expr.Visitor<Variant> {
 
   @Override
   public Variant visitInOperator(final Expr.InOperator expr) {
-    Variant operand = evaluate(expr.operand);
+    final Variant operand = evaluate(expr.operand);
     try {
       for (int i = 0; i < expr.values.size(); i++) {
         final Variant value = evaluate(expr.values.get(i));
@@ -115,7 +115,7 @@ final class ExprInterpreter implements Expr.Visitor<Variant> {
 
   @Override
   public Variant visitWithinOperator(final Expr.WithinOperator expr) {
-    Variant operand = evaluate(expr.operand);
+    final Variant operand = evaluate(expr.operand);
     try {
       final Variant minVal = evaluate(expr.min);
       final Variant maxVal = evaluate(expr.max);
@@ -134,7 +134,7 @@ final class ExprInterpreter implements Expr.Visitor<Variant> {
 
   @Override
   public Variant visitBetweenOperator(final Expr.BetweenOperator expr) {
-    Variant operand = evaluate(expr.operand);
+    final Variant operand = evaluate(expr.operand);
     try {
       final Variant minVal = evaluate(expr.min);
       final Variant maxVal = evaluate(expr.max);
@@ -163,9 +163,9 @@ final class ExprInterpreter implements Expr.Visitor<Variant> {
 
   @Override
   public Variant visitLogicalExpr(final Expr.Logical expr) {
-    Variant leftVar = evaluate(expr.left);
+    final Variant leftVar = evaluate(expr.left);
     checkBoolOperand(expr.operator, leftVar);
-    boolean left = leftVar.getAsBoolean();
+    final boolean left = leftVar.getAsBoolean();
     if (expr.operator.type == TokenType.OR) {
       if (left) {
         expr.result.accept(true);
@@ -179,16 +179,15 @@ final class ExprInterpreter implements Expr.Visitor<Variant> {
     } else {
       throw new RuntimeError(expr.operator, "Unexpected logical expression type: " + expr.operator.type);
     }
-    Variant rightVar = evaluate(expr.right);
+    final Variant rightVar = evaluate(expr.right);
     checkBoolOperand(expr.operator, rightVar);
-    boolean right = rightVar.getAsBoolean();
-    expr.result.accept(right);
+    expr.result.accept(rightVar.getAsBoolean());
     return expr.result;
   }
 
   @Override
   public Variant visitTernaryExpr(final Expr.Ternary expr) {
-    Variant conditionVar = evaluate(expr.condition);
+    final Variant conditionVar = evaluate(expr.condition);
     checkBoolOperand(expr.operator, conditionVar);
     final boolean condition = conditionVar.getAsBoolean();
     return evaluate(condition ? expr.trueExpr : expr.falseExpr);
@@ -196,7 +195,7 @@ final class ExprInterpreter implements Expr.Visitor<Variant> {
 
   @Override
   public Variant visitUnaryExpr(final Expr.Unary expr) {
-    Variant result = evaluate(expr.expression);
+    final Variant result = evaluate(expr.expression);
     switch (expr.operator.type) {
       case NOT:
         checkBoolOperand(expr.operator, result);
@@ -211,7 +210,7 @@ final class ExprInterpreter implements Expr.Visitor<Variant> {
 
   @Override
   public Variant visitIdentifierExpr(final Expr.Identifier expr) {
-    MutableVariant res = ctx.get(expr.operator.lexeme, expr.result);
+    final MutableVariant res = ctx.get(expr.operator.lexeme, expr.result);
     if (res == null) {
       throw new RuntimeError(expr.operator, "Unknown identifier '" + expr.operator.lexeme + "'");
     }
@@ -220,21 +219,21 @@ final class ExprInterpreter implements Expr.Visitor<Variant> {
 
   @Override
   public Variant visitCallExpr(final Expr.Call expr) {
-    Object funcObj = ctx.getFunction(expr.operator.lexeme);
+    final Object funcObj = ctx.getFunction(expr.operator.lexeme);
     return callFunction(expr.result, expr.operator, funcObj, expr.args);
   }
 
   @Override
   public Variant visitObjectCallExpr(final Expr.ObjectCall expr) {
-    Variant objResult = evaluate(expr.object);
+    final Variant objResult = evaluate(expr.object);
     // if it's an object call from ExprContext
     if (isExprContext(objResult)) {
       // then fetch the function from that ExprContext
-      Object funcObj = objResult.getAsExprContext().getFunction(expr.operator.lexeme);
+      final Object funcObj = objResult.getAsExprContext().getFunction(expr.operator.lexeme);
       return callFunction(expr.result, expr.operator, funcObj, expr.args);
     }
     // otherwise it's a normal/native function call -> get the function from the global context
-    Object funcObj = ctx.getFunction(expr.operator.lexeme);
+    final Object funcObj = ctx.getFunction(expr.operator.lexeme);
     if (funcObj == null) {
       throw new RuntimeError(expr.operator, "Unknown function '" + expr.operator.lexeme + "'");
     }

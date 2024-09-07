@@ -1,5 +1,4 @@
  TODO:
-1. add ability to add new native functions into native context, like dtol/ltod
 7. Can we merge contexts to avoid 2 lookups in this function in ExprContextCombined?
     public MutableVariant get(String name, MutableVariant result) {
         MutableVariant res = ctx1.get(name, result);
@@ -8,11 +7,6 @@
 
     if contexts don't change at runtime then we are allowed to merge them
 
-8. Extract performance tests as a separate target
-2. Support scientific input for Doubles: 1e6
-
-3. Add tests for VariantImpl equals / hashCode
-4. add git hash tag / gitVersion / gitDate functions
 6. Optimize expressions by caching the functions so that instead of fetching a function from the map:
    if (isExprContext(objResult)) {
       // then fetch the function from that ExprContext
@@ -21,6 +15,15 @@
     }
     // otherwise it's a normal/native function call -> get the function from the global context
     Object funcObj = ctx.getFunction(expr.operator.lexeme);
+
+    I think it can be done via traversing AST (the same way AstHierarchyPrinter does) and generate a new one
+    where Identifiers are substituted with the direct functions
+
+8. Extract performance tests as a separate target
+2. Support scientific input for Doubles: 1e6
+
+3. Add tests for VariantImpl equals / hashCode
+4. add git hash tag / gitVersion / gitDate functions
 
 do it once and store the function directly for reuse to avoid look ups by name during evaluation
 
@@ -100,6 +103,7 @@ and all other functions well be available via reflection
 
 
 Done:
+1. add ability to add new native functions into native context, like dtol/ltod
 5. Add tests for aliases
 4. Check that "not" is followed by Grouping to avoid runtime errors:
    not "A" == "B". Because it's translated into not("A") == "B" whereas it should be: not("A" == "B")

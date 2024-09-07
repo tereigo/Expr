@@ -24,7 +24,7 @@ final class ExprContextImpl implements ExprContext, MutableExprContext {
 
   @Override
   public MutableVariant get(String name, MutableVariant result) {
-    Object funcObj = getFunction(name);
+    final Object funcObj = getFunction(name);
     if (funcObj == null) {
       return null;
     }

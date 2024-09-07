@@ -126,5 +126,4 @@ final class AstPolishPrinter implements Expr.Visitor<String> {
 
     return builder.toString();
   }
-
 }

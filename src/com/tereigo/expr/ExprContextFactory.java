@@ -18,9 +18,9 @@ public final class ExprContextFactory {
     /**
      * Or we can also add some client-defined additional global "native" functions
      */
-    public static MutableExprContext createGlobalContext(ExprContextEnricher... additionalEnricher) {
+    public static MutableExprContext createGlobalContext(ExprContextEnricher... enrichers) {
         final MutableExprContext ctx = createNative();
-        ctx.enrich(additionalEnricher);
+        ctx.enrich(enrichers);
         return ctx;
     }
 
@@ -30,19 +30,19 @@ public final class ExprContextFactory {
      * In these cases "name" is the function available in the local context of "algo"
      * and "price" is the function available in the local context of "order"
      */
-    public static MutableExprContext createLocalContext(ExprContextEnricher... additionalEnricher) {
+    public static MutableExprContext createLocalContext(ExprContextEnricher... enrichers) {
         final MutableExprContext ctx = createEmpty();
-        ctx.enrich(additionalEnricher);
+        ctx.enrich(enrichers);
         return ctx;
-    }
-
-    private static MutableExprContext createEmpty() {
-        return new ExprContextImpl();
     }
 
     static MutableExprContext createNative() {
         final MutableExprContext ctx = new ExprContextImpl();
         ctx.enrich(ExprContextNativeEnricher.get());
         return ctx;
+    }
+
+    private static MutableExprContext createEmpty() {
+        return new ExprContextImpl();
     }
 }

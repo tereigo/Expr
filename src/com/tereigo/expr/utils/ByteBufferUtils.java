@@ -32,7 +32,7 @@ public final class ByteBufferUtils {
         int end = Math.min(buffer.remaining(), len);
         for (int i = 0; i < end; i++) {
             byte b = buffer.get();
-            builder.append((char) (b& 0xFF));
+            builder.append((char) (b & 0xFF));
         }
         buffer.position(pos);
     }
@@ -284,12 +284,25 @@ public final class ByteBufferUtils {
         return sb.toString();
     }
 
-    public static boolean contains(String str, ByteBuffer pattern) {
-        // TODO: implement
-        throw new NotImplementedException();
+    // TODO: add tests, optimize, what it should return if one of the arg is empty?
+    public static boolean contains(ByteBuffer str, String pattern) {
+        // TODO: optimize by checking the first character to match to start the cycle
+        for (int i = 0; i < str.remaining() - pattern.length() + 1; i++) {
+            boolean same = true;
+            for (int j = 0; j < pattern.length(); j++) {
+                if (str.get(i + j) != (byte)(pattern.charAt(j) & 0xFF)) {
+                    same = false;
+                    break;
+                }
+            }
+            if (same) {
+                return true;
+            }
+        }
+        return false;
     }
 
-    public static boolean contains(ByteBuffer str, String pattern) {
+    public static boolean contains(String str, ByteBuffer pattern) {
         // TODO: implement
         throw new NotImplementedException();
     }

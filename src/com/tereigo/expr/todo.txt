@@ -95,6 +95,8 @@ and all other functions well be available via reflection
 
 
 Done:
+5. Add a test for the optimized version with multiple chained domains/functions
+    falcon.order.ric.contains('ABC.L')
 8. Extract performance tests as a separate target
 7. After AST optimization there are no lookups!
    Can we merge contexts to avoid 2 lookups in this function in ExprContextCombined?

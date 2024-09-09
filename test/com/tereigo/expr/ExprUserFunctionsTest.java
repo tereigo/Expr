@@ -266,33 +266,47 @@ class ExprUserFunctionsTest extends ExprEvaluatorTestBase {
     }
 
     @Test
-    void userFunctionWithObjects() {
+    void userFunctionWithObjectsTests() {
         optimized = false;
-        final MutableExprContext ctx = getCreateObjectsContext();
+        final MutableExprContext ctx = createObjectsContext();
         objectTests(ctx);
     }
 
     @Test
-    void userFunctionWithObjectsOptimized() {
+    void userFunctionWithObjectsOptimizedTests() {
         optimized = true;
-        final MutableExprContext ctx = getCreateObjectsContext();
+        final MutableExprContext ctx = createObjectsContext();
         objectTests(ctx);
     }
 
-    private void objectTests(MutableExprContext ctx) {
-        assertTrue(evaluateBool("test.nodeName == \"VWAP1\" and test.algoType == \"Vwap\"", ctx));
-        assertTrue(evaluateBool("test.nodeName.contains(\"VWAP1\") and test.algoType == \"Vwap\"", ctx));
-        assertTrue(evaluateBool("test.tuidByClientId(1) == \"CLIENT1\"", ctx));
-
-        assertTrue(evaluateBool("order.ric == 'VOD.L'", ctx));
-        assertTrue(evaluateBool("test.nodeName == \"VWAP1\" and test.algoType == \"Vwap\" and order.ric == \"VOD.L\"", ctx));
-        assertTrue(evaluateBool("test.nodeName.contains(\"VWAP1\") and order.tuid == \"CLIENT1\"", ctx));
-
-        assertTrue(evaluateBool("test.nodeName() == \"VWAP1\" and test.algoType() == \"Vwap\" and order.ric() == \"VOD.L\"", ctx));
-        assertTrue(evaluateBool("test.nodeName().contains(\"VWAP1\") and order.tuid() == \"CLIENT1\"", ctx));
+    @Test
+    void userChainedDomainsTests() {
+        optimized = false;
+        final MutableExprContext ctx = createChainedContext();
+        chainedDomainTests(ctx);
     }
 
-    private static MutableExprContext getCreateObjectsContext() {
+    @Test
+    void userChainedDomainsOptimizedTests() {
+        optimized = true;
+        final MutableExprContext ctx = createChainedContext();
+        chainedDomainTests(ctx);
+    }
+
+    private void objectTests(MutableExprContext ctx) {
+        assertTrue(evaluateBool("test.nodeName == 'VWAP1' and test.algoType == 'Vwap'", ctx));
+        assertTrue(evaluateBool("test.nodeName.contains('VWAP1') and test.algoType == 'Vwap'", ctx));
+        assertTrue(evaluateBool("test.tuidByClientId(1) == 'CLIENT1'", ctx));
+
+        assertTrue(evaluateBool("order.ric == 'VOD.L'", ctx));
+        assertTrue(evaluateBool("test.nodeName == 'VWAP1' and test.algoType == 'Vwap' and order.ric == 'VOD.L'", ctx));
+        assertTrue(evaluateBool("test.nodeName.contains('VWAP1') and order.tuid == 'CLIENT1'", ctx));
+
+        assertTrue(evaluateBool("test.nodeName() == 'VWAP1' and test.algoType() == 'Vwap' and order.ric() == 'VOD.L'", ctx));
+        assertTrue(evaluateBool("test.nodeName().contains('VWAP1') and order.tuid() == 'CLIENT1'", ctx));
+    }
+
+    private static MutableExprContext createObjectsContext() {
         final TuidResolver tuidResolver = new TestTuidResolver();
         final ExprContext testCtx = createTestObjExprContext("VWAP1", constant("Vwap"), tuidResolver);
 
@@ -309,11 +323,43 @@ class ExprUserFunctionsTest extends ExprEvaluatorTestBase {
         OrderDomain.init(refData);
 
         final OrderFieldResolverImpl orderResolver = new OrderFieldResolverImpl();
-        final ExprContext orderCtx = createTestOrderExprContext(orderResolver);
+        final ExprContext orderCtx = createOrderExprContext(orderResolver);
         ctx.defineExprContext("order", () -> orderCtx);
 
         SampleOrderInstruction order1 = new SampleOrderInstruction(123L, 1);
         orderResolver.setOrder(order1);
+        return ctx;
+    }
+
+    private void chainedDomainTests(MutableExprContext ctx) {
+        assertTrue(evaluateBool("test.nodeName == 'VWAP1' and test.order.ric == 'VOD.L'", ctx));
+        assertTrue(evaluateBool("test.order.ric.contains('VOD.L')", ctx));
+    }
+
+    private static MutableExprContext createChainedContext() {
+
+        final MutableExprContext ctx = ExprContextFactory.createGlobalContext();
+
+        final TuidResolver tuidResolver = new TestTuidResolver();
+        final ReferenceDataCache refData = mock(ReferenceDataCache.class);
+        when(refData.getRicByProductId(123L)).thenReturn(constant("VOD.L"));
+        when(refData.getRicByProductId(124L)).thenReturn(constant("BT.L"));
+        when(refData.getTuidByClientId(1)).thenReturn(constant("CLIENT1"));
+        when(refData.getTuidByClientId(2)).thenReturn(constant("CLIENT2"));
+
+        OrderDomain.init(refData);
+
+        final MutableExprContext localTestCtx = createTestObjExprContext("VWAP1", constant("Vwap"), tuidResolver);
+        final OrderFieldResolverImpl orderResolver = new OrderFieldResolverImpl();
+        final ExprContext orderCtx = createOrderExprContext(orderResolver);
+        SampleOrderInstruction order1 = new SampleOrderInstruction(123L, 1);
+        orderResolver.setOrder(order1);
+
+        // add "order" context inside "test" context
+        localTestCtx.defineExprContext("order", () -> orderCtx);
+        // add "test" context at the top level
+        ctx.defineExprContext("test", () -> localTestCtx);
+
         return ctx;
     }
 
@@ -328,7 +374,7 @@ class ExprUserFunctionsTest extends ExprEvaluatorTestBase {
         }
     }
 
-    private static ExprContext createTestObjExprContext(String nodeName, ByteBuffer algoType, TuidResolver tuidResolver) {
+    private static MutableExprContext createTestObjExprContext(String nodeName, ByteBuffer algoType, TuidResolver tuidResolver) {
         final MutableExprContext ctx = ExprContextFactory.createLocalContext();
         ctx.defineString("nodeName", () -> nodeName);
         ctx.defineByteBuffer("algoType", () -> algoType);
@@ -339,7 +385,7 @@ class ExprUserFunctionsTest extends ExprEvaluatorTestBase {
         return ctx;
     }
 
-    private static ExprContext createTestOrderExprContext(OrderFieldResolver orderResolver) {
+    private static MutableExprContext createOrderExprContext(OrderFieldResolver orderResolver) {
         final MutableExprContext ctx = ExprContextFactory.createLocalContext();
         ctx.defineLong("productId", orderResolver::productId);
         ctx.defineByteBuffer("ric", orderResolver::ric);

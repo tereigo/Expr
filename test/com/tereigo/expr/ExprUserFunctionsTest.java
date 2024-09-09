@@ -20,6 +20,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 class ExprUserFunctionsTest extends ExprEvaluatorTestBase {
+    private boolean optimized;
 
     @Test
     void userFunctionTests() {
@@ -27,7 +28,26 @@ class ExprUserFunctionsTest extends ExprEvaluatorTestBase {
         TestOrder order1 = new TestOrder("VOD.L", 123L, true, constant("CLIENT1"));
         orderSupplier.setOrder(order1);
 
-        final MutableExprContext globalCtx = ExprContextFactory.create();
+        final ExprContextCombined ctx = createContext(orderSupplier);
+
+        this.optimized = false;
+        userFunctionTestsImpl(ctx, orderSupplier);
+    }
+
+    @Test
+    void userFunctionOptimizedTests() {
+        SimpleOrderFieldSupplier orderSupplier = new SimpleOrderFieldSupplier();
+        TestOrder order1 = new TestOrder("VOD.L", 123L, true, constant("CLIENT1"));
+        orderSupplier.setOrder(order1);
+
+        final ExprContextCombined ctx = createContext(orderSupplier);
+
+        this.optimized = true;
+        userFunctionTestsImpl(ctx, orderSupplier);
+    }
+
+    private static ExprContextCombined createContext(SimpleOrderFieldSupplier orderSupplier) {
+        final MutableExprContext globalCtx = ExprContextFactory.createGlobalContext();
         globalCtx.defineFunction("nodeAlgoType", result -> result.accept("Vwap"));
         globalCtx.defineFunction("region", result -> result.accept("EMEA"));
         // this one generates garbage!
@@ -83,14 +103,33 @@ class ExprUserFunctionsTest extends ExprEvaluatorTestBase {
             result.accept(l > d && bool && !s.isEmpty() && ByteBufferUtils.startWith(bb, "CLIENT"));
         });
 
-        final MutableExprContext orderCtx = ExprContextFactory.create();
+        final MutableExprContext orderCtx = ExprContextFactory.createLocalContext();
         orderCtx.defineLong("$productId", orderSupplier::productId);
         orderCtx.defineString("$ric", orderSupplier::ric);
         orderCtx.defineBool("$enabled", orderSupplier::enabled);
         orderCtx.defineByteBuffer("$tuid", orderSupplier::tuid);
 
         final ExprContextCombined ctx = ExprContextCombined.create(globalCtx, orderCtx);
+        return ctx;
+    }
 
+    protected boolean evaluateBool(String text, ExprContext ctx) {
+        return optimized ? super.evaluateBoolOptimized(ctx, text) : super.evaluateBool(text, ctx);
+    }
+
+    protected String evaluateString(String text, ExprContext ctx) {
+        return optimized ? super.evaluateStringOptimized(ctx, text) : super.evaluateString(text, ctx);
+    }
+
+    protected long evaluateLong(String text, ExprContext ctx) {
+        return optimized ? super.evaluateLongOptimized(ctx, text) : super.evaluateLong(text, ctx);
+    }
+
+    protected double evaluateDouble(String text, ExprContext ctx) {
+        return optimized ? super.evaluateDoubleOptimized(ctx, text) : super.evaluateDouble(text, ctx);
+    }
+
+    private void userFunctionTestsImpl(ExprContextCombined ctx, SimpleOrderFieldSupplier orderSupplier) {
         assertTrue(evaluateBool("timeNs() > $productId", ctx));
         assertTrue(evaluateBool("6 < 2 * PI", ctx));
         assertTrue(evaluateBool("region() == \"EMEA\" and falconEnv() == \"PROD\"", ctx));
@@ -198,7 +237,23 @@ class ExprUserFunctionsTest extends ExprEvaluatorTestBase {
 
     @Test
     void userFunctionWithStringTests() {
-        final MutableExprContext ctx = ExprContextFactory.create();
+        optimized = false;
+        final MutableExprContext ctx = ExprContextFactory.createGlobalContext();
+        ctx.defineString("region", () -> "EMEA");
+        ctx.defineFunction("algoType", result -> result.accept(constant("Algo1")));
+        ctx.defineFunction("stringFunc", (result, arg1) -> result.accept(arg1.getAsString()));
+        ctx.defineFunction("byteBufferFunc", (result, arg1) -> result.accept(arg1.getAsByteBuffer()));
+
+        assertTrue(evaluateBool("region.contains('EMEA')", ctx));
+        assertFalse(evaluateBool("stringFunc(stringFunc(stringFunc(region))).isEmpty()", ctx));
+        assertFalse(evaluateBool("stringFunc(stringFunc(stringFunc(\"ABC\"))).isEmpty()", ctx));
+        assertFalse(evaluateBool("byteBufferFunc(byteBufferFunc(algoType())).isEmpty()", ctx));
+    }
+
+    @Test
+    void userFunctionWithStringOptimizedTests() {
+        optimized = true;
+        final MutableExprContext ctx = ExprContextFactory.createGlobalContext();
         ctx.defineString("region", () -> "EMEA");
         ctx.defineFunction("algoType", result -> result.accept(constant("Algo1")));
         ctx.defineFunction("stringFunc", (result, arg1) -> result.accept(arg1.getAsString()));
@@ -212,15 +267,37 @@ class ExprUserFunctionsTest extends ExprEvaluatorTestBase {
 
     @Test
     void userFunctionWithObjects() {
-        TuidResolver tuidResolver = new TestTuidResolver();
-        final ExprContext testCtx = createTestObjExprContext("VWAP1", constant("Vwap"), tuidResolver);
+        optimized = false;
+        final MutableExprContext ctx = getCreateObjectsContext();
+        objectTests(ctx);
+    }
 
-        final MutableExprContext ctx = ExprContextFactory.create();
-        ctx.defineExprContext("test", () -> testCtx);
+    @Test
+    void userFunctionWithObjectsOptimized() {
+        optimized = true;
+        final MutableExprContext ctx = getCreateObjectsContext();
+        objectTests(ctx);
+    }
 
+    private void objectTests(MutableExprContext ctx) {
         assertTrue(evaluateBool("test.nodeName == \"VWAP1\" and test.algoType == \"Vwap\"", ctx));
         assertTrue(evaluateBool("test.nodeName.contains(\"VWAP1\") and test.algoType == \"Vwap\"", ctx));
         assertTrue(evaluateBool("test.tuidByClientId(1) == \"CLIENT1\"", ctx));
+
+        assertTrue(evaluateBool("order.ric == 'VOD.L'", ctx));
+        assertTrue(evaluateBool("test.nodeName == \"VWAP1\" and test.algoType == \"Vwap\" and order.ric == \"VOD.L\"", ctx));
+        assertTrue(evaluateBool("test.nodeName.contains(\"VWAP1\") and order.tuid == \"CLIENT1\"", ctx));
+
+        assertTrue(evaluateBool("test.nodeName() == \"VWAP1\" and test.algoType() == \"Vwap\" and order.ric() == \"VOD.L\"", ctx));
+        assertTrue(evaluateBool("test.nodeName().contains(\"VWAP1\") and order.tuid() == \"CLIENT1\"", ctx));
+    }
+
+    private static MutableExprContext getCreateObjectsContext() {
+        final TuidResolver tuidResolver = new TestTuidResolver();
+        final ExprContext testCtx = createTestObjExprContext("VWAP1", constant("Vwap"), tuidResolver);
+
+        final MutableExprContext ctx = ExprContextFactory.createGlobalContext();
+        ctx.defineExprContext("test", () -> testCtx);
 
         // adding order context
         final ReferenceDataCache refData = mock(ReferenceDataCache.class);
@@ -237,13 +314,7 @@ class ExprUserFunctionsTest extends ExprEvaluatorTestBase {
 
         SampleOrderInstruction order1 = new SampleOrderInstruction(123L, 1);
         orderResolver.setOrder(order1);
-
-        assertTrue(evaluateBool("order.ric == 'VOD.L'", ctx));
-        assertTrue(evaluateBool("test.nodeName == \"VWAP1\" and test.algoType == \"Vwap\" and order.ric == \"VOD.L\"", ctx));
-        assertTrue(evaluateBool("test.nodeName.contains(\"VWAP1\") and order.tuid == \"CLIENT1\"", ctx));
-
-        assertTrue(evaluateBool("test.nodeName() == \"VWAP1\" and test.algoType() == \"Vwap\" and order.ric() == \"VOD.L\"", ctx));
-        assertTrue(evaluateBool("test.nodeName().contains(\"VWAP1\") and order.tuid() == \"CLIENT1\"", ctx));
+        return ctx;
     }
 
     private interface TuidResolver {

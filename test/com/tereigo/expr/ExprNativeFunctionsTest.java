@@ -149,8 +149,8 @@ class ExprNativeFunctionsTest extends ExprEvaluatorTestBase {
         assertEquals(-2, evaluateLong("roundDown(-1.6)"));
         assertEquals(-2, evaluateLong("roundDown(-1.9)"));
         assertEquals(-3, evaluateLong("roundDown(-2.1)"));
-        runErr = assertThrows(RuntimeError.class, () -> evaluate("roundDown(\"A\")"));
-        assertEquals("Expression evaluation error [line 1, pos 1]: RuntimeException in function 'roundDown': Operand must be a number in expression 'roundDown(\"A\")'", runErr.getMessage());
+        runErr = assertThrows(RuntimeError.class, () -> evaluate("roundDown('A')"));
+        assertEquals("Expression evaluation error [line 1, pos 1]: RuntimeException in function 'roundDown': Operand must be a number in expression 'roundDown('A')'", runErr.getMessage());
         runErr = assertThrows(RuntimeError.class, () -> evaluate("roundDown(true)"));
         assertEquals("Expression evaluation error [line 1, pos 1]: RuntimeException in function 'roundDown': Operand must be a number in expression 'roundDown(true)'", runErr.getMessage());
         // toLong
@@ -176,8 +176,8 @@ class ExprNativeFunctionsTest extends ExprEvaluatorTestBase {
         assertEquals(-1, evaluateLong("toLong(-1.6)"));
         assertEquals(-1, evaluateLong("toLong(-1.9)"));
         assertEquals(-2, evaluateLong("toLong(-2.1)"));
-        runErr = assertThrows(RuntimeError.class, () -> evaluate("toLong(\"A\")"));
-        assertEquals("Expression evaluation error [line 1, pos 1]: RuntimeException in function 'toLong': Operand must be a number in expression 'toLong(\"A\")'", runErr.getMessage());
+        runErr = assertThrows(RuntimeError.class, () -> evaluate("toLong('A')"));
+        assertEquals("Expression evaluation error [line 1, pos 1]: RuntimeException in function 'toLong': Operand must be a number in expression 'toLong('A')'", runErr.getMessage());
         runErr = assertThrows(RuntimeError.class, () -> evaluate("toLong(true)"));
         assertEquals("Expression evaluation error [line 1, pos 1]: RuntimeException in function 'toLong': Operand must be a number in expression 'toLong(true)'", runErr.getMessage());
         // toDouble
@@ -203,12 +203,12 @@ class ExprNativeFunctionsTest extends ExprEvaluatorTestBase {
         assertEquals(-1.6, evaluateDouble("toDouble(-1.6)"), EPS);
         assertEquals(-1.9, evaluateDouble("toDouble(-1.9)"), EPS);
         assertEquals(-2.1, evaluateDouble("toDouble(-2.1)"), EPS);
-        runErr = assertThrows(RuntimeError.class, () -> evaluate("toDouble(\"A\")"));
-        assertEquals("Expression evaluation error [line 1, pos 1]: RuntimeException in function 'toDouble': Operand must be a number in expression 'toDouble(\"A\")'", runErr.getMessage());
+        runErr = assertThrows(RuntimeError.class, () -> evaluate("toDouble('A')"));
+        assertEquals("Expression evaluation error [line 1, pos 1]: RuntimeException in function 'toDouble': Operand must be a number in expression 'toDouble('A')'", runErr.getMessage());
         runErr = assertThrows(RuntimeError.class, () -> evaluate("toDouble(true)"));
         assertEquals("Expression evaluation error [line 1, pos 1]: RuntimeException in function 'toDouble': Operand must be a number in expression 'toDouble(true)'", runErr.getMessage());
 
-        final MutableExprContext ctx = ExprContextFactory.create();
+        final MutableExprContext ctx = ExprContextFactory.createGlobalContext();
 
         assertEquals(1.0, evaluateDouble("min(1, PI)", ctx), EPS);
         assertEquals(1.0, evaluateDouble("min(1, PI + PI)", ctx), EPS);
@@ -241,6 +241,7 @@ class ExprNativeFunctionsTest extends ExprEvaluatorTestBase {
         assertEquals(4, evaluateLong("PI.roundUp()", ctx));
         assertEquals(3, evaluateLong("3.14.toLong()", ctx));
         assertEquals(5.0, evaluateDouble("5.toDouble()", ctx), EPS);
+        assertEquals(5.0, evaluateDouble("5.0.toDouble()", ctx), EPS);
     }
 
     @Test
@@ -294,7 +295,7 @@ class ExprNativeFunctionsTest extends ExprEvaluatorTestBase {
         runErr = assertThrows(RuntimeError.class, () -> evaluate("true.contains(\"A\")"));
         assertEquals("Expression evaluation error [line 1, pos 6]: RuntimeException in function 'contains': Operand must be a STRING or BYTE_BUFFER in expression 'true.contains(\"A\")'", runErr.getMessage());
 
-        final MutableExprContext ctx = ExprContextFactory.create();
+        final MutableExprContext ctx = ExprContextFactory.createGlobalContext();
         ctx.defineString("region", () -> "EMEA");
         ctx.defineFunction("algoType", result -> result.accept("Algo1"));
 
@@ -303,7 +304,7 @@ class ExprNativeFunctionsTest extends ExprEvaluatorTestBase {
         assertTrue(evaluateBool("algoType().length() == 5", ctx));
         assertTrue(evaluateBool("region.length() == 4", ctx));
 
-        final MutableExprContext ctx2 = ExprContextFactory.create();
+        final MutableExprContext ctx2 = ExprContextFactory.createGlobalContext();
         ctx2.defineByteBuffer("region", () -> constant("EMEA"));
         ctx2.defineFunction("algoType", result -> result.accept(constant("Algo1")));
 
@@ -312,7 +313,7 @@ class ExprNativeFunctionsTest extends ExprEvaluatorTestBase {
         assertTrue(evaluateBool("algoType().length() == 5", ctx2));
         assertTrue(evaluateBool("region.length() == 4", ctx2));
 
-        // TODO: implement
+        // TODO: implement ByteBufferUtils.contains() for all combinations
 //        runErr = assertThrows(RuntimeError.class, () -> evaluate("\"ABC\".contains(region)", ctx2));
 //        assertEquals("Expression evaluation error [line 1, pos 7]: RuntimeException in function 'contains': Operand must be a STRING in expression '\"ABC\".contains(region)'", runErr.getMessage());
 //        runErr = assertThrows(RuntimeError.class, () -> evaluate("\"ABC\".contains(algoType())", ctx2));
@@ -322,13 +323,50 @@ class ExprNativeFunctionsTest extends ExprEvaluatorTestBase {
 //        runErr = assertThrows(RuntimeError.class, () -> evaluate("algoType().contains(\"A\")", ctx2));
 //        assertEquals("Expression evaluation error [line 1, pos 12]: RuntimeException in function 'contains': Operand must be a STRING in expression 'algoType().contains(\"A\")'", runErr.getMessage());
 
-        final MutableExprContext ctx3 = ExprContextFactory.create();
+        final MutableExprContext ctx3 = ExprContextFactory.createGlobalContext();
         ctx3.defineString("region", () -> "EMEA");
+        ctx3.defineByteBuffer("country", () -> constant("Italy"));
         ctx3.defineFunction("algoType", result -> result.accept(constant("Algo1")));
 
         assertFalse(evaluateBool("algoType().isEmpty()", ctx3));
+        assertFalse(evaluateBool("algoType.isEmpty()", ctx3));
         assertFalse(evaluateBool("region.isEmpty()", ctx3));
+        assertFalse(evaluateBool("country().isEmpty()", ctx3));
+        assertFalse(evaluateBool("country.isEmpty()", ctx3));
         assertTrue(evaluateBool("algoType().length() == 5", ctx3));
+        assertTrue(evaluateBool("algoType.length() == 5", ctx3));
         assertTrue(evaluateBool("region.length() == 4", ctx3));
+        assertTrue(evaluateBool("region.length == 4", ctx3));
+        assertTrue(evaluateBool("length(region) == 4", ctx3));
+        assertTrue(evaluateBool("country.length() == 5", ctx3));
+        assertTrue(evaluateBool("country.length == 5", ctx3));
+        assertTrue(evaluateBool("length(country) == 5", ctx3));
+        assertTrue(evaluateBool("region.contains('A')", ctx3));
+        assertTrue(evaluateBool("contains(region, 'A')", ctx3));
+        // TODO: implement
+        //assertFalse(evaluateBool("country.contains('ly')", ctx3));
+        // TODO: implement
+        //assertFalse(evaluateBool("contains(country, 'ly')", ctx3));
+
+        // Try the same with optimized AST
+        assertFalse(evaluateBoolOptimized(ctx3, "algoType().isEmpty()"));
+        assertFalse(evaluateBoolOptimized(ctx3, "algoType.isEmpty()"));
+        assertFalse(evaluateBoolOptimized(ctx3, "region.isEmpty()"));
+        assertFalse(evaluateBoolOptimized(ctx3, "country().isEmpty()"));
+        assertFalse(evaluateBoolOptimized(ctx3, "country.isEmpty()"));
+        assertTrue(evaluateBoolOptimized(ctx3, "algoType().length() == 5"));
+        assertTrue(evaluateBoolOptimized(ctx3, "algoType.length() == 5"));
+        assertTrue(evaluateBoolOptimized(ctx3, "region.length() == 4"));
+        assertTrue(evaluateBoolOptimized(ctx3, "region.length == 4"));
+        assertTrue(evaluateBoolOptimized(ctx3, "length(region) == 4"));
+        assertTrue(evaluateBoolOptimized(ctx3, "country.length() == 5"));
+        assertTrue(evaluateBoolOptimized(ctx3, "country.length == 5"));
+        assertTrue(evaluateBoolOptimized(ctx3, "length(country) == 5"));
+        assertTrue(evaluateBoolOptimized(ctx3, "region.contains('A')"));
+        assertTrue(evaluateBoolOptimized(ctx3, "contains(region, 'A')"));
+        // TODO: implement
+        //assertFalse(evaluateBoolOptimized("country.contains('ly')", ctx3));
+        // TODO: implement
+        //assertFalse(evaluateBoolOptimized("contains(country, 'ly')", ctx3));
     }
 }

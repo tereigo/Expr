@@ -9,7 +9,7 @@ final class ExprCompiler {
 
     private ExprCompiler() {}
 
-    static ASTRoot compile(String source) {
+    static ASTRoot compile(final String source) {
         return compile(ByteBufferUtils.constant(source));
     }
 

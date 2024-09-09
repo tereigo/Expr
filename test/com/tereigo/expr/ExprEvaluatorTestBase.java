@@ -27,6 +27,11 @@ class ExprEvaluatorTestBase {
         evaluator.evaluateAsObject(ctx);
     }
 
+    protected void evaluateOptimized(ExprContext ctx, String text) {
+        ExprEvaluator evaluator = new ExprEvaluator(ctx, text);
+        evaluator.evaluateAsObject(ctx);
+    }
+
     protected void evaluate(ASTRoot root, ExprContext ctx) {
         ExprEvaluator evaluator = new ExprEvaluator(root);
         evaluator.evaluateAsObject(ctx);
@@ -47,6 +52,11 @@ class ExprEvaluatorTestBase {
         return evaluator.evaluateLong(ctx);
     }
 
+    protected long evaluateLongOptimized(ExprContext ctx, String text) {
+        ExprEvaluator evaluator = new ExprEvaluator(ctx, text);
+        return evaluator.evaluateLong(ctx);
+    }
+
     protected double evaluateDouble(String text) {
         ExprEvaluator evaluator = new ExprEvaluator(text);
         return evaluator.evaluateDouble();
@@ -54,6 +64,11 @@ class ExprEvaluatorTestBase {
 
     protected double evaluateDouble(String text, ExprContext ctx) {
         ExprEvaluator evaluator = new ExprEvaluator(text);
+        return evaluator.evaluateDouble(ctx);
+    }
+
+    protected double evaluateDoubleOptimized(ExprContext ctx, String text) {
+        ExprEvaluator evaluator = new ExprEvaluator(ctx, text);
         return evaluator.evaluateDouble(ctx);
     }
 
@@ -67,6 +82,11 @@ class ExprEvaluatorTestBase {
         return evaluator.evaluateBool(ctx);
     }
 
+    protected boolean evaluateBoolOptimized(ExprContext ctx, String text) {
+        ExprEvaluator evaluator = new ExprEvaluator(ctx, text);
+        return evaluator.evaluateBool(ctx);
+    }
+
     protected String evaluateString(String text) {
         ExprEvaluator evaluator = new ExprEvaluator(text);
         return evaluator.evaluateString();
@@ -77,8 +97,18 @@ class ExprEvaluatorTestBase {
         return evaluator.evaluateString(ctx);
     }
 
+    protected String evaluateStringOptimized(ExprContext ctx, String text) {
+        ExprEvaluator evaluator = new ExprEvaluator(ctx, text);
+        return evaluator.evaluateString(ctx);
+    }
+
     protected ByteBuffer evaluateByteBuffer(String text, ExprContext ctx) {
         ExprEvaluator evaluator = new ExprEvaluator(text);
+        return evaluator.evaluateByteBuffer(ctx);
+    }
+
+    protected ByteBuffer evaluateByteBufferOptimized(ExprContext ctx, String text) {
+        ExprEvaluator evaluator = new ExprEvaluator(ctx, text);
         return evaluator.evaluateByteBuffer(ctx);
     }
 
@@ -101,5 +131,4 @@ class ExprEvaluatorTestBase {
         ExprEvaluator exprEvaluator = new ExprEvaluator(expr);
         return exprEvaluator.evaluateString();
     }
-
 }

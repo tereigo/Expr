@@ -1,5 +1,6 @@
 package com.tereigo.expr;
 
+import com.tereigo.expr.function.Function0;
 import com.tereigo.expr.variant.MutableVariant;
 import com.tereigo.expr.variant.Variant;
 import com.tereigo.expr.variant.VariantFactory;
@@ -21,8 +22,11 @@ abstract class Expr {
     R visitTernaryExpr(Ternary expr);   // boolExpr ? trueExpr : falseExpr
     R visitUnaryExpr(Unary expr);       // -, not
     R visitIdentifierExpr(Identifier expr); // external value
+    R visitResolvedIdentifierExpr(ResolvedIdentifier expr); // external value
     R visitCallExpr(Call expr);         // function
+    R visitResolvedCallExpr(ResolvedCall expr);         // function
     R visitObjectCallExpr(ObjectCall expr); // call method from the object
+    R visitResolvedObjectCallExpr(ResolvedObjectCall expr); // call method from the object
   }
 
   static abstract class BaseExpr extends Expr {
@@ -104,6 +108,7 @@ abstract class Expr {
 
   static class Grouping extends Expr {
     // Grouping is really a proxy to the underlying expression so it doesn't require Variant to store the result
+    final Expr expression;
 
     Grouping(Expr expression) {
       this.expression = expression;
@@ -113,8 +118,6 @@ abstract class Expr {
     <R> R accept(Visitor<R> visitor) {
       return visitor.visitGroupingExpr(this);
     }
-
-    final Expr expression;
   }
 
   static class Literal extends Expr {
@@ -209,6 +212,20 @@ abstract class Expr {
     }
   }
 
+  static class ResolvedIdentifier extends BaseExpr {
+    final Function0 function;
+
+    ResolvedIdentifier(Token name, Function0 function) {
+      super(name);
+      this.function = function;
+    }
+
+    @Override
+    <R> R accept(Visitor<R> visitor) {
+      return visitor.visitResolvedIdentifierExpr(this);
+    }
+  }
+
   static class Call extends BaseExpr {
     final List<Expr> args;
 
@@ -223,6 +240,22 @@ abstract class Expr {
     }
   }
 
+  static class ResolvedCall extends BaseExpr {
+    final Object function;
+    final List<Expr> args;
+
+    ResolvedCall(Token name, Object function, List<Expr> args) {
+      super(name);
+      this.function = function;
+      this.args = args;
+    }
+
+    @Override
+    <R> R accept(Visitor<R> visitor) {
+      return visitor.visitResolvedCallExpr(this);
+    }
+  }
+
   static class ObjectCall extends Call {
     final Expr object;
 
@@ -234,6 +267,20 @@ abstract class Expr {
     @Override
     <R> R accept(Visitor<R> visitor) {
       return visitor.visitObjectCallExpr(this);
+    }
+  }
+
+  static class ResolvedObjectCall extends ResolvedCall {
+    final Expr object;
+
+    ResolvedObjectCall(Expr object, Token name, Object function, List<Expr> args) {
+      super(name, function, args);
+      this.object = object;
+    }
+
+    @Override
+    <R> R accept(Visitor<R> visitor) {
+      return visitor.visitResolvedObjectCallExpr(this);
     }
   }
 }

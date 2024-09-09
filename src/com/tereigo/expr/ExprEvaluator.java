@@ -31,6 +31,18 @@ public final class ExprEvaluator {
         this(ExprCompiler.compile(source));
     }
 
+    /**
+     * Optimized evaluation for the cases where the context is known upfront it and stays immutable for the evaluation
+     * It optimized the compiled AST tree before evaluation by resolving all function and object calls and storing them as the direct functions
+     * It means it doesn't have to do function/object lookups via hash map during the evaluation
+     * @param ctx - Static immutable evaluation context.
+     *            IMPORTANT: it should be the same context which will be passed into the evaluation: evaluator.evaluate(ctx)
+     * @param source - Expression
+     */
+    public ExprEvaluator(final ExprContext ctx, final String source) {
+        this(ExprOptimizer.optimize(ExprCompiler.compile(source), ctx));
+    }
+
     ExprEvaluator(final ASTRoot root) {
         this.source = root.source();
         this.interpreter = new ExprInterpreter(root.expr());

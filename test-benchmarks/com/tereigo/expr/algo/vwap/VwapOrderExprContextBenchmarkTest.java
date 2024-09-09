@@ -9,6 +9,7 @@ import com.tereigo.expr.domains.order.OrderFieldResolverImpl;
 import com.tereigo.expr.falcon.utils.ReferenceDataCacheImpl;
 import com.tereigo.expr.order.TestVwapOrder;
 import com.tereigo.expr.utils.ByteBufferUtils;
+import org.junit.jupiter.api.Test;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
 import org.openjdk.jmh.annotations.Fork;
@@ -19,6 +20,10 @@ import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.annotations.Warmup;
+import org.openjdk.jmh.runner.Runner;
+import org.openjdk.jmh.runner.RunnerException;
+import org.openjdk.jmh.runner.options.Options;
+import org.openjdk.jmh.runner.options.OptionsBuilder;
 
 import java.util.concurrent.TimeUnit;
 
@@ -72,28 +77,30 @@ public class VwapOrderExprContextBenchmarkTest {
             // 7152 +- 427
 //            evaluator = new ExprEvaluator("vwap.volumeLimit == 0.1 and ric in ['BT.L', 'VOD.L', 'TSCO.L']");
             // 1553
-            evaluator = new ExprEvaluator("(vwap.volumeLimit == 0.1) and (vwap.ric == 'VOD.L') and (order.ric == 'VOD.L') and (ric == 'VOD.L') and (vwap.tuid == 'CLIENT1') and (order.tuid == 'CLIENT1') and (tuid == 'CLIENT1') and (ric in ['BT.L', 'VOD.L', 'TSCO.L'])");
+//            evaluator = new ExprEvaluator("(vwap.volumeLimit == 0.1) and (vwap.ric == 'VOD.L') and (order.ric == 'VOD.L') and (ric == 'VOD.L') and (vwap.tuid == 'CLIENT1') and (order.tuid == 'CLIENT1') and (tuid == 'CLIENT1') and (ric in ['BT.L', 'VOD.L', 'TSCO.L'])");
+            // 2100 optimized
+            evaluator = new ExprEvaluator(ctx, "(vwap.volumeLimit == 0.1) and (vwap.ric == 'VOD.L') and (order.ric == 'VOD.L') and (ric == 'VOD.L') and (vwap.tuid == 'CLIENT1') and (order.tuid == 'CLIENT1') and (tuid == 'CLIENT1') and (ric in ['BT.L', 'VOD.L', 'TSCO.L'])");
         }
     }
 
     @Benchmark
     @BenchmarkMode(Mode.Throughput)
     @OutputTimeUnit(TimeUnit.MILLISECONDS)
-    @Fork(value = 1)
-    @Warmup(iterations = 3, timeUnit = TimeUnit.MILLISECONDS, time = 5000)
-    @Measurement(iterations = 3, timeUnit = TimeUnit.MILLISECONDS, time = 5000)
-//    @Warmup(iterations = 5, timeUnit = TimeUnit.MILLISECONDS, time = 10000)
-//    @Measurement(iterations = 5, timeUnit = TimeUnit.MILLISECONDS, time = 10000)
+    @Fork(value = 3)
+//    @Warmup(iterations = 3, timeUnit = TimeUnit.MILLISECONDS, time = 5000)
+//    @Measurement(iterations = 3, timeUnit = TimeUnit.MILLISECONDS, time = 5000)
+    @Warmup(iterations = 5, timeUnit = TimeUnit.MILLISECONDS, time = 10000)
+    @Measurement(iterations = 5, timeUnit = TimeUnit.MILLISECONDS, time = 10000)
     public void benchmarkSimpleExpression(BenchmarkState state) {
         state.evaluator.evaluateBool(state.ctx);
     }
 
-//    @Test
-//    public void runBenchmarks() throws RunnerException {
-//        Options options = new OptionsBuilder()
-//                .include(this.getClass().getName() + ".benchmark*")
-//                .build();
-//
-//        new Runner(options).run();
-//    }
+    @Test
+    public void runBenchmarks() throws RunnerException {
+        Options options = new OptionsBuilder()
+                .include(this.getClass().getName() + ".benchmark*")
+                .build();
+
+        new Runner(options).run();
+    }
 }

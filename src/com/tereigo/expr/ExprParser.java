@@ -206,7 +206,7 @@ final class ExprParser {
   }
 
   private List<Expr> list() {
-    List<Expr> values = new ArrayList<>();
+    final List<Expr> values = new ArrayList<>();
     do {
       Expr entry = expression();
       values.add(entry);

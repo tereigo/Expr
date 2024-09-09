@@ -34,7 +34,7 @@ final class ExprInterpreter implements Expr.Visitor<Variant> {
 
   Variant evaluate(final ExprContext ctx) {
     // TODO: if we make sure ExprContext always contains native context then we won't need to have 2
-    this.ctx.init(ExprContextNative.get(), ctx);
+    this.ctx.init(ctx, ExprContextNative.get());
     return evaluate(expression);
   }
 
@@ -218,9 +218,20 @@ final class ExprInterpreter implements Expr.Visitor<Variant> {
   }
 
   @Override
+  public Variant visitResolvedIdentifierExpr(final Expr.ResolvedIdentifier expr) {
+    expr.function.call(expr.result);
+    return expr.result;
+  }
+
+  @Override
   public Variant visitCallExpr(final Expr.Call expr) {
     final Object funcObj = ctx.getFunction(expr.operator.lexeme);
     return callFunction(expr.result, expr.operator, funcObj, expr.args);
+  }
+
+  @Override
+  public Variant visitResolvedCallExpr(final Expr.ResolvedCall expr) {
+    return callFunction(expr.result, expr.operator, expr.function, expr.args);
   }
 
   @Override
@@ -238,6 +249,33 @@ final class ExprInterpreter implements Expr.Visitor<Variant> {
       throw new RuntimeError(expr.operator, "Unknown function '" + expr.operator.lexeme + "'");
     }
 
+    try {
+      // expr.args.size()+1 - because we add the resolved "this" as a second parameter (objResult)
+      switch (expr.args.size() + 1) {
+        case 1: ((Function1)funcObj).call(expr.result, objResult); break;
+        case 2: ((Function2)funcObj).call(expr.result, objResult, evaluate(expr.args.get(0))); break;
+        case 3: ((Function3)funcObj).call(expr.result, objResult, evaluate(expr.args.get(0)), evaluate(expr.args.get(1))); break;
+        case 4: ((Function4)funcObj).call(expr.result, objResult, evaluate(expr.args.get(0)), evaluate(expr.args.get(1)), evaluate(expr.args.get(2))); break;
+        case 5: ((Function5)funcObj).call(expr.result, objResult, evaluate(expr.args.get(0)), evaluate(expr.args.get(1)), evaluate(expr.args.get(2)), evaluate(expr.args.get(3))); break;
+      }
+    } catch (ClassCastException castEx) {
+      throw new RuntimeError(expr.operator, "ClassCastException in function '" + expr.operator.lexeme + "': " + getExceptionMsg(castEx));
+    }
+    catch (RuntimeException runtimeEx) {
+      throw new RuntimeError(expr.operator, "RuntimeException in function '" + expr.operator.lexeme + "': " + getExceptionMsg(runtimeEx));
+    }
+    return expr.result;
+  }
+
+  @Override
+  public Variant visitResolvedObjectCallExpr(Expr.ResolvedObjectCall expr) {
+    final Variant objResult = evaluate(expr.object);
+    // if it's an object call from ExprContext
+    if (isExprContext(objResult)) {
+      return callFunction(expr.result, expr.operator, expr.function, expr.args);
+    }
+    // otherwise it's a normal/native function call -> get the function from the global context
+    final Object funcObj = expr.function;
     try {
       // expr.args.size()+1 - because we add the resolved "this" as a second parameter (objResult)
       switch (expr.args.size() + 1) {

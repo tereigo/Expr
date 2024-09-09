@@ -10,14 +10,30 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class FalconDomainTest extends ExprEvaluatorTestBase {
+    private boolean optimized;
 
     @Test
     void falconTests() {
-        RuntimeError runErr;
 
-        final MutableExprContext ctx = ExprContextFactory.create();
+        final MutableExprContext ctx = ExprContextFactory.createGlobalContext();
         FalconDomain.defineFunctions(ctx);
 
+        optimized = false;
+        runFalconTests(ctx);
+    }
+
+    @Test
+    void falconOptimizedTests() {
+
+        final MutableExprContext ctx = ExprContextFactory.createGlobalContext();
+        FalconDomain.defineFunctions(ctx);
+
+        optimized = true;
+        runFalconTests(ctx);
+    }
+
+    private void runFalconTests(MutableExprContext ctx) {
+        RuntimeError runErr;
         // ltod
         assertEquals(0.0, evaluateDouble("ltod(0)", ctx), EPS);
         assertEquals(1.0, evaluateDouble("ltod(1000000)", ctx), EPS);
@@ -35,8 +51,8 @@ class FalconDomainTest extends ExprEvaluatorTestBase {
         assertEquals(-100_000_000L, evaluateLong("dtol(-100.0)", ctx));
         assertEquals(123_456_000L, evaluateLong("dtol(123.456)", ctx));
         assertEquals(10_000_000L, evaluateLong("dtol(10)", ctx));
-        runErr = assertThrows(RuntimeError.class, () -> evaluate("dtol(\"A\")", ctx));
-        assertEquals("Expression evaluation error [line 1, pos 1]: RuntimeException in function 'dtol': Operand must be a DOUBLE number in expression 'dtol(\"A\")'", runErr.getMessage());
+        runErr = assertThrows(RuntimeError.class, () -> evaluate("dtol('A')", ctx));
+        assertEquals("Expression evaluation error [line 1, pos 1]: RuntimeException in function 'dtol': Operand must be a DOUBLE number in expression 'dtol('A')'", runErr.getMessage());
         runErr = assertThrows(RuntimeError.class, () -> evaluate("dtol(true)", ctx));
         assertEquals("Expression evaluation error [line 1, pos 1]: RuntimeException in function 'dtol': Operand must be a DOUBLE number in expression 'dtol(true)'", runErr.getMessage());
         // isMarketPrice
@@ -45,8 +61,8 @@ class FalconDomainTest extends ExprEvaluatorTestBase {
         assertFalse(evaluateBool("isMarketPrice(1000000)", ctx));
         runErr = assertThrows(RuntimeError.class, () -> evaluate("isMarketPrice(1000000.0)", ctx));
         assertEquals("Expression evaluation error [line 1, pos 1]: RuntimeException in function 'isMarketPrice': Operand must be a LONG number in expression 'isMarketPrice(1000000.0)'", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluate("isMarketPrice(\"A\")", ctx));
-        assertEquals("Expression evaluation error [line 1, pos 1]: RuntimeException in function 'isMarketPrice': Operand must be a LONG number in expression 'isMarketPrice(\"A\")'", runErr.getMessage());
+        runErr = assertThrows(RuntimeError.class, () -> evaluate("isMarketPrice('A')", ctx));
+        assertEquals("Expression evaluation error [line 1, pos 1]: RuntimeException in function 'isMarketPrice': Operand must be a LONG number in expression 'isMarketPrice('A')'", runErr.getMessage());
         runErr = assertThrows(RuntimeError.class, () -> evaluate("isMarketPrice(true)", ctx));
         assertEquals("Expression evaluation error [line 1, pos 1]: RuntimeException in function 'isMarketPrice': Operand must be a LONG number in expression 'isMarketPrice(true)'", runErr.getMessage());
         // isLimitPrice
@@ -55,8 +71,8 @@ class FalconDomainTest extends ExprEvaluatorTestBase {
         assertTrue(evaluateBool("isLimitPrice(1000000)", ctx));
         runErr = assertThrows(RuntimeError.class, () -> evaluate("isLimitPrice(1000000.0)", ctx));
         assertEquals("Expression evaluation error [line 1, pos 1]: RuntimeException in function 'isLimitPrice': Operand must be a LONG number in expression 'isLimitPrice(1000000.0)'", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluate("isLimitPrice(\"A\")", ctx));
-        assertEquals("Expression evaluation error [line 1, pos 1]: RuntimeException in function 'isLimitPrice': Operand must be a LONG number in expression 'isLimitPrice(\"A\")'", runErr.getMessage());
+        runErr = assertThrows(RuntimeError.class, () -> evaluate("isLimitPrice('A')", ctx));
+        assertEquals("Expression evaluation error [line 1, pos 1]: RuntimeException in function 'isLimitPrice': Operand must be a LONG number in expression 'isLimitPrice('A')'", runErr.getMessage());
         runErr = assertThrows(RuntimeError.class, () -> evaluate("isLimitPrice(true)", ctx));
         assertEquals("Expression evaluation error [line 1, pos 1]: RuntimeException in function 'isLimitPrice': Operand must be a LONG number in expression 'isLimitPrice(true)'", runErr.getMessage());
         // isValidPrice
@@ -65,8 +81,8 @@ class FalconDomainTest extends ExprEvaluatorTestBase {
         assertTrue(evaluateBool("isValidPrice(1000000)", ctx));
         runErr = assertThrows(RuntimeError.class, () -> evaluate("isValidPrice(1000000.0)", ctx));
         assertEquals("Expression evaluation error [line 1, pos 1]: RuntimeException in function 'isValidPrice': Operand must be a LONG number in expression 'isValidPrice(1000000.0)'", runErr.getMessage());
-        runErr = assertThrows(RuntimeError.class, () -> evaluate("isValidPrice(\"A\")", ctx));
-        assertEquals("Expression evaluation error [line 1, pos 1]: RuntimeException in function 'isValidPrice': Operand must be a LONG number in expression 'isValidPrice(\"A\")'", runErr.getMessage());
+        runErr = assertThrows(RuntimeError.class, () -> evaluate("isValidPrice('A')", ctx));
+        assertEquals("Expression evaluation error [line 1, pos 1]: RuntimeException in function 'isValidPrice': Operand must be a LONG number in expression 'isValidPrice('A')'", runErr.getMessage());
         runErr = assertThrows(RuntimeError.class, () -> evaluate("isValidPrice(true)", ctx));
         assertEquals("Expression evaluation error [line 1, pos 1]: RuntimeException in function 'isValidPrice': Operand must be a LONG number in expression 'isValidPrice(true)'", runErr.getMessage());
 
@@ -86,4 +102,27 @@ class FalconDomainTest extends ExprEvaluatorTestBase {
         assertTrue(evaluateBool("isValidPrice(dtol(PI))", ctx));
     }
 
+    protected boolean evaluateBool(String text, ExprContext ctx) {
+        return optimized ? super.evaluateBoolOptimized(ctx, text) : super.evaluateBool(text, ctx);
+    }
+
+    protected String evaluateString(String text, ExprContext ctx) {
+        return optimized ? super.evaluateStringOptimized(ctx, text) : super.evaluateString(text, ctx);
+    }
+
+    protected long evaluateLong(String text, ExprContext ctx) {
+        return optimized ? super.evaluateLongOptimized(ctx, text) : super.evaluateLong(text, ctx);
+    }
+
+    protected double evaluateDouble(String text, ExprContext ctx) {
+        return optimized ? super.evaluateDoubleOptimized(ctx, text) : super.evaluateDouble(text, ctx);
+    }
+
+    protected void evaluate(String text, ExprContext ctx) {
+        if (optimized) {
+            super.evaluateOptimized(ctx, text);
+        } else {
+            super.evaluate(text, ctx);
+        }
+    }
 }

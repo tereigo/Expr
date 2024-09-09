@@ -4,6 +4,8 @@ import com.tereigo.expr.order.SimpleOrderFieldSupplier;
 import com.tereigo.expr.order.TestOrder;
 import org.junit.jupiter.api.Test;
 
+import java.nio.ByteBuffer;
+
 import static com.tereigo.expr.utils.ByteBufferUtils.constant;
 import static com.tereigo.expr.utils.ByteBufferUtils.parseString;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -15,7 +17,7 @@ class ExprEvaluationWithContextTest extends ExprEvaluatorTestBase {
 
     @Test
     void contextTestsWithSuppliers() {
-        final MutableExprContext ctx = ExprContextFactory.create();
+        final MutableExprContext ctx = ExprContextFactory.createGlobalContext();
         ctx.defineDouble("$PI", () -> 3.14);
         ctx.defineLong("$productId", () -> 123L);
         ctx.defineString("$ric", () -> "VOD.L");
@@ -27,9 +29,59 @@ class ExprEvaluationWithContextTest extends ExprEvaluatorTestBase {
     }
 
     @Test
+    void contextTestsAfterOptimizationForDebug() {
+        final MutableExprContext ctx = ExprContextFactory.createGlobalContext();
+        ctx.defineDouble("$PI", () -> 3.14);
+        ctx.defineLong("$productId", () -> 123L);
+        ctx.defineString("$ric", () -> "VOD.L");
+        ctx.defineString("$nodeAlgoType", () -> "Vwap");
+        ctx.defineBool("$enabled", () -> true);
+        ctx.defineByteBuffer("$tuid", () -> constant("CLIENT1"));
+
+        final ExprContext testCtx = createTestObjExprContext("VWAP1", constant("Vwap"));
+
+        ctx.defineExprContext("test", () -> testCtx);
+
+        {
+            ExprEvaluator evaluator = new ExprEvaluator(ctx, "1.0+$PI");
+            assertEquals(4.14, evaluator.evaluateDouble(ctx), EPS);
+        }
+
+        {
+            ExprEvaluator evaluator = new ExprEvaluator(ctx, "not($enabled)");
+            assertFalse(evaluator.evaluateBool(ctx));
+        }
+
+        {
+            ExprEvaluator evaluator = new ExprEvaluator(ctx, "test.nodeName == 'VWAP1' and 'ABC'.contains('A') and $productId == 123 and $ric == 'VOD.L'");
+            assertTrue(evaluator.evaluateBool(ctx));
+        }
+    }
+
+    @Test
+    void contextTestsAfterOptimization() {
+        final MutableExprContext ctx = ExprContextFactory.createGlobalContext();
+        ctx.defineDouble("$PI", () -> 3.14);
+        ctx.defineLong("$productId", () -> 123L);
+        ctx.defineString("$ric", () -> "VOD.L");
+        ctx.defineString("$nodeAlgoType", () -> "Vwap");
+        ctx.defineBool("$enabled", () -> true);
+        ctx.defineByteBuffer("$tuid", () -> constant("CLIENT1"));
+
+        runOptimizedExpressionWithContextTests(ctx);
+    }
+
+    private static ExprContext createTestObjExprContext(String nodeName, ByteBuffer algoType) {
+        final MutableExprContext ctx = ExprContextFactory.createLocalContext();
+        ctx.defineString("nodeName", () -> nodeName);
+        ctx.defineByteBuffer("algoType", () -> algoType);
+        return ctx;
+    }
+
+    @Test
     void contextTestsWithSuppliersForOrder() {
         TestOrder order = new TestOrder("VOD.L", 123L, true, constant("CLIENT1"));
-        final MutableExprContext ctx = ExprContextFactory.create();
+        final MutableExprContext ctx = ExprContextFactory.createGlobalContext();
         ctx.defineDouble("$PI", () -> 3.14);
         ctx.defineString("$nodeAlgoType", () -> "Vwap");
         ctx.defineLong("$productId", order::productId);
@@ -45,7 +97,7 @@ class ExprEvaluationWithContextTest extends ExprEvaluatorTestBase {
         SimpleOrderFieldSupplier orderSupplier = new SimpleOrderFieldSupplier();
         TestOrder order1 = new TestOrder("VOD.L", 123L, true, constant("CLIENT1"));
         orderSupplier.setOrder(order1);
-        final MutableExprContext ctx = ExprContextFactory.create();
+        final MutableExprContext ctx = ExprContextFactory.createGlobalContext();
         ctx.defineDouble("$PI", () -> 3.14);
         ctx.defineString("$nodeAlgoType", () -> "Vwap");
         ctx.defineLong("$productId", orderSupplier::productId);
@@ -86,7 +138,7 @@ class ExprEvaluationWithContextTest extends ExprEvaluatorTestBase {
         TestOrder order1 = new TestOrder("VOD.L", 123L, true, constant("CLIENT1"));
         orderSupplier.setOrder(order1);
 
-        final MutableExprContext globalCtx = ExprContextFactory.create();
+        final MutableExprContext globalCtx = ExprContextFactory.createGlobalContext();
         globalCtx.defineDouble("$PI", () -> 3.14);
         globalCtx.defineString("$nodeAlgoType", () -> "Vwap");
         globalCtx.defineString("$region", () -> "EMEA");
@@ -98,7 +150,7 @@ class ExprEvaluationWithContextTest extends ExprEvaluatorTestBase {
         globalCtx.addAlias("$falconEnv", "falconEnv");
         globalCtx.addAlias("$timeNs", "timeNs");
 
-        final MutableExprContext orderCtx = ExprContextFactory.create();
+        final MutableExprContext orderCtx = ExprContextFactory.createLocalContext();
         orderCtx.defineLong("$productId", orderSupplier::productId);
         orderCtx.defineString("$ric", orderSupplier::ric);
         orderCtx.defineBool("$enabled", orderSupplier::enabled);
@@ -207,5 +259,37 @@ class ExprEvaluationWithContextTest extends ExprEvaluatorTestBase {
         assertFalse(evaluateBool("$tuid in ['CLIENT0', 'CLIENT2']", ctx));
         assertEquals(constant("CLIENT1"), evaluateByteBuffer("$tuid", ctx));
         assertEquals("CLIENT1", parseString(evaluateByteBuffer("$tuid", ctx)));
+    }
+
+    private void runOptimizedExpressionWithContextTests(ExprContext ctx) {
+        assertEquals(4.14, evaluateDoubleOptimized(ctx, "1.0+$PI"), EPS);
+        assertEquals(6.28, evaluateDoubleOptimized(ctx, " $PI  + $PI  "), EPS);
+        assertEquals(0.0, evaluateDoubleOptimized(ctx, "($PI  + PI) * 0.0"), EPS);
+        assertEquals(-3.14, evaluateDoubleOptimized(ctx, "-$PI"), EPS);
+        assertEquals(-3.14, evaluateDoubleOptimized(ctx, "(-$PI)"), EPS);
+        assertEquals(-3.14, evaluateDoubleOptimized(ctx, "-($PI)"), EPS);
+        assertFalse(evaluateBoolOptimized(ctx, "not($enabled)"));
+        assertTrue(evaluateBoolOptimized(ctx, "$PI == $PI"));
+        assertTrue(evaluateBoolOptimized(ctx, "$productId == 123 and $ric == \"VOD.L\""));
+        assertTrue(evaluateBoolOptimized(ctx, "$productId == 123 and $ric == 'VOD.L'"));
+        assertTrue(evaluateBoolOptimized(ctx, "$productId == 567 or $enabled"));
+        assertFalse(evaluateBoolOptimized(ctx, "$productId == 567 and $enabled"));
+        assertFalse(evaluateBoolOptimized(ctx, "$nodeAlgoType == $ric"));
+        assertFalse(evaluateBoolOptimized(ctx, "$nodeAlgoType == \"123\""));
+        assertEquals(124, evaluateLongOptimized(ctx, "$productId + 1"));
+        assertEquals(100, evaluateLongOptimized(ctx, "$productId - 23"));
+        assertTrue(evaluateBoolOptimized(ctx, "$tuid == \"CLIENT1\""));
+        assertTrue(evaluateBoolOptimized(ctx, "\"CLIENT1\" == $tuid"));
+        assertTrue(evaluateBoolOptimized(ctx, "$tuid in [\"CLIENT0\", \"CLIENT1\"]"));
+        assertFalse(evaluateBoolOptimized(ctx, "$tuid != \"CLIENT1\""));
+        assertFalse(evaluateBoolOptimized(ctx, "\"CLIENT1\" != $tuid"));
+        assertFalse(evaluateBoolOptimized(ctx, "'CLIENT1' != $tuid"));
+        assertFalse(evaluateBoolOptimized(ctx, "not ($tuid in [\"CLIENT0\", \"CLIENT1\"])"));
+        assertFalse(evaluateBoolOptimized(ctx, "$tuid == \"CLIENT2\""));
+        assertFalse(evaluateBoolOptimized(ctx, "\"CLIENT2\" == $tuid"));
+        assertFalse(evaluateBoolOptimized(ctx, "$tuid in [\"CLIENT0\", \"CLIENT2\"]"));
+        assertFalse(evaluateBoolOptimized(ctx, "$tuid in ['CLIENT0', 'CLIENT2']"));
+        assertEquals(constant("CLIENT1"), evaluateByteBufferOptimized(ctx, "$tuid"));
+        assertEquals("CLIENT1", parseString(evaluateByteBufferOptimized(ctx, "$tuid")));
     }
 }

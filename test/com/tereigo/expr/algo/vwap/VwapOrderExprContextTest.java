@@ -55,6 +55,7 @@ class VwapOrderExprContextTest {
     void vwapDomainTests() {
         assertTrue(evaluateBool("vwap.volumeLimit == 0.1", ctx));
         assertEquals(0.1, evaluateDouble("vwap.volumeLimit", ctx));
+        assertTrue(evaluateBool("'ABC'.contains('A') and vwap.volumeLimit == 0.1", ctx));
 
         assertTrue(evaluateBool("vwap.volumeLimit == 0.1 and vwap.ric == 'VOD.L' and order.ric == 'VOD.L' and ric == 'VOD.L' and vwap.tuid == 'CLIENT1' and order.tuid == 'CLIENT1' and tuid == 'CLIENT1'", ctx));
 
@@ -63,13 +64,36 @@ class VwapOrderExprContextTest {
         assertTrue(evaluateBool("vwap.volumeLimit == 0.2 and vwap.ric == 'BP.L' and order.ric == 'BP.L' and ric == 'BP.L' and vwap.tuid == 'CLIENT2' and order.tuid == 'CLIENT2' and tuid == 'CLIENT2'", ctx));
     }
 
+    @Test
+    void vwapDomainOptimizedTests() {
+        assertTrue(evaluateBoolOptimized("vwap.volumeLimit == 0.1", ctx));
+        assertEquals(0.1, evaluateDoubleOptimized("vwap.volumeLimit", ctx));
+        assertTrue(evaluateBoolOptimized("'ABC'.contains('A') and vwap.volumeLimit == 0.1", ctx));
+
+        assertTrue(evaluateBoolOptimized("vwap.volumeLimit == 0.1 and vwap.ric == 'VOD.L' and order.ric == 'VOD.L' and ric == 'VOD.L' and vwap.tuid == 'CLIENT1' and order.tuid == 'CLIENT1' and tuid == 'CLIENT1'", ctx));
+
+        orderFieldResolver.setOrder(order2);
+
+        assertTrue(evaluateBoolOptimized("vwap.volumeLimit == 0.2 and vwap.ric == 'BP.L' and order.ric == 'BP.L' and ric == 'BP.L' and vwap.tuid == 'CLIENT2' and order.tuid == 'CLIENT2' and tuid == 'CLIENT2'", ctx));
+    }
+
     private boolean evaluateBool(String text, ExprContext ctx) {
         ExprEvaluator evaluator = new ExprEvaluator(text);
         return evaluator.evaluateBool(ctx);
     }
 
+    private boolean evaluateBoolOptimized(String text, ExprContext ctx) {
+        ExprEvaluator evaluator = new ExprEvaluator(ctx, text);
+        return evaluator.evaluateBool(ctx);
+    }
+
     private double evaluateDouble(String text, ExprContext ctx) {
         ExprEvaluator evaluator = new ExprEvaluator(text);
+        return evaluator.evaluateDouble(ctx);
+    }
+
+    private double evaluateDoubleOptimized(String text, ExprContext ctx) {
+        ExprEvaluator evaluator = new ExprEvaluator(ctx, text);
         return evaluator.evaluateDouble(ctx);
     }
 }

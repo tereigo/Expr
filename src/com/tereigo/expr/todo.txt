@@ -1,33 +1,38 @@
  TODO:
-7. Can we merge contexts to avoid 2 lookups in this function in ExprContextCombined?
-    public MutableVariant get(String name, MutableVariant result) {
-        MutableVariant res = ctx1.get(name, result);
-        return res != null ? res : ctx2 != null ? ctx2.get(name, result) : null;
-    }
+4. This is essentially what we do then we introduce AstOptimizer!
+   May be we should store the context used for optimization and reuse it for evaluation
+   And either enforce that for the optimized ast context should not be passed it or check that it's the same context passed in
+   (it's hard to do since it's possible to modify the context AFTER AST was optimized)
+   The best solution would be to change the interface in such a way to prevent the user to pass in the context for the evaluation if AST was optimized
+   interface NormalEvaluator {
+       void evaluate(); // evaluation with just native context
+       void evaluate(ExprContext ctx); // evaluation with user context + native context
+   }
 
-    if contexts don't change at runtime then we are allowed to merge them
+   interface OptimizedEvaluator {
+       void evaluate(); // evaluation with the context which was passed in when the expression was compiled
+   }
 
-6. Optimize expressions by caching the functions so that instead of fetching a function from the map:
-   if (isExprContext(objResult)) {
-      // then fetch the function from that ExprContext
-      Object funcObj = objResult.getAsExprContext().getFunction(expr.operator.lexeme);
-      return callFunction(expr.result, expr.operator, funcObj, expr.args);
-    }
-    // otherwise it's a normal/native function call -> get the function from the global context
-    Object funcObj = ctx.getFunction(expr.operator.lexeme);
+   May be enforce supplying ExprContext during expression compilation to make sure that it's not changed during evaluation?
+   It ensures that a client will not apply any GC-type ops to ExprContext during evaluation
+   It also means that the original expression and it's Expr context are "immutable" after compilation.
+   Not "totally immutable" because you can substitute an order still in Supplier but both both Compiled expr and its ExprContext are bound together.
+   "evaluate()" will not have "ctx" in that case and it goes into ExprEvaluator constructor:
+        ASTRoot root = ExprCompiler.compile("$ric == \"VOD.L\" and $productId == 123 or 5 != 2");
+        ExprEvaluator exprEvaluator = new ExprEvaluator(root, ctx);
 
-    I think it can be done via traversing AST (the same way AstHierarchyPrinter does) and generate a new one
-    where Identifiers are substituted with the direct functions
+        exprEvaluator.evaluateBool();
 
-8. Extract performance tests as a separate target
+   Cons:
+   You need to have ExprContext to be able to compile the expression which is not always available. especially when you compile in front-end
+
+
 2. Support scientific input for Doubles: 1e6
 
 3. Add tests for VariantImpl equals / hashCode
 4. add git hash tag / gitVersion / gitDate functions
 
 do it once and store the function directly for reuse to avoid look ups by name during evaluation
-
-
 
 7. Add string operators:
  startsWith
@@ -83,19 +88,6 @@ and all other functions well be available via reflection
 
 9. Do we NIL ?
 
-4. May be enforce supplying ExprContext during expression compilation to make sure that it's not changed during evaluation?
-   It ensures that a client will not apply any GC-type ops to ExprContext during evaluation
-   It also means that the original expression and it's Expr context are "immutable" after compilation.
-   Not "totally immutable" because you can substitute an order still in Supplier but both both Compiled expr and its ExprContext are bound together.
-   "evaluate()" will not have "ctx" in that case and it goes into ExprEvaluator constructor:
-        ASTRoot root = ExprCompiler.compile("$ric == \"VOD.L\" and $productId == 123 or 5 != 2");
-        ExprEvaluator exprEvaluator = new ExprEvaluator(root, ctx);
-
-        exprEvaluator.evaluateBool();
-
-   Cons:
-   You need to have ExprContext to be able to compile the expression which is not always available. especially when you compile in front-end
-
 
 
 
@@ -103,6 +95,28 @@ and all other functions well be available via reflection
 
 
 Done:
+8. Extract performance tests as a separate target
+7. After AST optimization there are no lookups!
+   Can we merge contexts to avoid 2 lookups in this function in ExprContextCombined?
+    public MutableVariant get(String name, MutableVariant result) {
+        MutableVariant res = ctx1.get(name, result);
+        return res != null ? res : ctx2 != null ? ctx2.get(name, result) : null;
+    }
+
+    if contexts don't change at runtime then we are allowed to merge them
+
+6. Optimize expressions by caching the functions so that instead of fetching a function from the map:
+   if (isExprContext(objResult)) {
+      // then fetch the function from that ExprContext
+      Object funcObj = objResult.getAsExprContext().getFunction(expr.operator.lexeme);
+      return callFunction(expr.result, expr.operator, funcObj, expr.args);
+    }
+    // otherwise it's a normal/native function call -> get the function from the global context
+    Object funcObj = ctx.getFunction(expr.operator.lexeme);
+
+    I think it can be done via traversing AST (the same way AstHierarchyPrinter does) and generate a new one
+    where Identifiers are substituted with the direct functions
+
 1. add ability to add new native functions into native context, like dtol/ltod
 5. Add tests for aliases
 4. Check that "not" is followed by Grouping to avoid runtime errors:

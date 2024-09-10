@@ -1,7 +1,7 @@
 package com.tereigo.expr.utils;
 
 import com.tereigo.expr.annotations.GeneratesGarbage;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
+import com.tereigo.expr.function.ByteComparator;
 
 import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
@@ -9,7 +9,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Comparator;
 
 public final class ByteBufferUtils {
-    public static final ByteBuffer EMPTY_BUFFER = ByteBuffer.allocate(0).asReadOnlyBuffer();
+    private static final ByteBuffer EMPTY = ByteBuffer.allocate(0).asReadOnlyBuffer();
 
     private static final ByteComparator BYTE_CASE_SENSITIVE_COMPARATOR = Byte::compare;
     private static final ByteComparator BYTE_CASE_INSENSITIVE_COMPARATOR = (lhs, rhs) -> Byte.compare(asciiByteToLower(lhs), asciiByteToLower(rhs));
@@ -19,17 +19,22 @@ public final class ByteBufferUtils {
 
     private ByteBufferUtils() {}
 
-    public static ByteBuffer constant(String from) {
+    @GeneratesGarbage
+    public static ByteBuffer constant(final String from) {
         return ByteBuffer.wrap(from.getBytes()).asReadOnlyBuffer();
     }
 
-    public static void parseString(ByteBuffer buffer, StringBuilder builder) {
+    public static ByteBuffer empty() {
+        return EMPTY;
+    }
+
+    public static void parseString(final ByteBuffer buffer, final StringBuilder builder) {
         parseString(buffer, builder, buffer.remaining());
     }
 
-    public static void parseString(ByteBuffer buffer, StringBuilder builder, int len) {
-        int pos = buffer.position();
-        int end = Math.min(buffer.remaining(), len);
+    public static void parseString(final ByteBuffer buffer, final StringBuilder builder, final int len) {
+        final int pos = buffer.position();
+        final int end = Math.min(buffer.remaining(), len);
         for (int i = 0; i < end; i++) {
             byte b = buffer.get();
             builder.append((char) (b & 0xFF));
@@ -37,64 +42,68 @@ public final class ByteBufferUtils {
         buffer.position(pos);
     }
 
-    public static String parseString(ByteBuffer buffer) {
+    @GeneratesGarbage
+    public static String parseString(final ByteBuffer buffer) {
         if (!buffer.hasRemaining()) {
             return "";
         }
-        byte[] bytes = getBytes(buffer);
+        final byte[] bytes = getBytes(buffer);
         return new String(bytes, 0, buffer.remaining(), StandardCharsets.US_ASCII);
     }
 
-    public static String parseString(ByteBuffer buffer, int len) {
-        byte[] bytes = getBytes(buffer);
+    @GeneratesGarbage
+    public static String parseString(final ByteBuffer buffer, int len) {
+        final byte[] bytes = getBytes(buffer, len);
         return new String(bytes, 0, bytes.length, StandardCharsets.US_ASCII);
     }
 
-    public static byte[] getBytes(ByteBuffer buffer) {
+    @GeneratesGarbage
+    public static byte[] getBytes(final ByteBuffer buffer) {
         return getBytes(buffer, buffer.remaining());
     }
 
-    public static byte[] getBytes(ByteBuffer buffer, int len) {
-        buffer.mark();
-        byte[] bytes = new byte[Math.min(len, buffer.remaining())];
+    @GeneratesGarbage
+    public static byte[] getBytes(final ByteBuffer buffer, final int len) {
+        final int pos = buffer.position();
+        final byte[] bytes = new byte[Math.min(len, buffer.remaining())];
         buffer.get(bytes);
-        buffer.reset();
+        buffer.position(pos);
         return bytes;
     }
 
-    public static boolean isEmpty(ByteBuffer buffer) {
+    public static boolean isEmpty(final ByteBuffer buffer) {
         return !buffer.hasRemaining();
     }
 
-    public static void setToEmpty(ByteBuffer buffer) {
+    public static void setToEmpty(final ByteBuffer buffer) {
         buffer.clear().flip();
     }
 
-    public static ByteBuffer toByteBuffer(CharSequence data, ByteBuffer target) {
+    public static ByteBuffer toByteBufferSafe(final CharSequence data, final ByteBuffer target) {
+        return toByteBuffer(data, target, target.capacity());
+    }
+
+    public static ByteBuffer toByteBuffer(final CharSequence data, final ByteBuffer target) {
+        return toByteBuffer(data, target, data.length());
+    }
+
+    public static ByteBuffer toByteBuffer(final CharSequence data, final ByteBuffer target, final int len) {
         target.clear();
-        for (int i = 0; i < data.length(); i++) {
+        final int max = Math.min(data.length(), len);
+        for (int i = 0; i < max; i++) {
             target.put((byte)(data.charAt(i) & 0xFF));
         }
         target.flip();
         return target;
     }
 
-    public static ByteBuffer toByteBuffer(CharSequence data, ByteBuffer target, int len) {
-        target.clear();
-        for (int i = 0; i < data.length() && i < len; i++) {
-            target.put((byte)(data.charAt(i) & 0xFF));
+    public static ByteBuffer deepCopy(final ByteBuffer source, final ByteBuffer target) {
+        if (target == null) {
+            return null;
         }
-        target.flip();
-        return target;
-    }
-
-    public static ByteBuffer deepCopy(ByteBuffer source, ByteBuffer target) {
         final int srcP = source.position();
         final int srcL = source.limit();
         try {
-            if (target == null) {
-                return null;
-            }
             target.put(source);
             target.flip();
             source.position(srcP);
@@ -105,6 +114,7 @@ public final class ByteBufferUtils {
         }
     }
 
+    @GeneratesGarbage
     public static ByteBuffer clone(final ByteBuffer original) {
         final ByteBuffer clone = (original.isDirect()) ?
                 ByteBuffer.allocateDirect(original.capacity()) :
@@ -118,75 +128,94 @@ public final class ByteBufferUtils {
         return clone;
     }
 
-    public static ByteBuffer toByteBufferSafe(CharSequence data, ByteBuffer target) {
-        return toByteBuffer(data, target, target.capacity());
-    }
-
-    public static byte asciiByteToLower(byte b) {
+    public static byte asciiByteToLower(final byte b) {
         return (b >= 65 && b <= 90) ? (byte)(b+32) : b;
     }
 
-    public static boolean startsWith(ByteBuffer source, ByteBuffer key) {
-        return startsWith(source, key, Byte::compare);
+    public static boolean startsWith(final ByteBuffer source, final ByteBuffer key) {
+        return startsWith(source, key, BYTE_CASE_SENSITIVE_COMPARATOR);
     }
 
-    public static boolean startWithCaseInsensitive(ByteBuffer source, ByteBuffer key) {
-        return startsWith(source, key, (lhs, rhs) -> Byte.compare(asciiByteToLower(lhs), asciiByteToLower(rhs)));
+    public static boolean startsWithCaseInsensitive(final ByteBuffer source, final ByteBuffer key) {
+        return startsWith(source, key, BYTE_CASE_INSENSITIVE_COMPARATOR);
     }
 
-    public static boolean startsWith(ByteBuffer source, ByteBuffer key, ByteComparator comparator) {
-        source.mark();
-        key.mark();
-        while (source.hasRemaining() && key.hasRemaining()) {
-            if (comparator.compare(source.get(), key.get()) != 0) {
-                source.reset();
-                key.reset();
+    public static boolean startsWith(final ByteBuffer source, final ByteBuffer key, final ByteComparator comparator) {
+        final int keySize = key.remaining();
+        if (keySize > source.remaining()) {
+            return false;
+        }
+        for (int i = 0; i < keySize; i++) {
+            if (comparator.compare(source.get(i), key.get(i)) != 0) {
                 return false;
             }
         }
-        final boolean result = !key.hasRemaining();
-        source.reset();
-        key.reset();
-        return result;
+        return true;
     }
 
-    // tereni: Changed!!!
-    public static boolean startsWith(ByteBuffer source, CharSequence key) {
-        source.mark();
-        final int strSize = key.length();
-        int i = 0;
-        while (source.hasRemaining() && i < strSize) {
-            if (source.get() != key.charAt(i)) {
-                source.reset();
+    public static boolean startsWith(final ByteBuffer source, final CharSequence key) {
+        return startsWith(source, key, BYTE_CASE_SENSITIVE_COMPARATOR);
+    }
+
+    public static boolean startsWithCaseInsensitive(final ByteBuffer source, final CharSequence key) {
+        return startsWith(source, key, BYTE_CASE_INSENSITIVE_COMPARATOR);
+    }
+
+    public static boolean startsWith(final ByteBuffer source, final CharSequence key, final ByteComparator comparator) {
+        final int keySize = key.length();
+        if (keySize > source.remaining()) {
+            return false;
+        }
+        for (int i = 0; i < keySize; i++) {
+            if (comparator.compare(source.get(i), (byte)(key.charAt(i) & 0xFF)) != 0) {
                 return false;
             }
-            ++i;
         }
-        source.reset();
-        return i == strSize;
+        return true;
     }
 
-    public static boolean equals(ByteBuffer buffer, ByteBuffer other) {
+    public static boolean startsWith(final CharSequence source, final ByteBuffer key) {
+        return startsWith(source, key, BYTE_CASE_SENSITIVE_COMPARATOR);
+    }
+
+    public static boolean startsWithCaseInsensitive(final CharSequence source, final ByteBuffer key) {
+        return startsWith(source, key, BYTE_CASE_INSENSITIVE_COMPARATOR);
+    }
+
+    public static boolean startsWith(final CharSequence source, final ByteBuffer key, final ByteComparator comparator) {
+        final int keySize = key.remaining();
+        if (keySize > source.length()) {
+            return false;
+        }
+        for (int i = 0; i < keySize; i++) {
+            if (comparator.compare((byte)(source.charAt(i) & 0xFF),key.get(i)) != 0) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public static boolean equals(final ByteBuffer buffer, final ByteBuffer other) {
         return equals(buffer, other, BYTE_CASE_SENSITIVE_COMPARATOR);
     }
 
-    public static boolean equals(CharSequence str, ByteBuffer buffer) {
+    public static boolean equals(final CharSequence str, final ByteBuffer buffer) {
         return equals(buffer, str, BYTE_CASE_SENSITIVE_COMPARATOR);
     }
 
-    public static boolean equalsIgnoreCase(ByteBuffer buffer, ByteBuffer other) {
+    public static boolean equalsIgnoreCase(final ByteBuffer buffer, final ByteBuffer other) {
         return equals(buffer, other, BYTE_CASE_INSENSITIVE_COMPARATOR);
     }
 
-    public static boolean equalsIgnoreCase(ByteBuffer buffer, CharSequence str) {
+    public static boolean equalsIgnoreCase(final ByteBuffer buffer, final CharSequence str) {
         return equals(buffer, str, BYTE_CASE_INSENSITIVE_COMPARATOR);
     }
 
-    public static boolean equalsIgnoreCase(CharSequence str, ByteBuffer buffer) {
+    public static boolean equalsIgnoreCase(final CharSequence str, final ByteBuffer buffer) {
         return equals(buffer, str, BYTE_CASE_INSENSITIVE_COMPARATOR);
     }
 
-    public static boolean equals(ByteBuffer buffer, ByteBuffer other, ByteComparator comparator) {
+    public static boolean equals(final ByteBuffer buffer, final ByteBuffer other, final ByteComparator comparator) {
         if (buffer == other) {
             return true;
         }
@@ -198,18 +227,18 @@ public final class ByteBufferUtils {
         }
     }
 
-    public static boolean equals(ByteBuffer buffer, CharSequence str, ByteComparator comparator) {
+    public static boolean equals(final ByteBuffer buffer, final CharSequence str, final ByteComparator comparator) {
         if (buffer == null && str == null) {
             return true;
         }
         if (buffer != null && str != null) {
-            int pos = buffer.position();
-            int lim = buffer.limit();
+            final int pos = buffer.position();
+            final int lim = buffer.limit();
             if (str.length() != (lim - pos)) {
                 return false;
             }
             for (int i = 0; i < str.length(); i++) {
-                if (comparator.compare((byte)str.charAt(i), buffer.get(pos + i)) != 0) {
+                if (comparator.compare((byte)(str.charAt(i) & 0xFF), buffer.get(pos + i)) != 0) {
                     return false;
                 }
             }
@@ -219,20 +248,20 @@ public final class ByteBufferUtils {
         }
     }
 
-    public static boolean equals(ByteBuffer buffer, CharSequence chars) {
+    public static boolean equals(final ByteBuffer buffer, final CharSequence chars) {
         if (buffer == null && chars == null) {
             return true;
         }
 
         if (buffer != null && chars != null) {
-            int pos = buffer.position();
-            int lim = buffer.limit();
+            final int pos = buffer.position();
+            final int lim = buffer.limit();
             if (chars.length() != (lim - pos)) {
                 return false;
             }
 
             for (int i = 0; i < chars.length(); i++) {
-                if (chars.charAt(i) != buffer.get(pos + i)) {
+                if ((chars.charAt(i) & 0xFF) != buffer.get(pos + i)) {
                     return false;
                 }
             }
@@ -243,15 +272,15 @@ public final class ByteBufferUtils {
         }
     }
 
-    public static int compare(ByteBuffer buffer, ByteBuffer other) {
-        return compare(buffer, other, Byte::compare);
+    public static int compare(final ByteBuffer buffer, final ByteBuffer other) {
+        return compare(buffer, other, BYTE_CASE_SENSITIVE_COMPARATOR);
     }
 
-    public static int compareCaseInsensitive(ByteBuffer buffer, ByteBuffer other) {
-        return compare(buffer, other, (byte lhs, byte rhs) -> Byte.compare(asciiByteToLower(lhs), asciiByteToLower(rhs)));
+    public static int compareCaseInsensitive(final ByteBuffer buffer, final ByteBuffer other) {
+        return compare(buffer, other, BYTE_CASE_INSENSITIVE_COMPARATOR);
     }
 
-    public static int compare(ByteBuffer buffer, ByteBuffer other, ByteComparator comparator) {
+    public static int compare(final ByteBuffer buffer, final ByteBuffer other, final ByteComparator comparator) {
         if (buffer == null && other == null) {
             return 0;
         } else if (buffer == null) {
@@ -259,9 +288,9 @@ public final class ByteBufferUtils {
         } else if (other == null) {
             return 1;
         }
-        int n = buffer.position() + Math.min(buffer.remaining(), other.remaining());
+        final int n = buffer.position() + Math.min(buffer.remaining(), other.remaining());
         for (int i = buffer.position(), j = other.position(); i < n; i++, j++) {
-            int cmp = comparator.compare(buffer.get(i), other.get(j));
+            final int cmp = comparator.compare(buffer.get(i), other.get(j));
             if (cmp != 0) {
                 return cmp;
             }
@@ -269,90 +298,35 @@ public final class ByteBufferUtils {
         return buffer.remaining() - other.remaining();
     }
 
-    public static void toString(ByteBuffer buffer, StringBuilder sb) {
+    // TODO: is it supposed to change buffer.position?
+    public static void toString(final ByteBuffer buffer, final StringBuilder sb) {
         int pos = buffer.position();
-        int lim = buffer.limit();
+        final int lim = buffer.limit();
         while (pos < lim) {
             sb.append((char) buffer.get(pos++));
         }
     }
 
     @GeneratesGarbage
-    public static String toString(ByteBuffer buffer) {
+    public static String toString(final ByteBuffer buffer) {
         StringBuilder sb = new StringBuilder(buffer.remaining());
         toString(buffer, sb);
         return sb.toString();
     }
 
-    public static boolean contains(ByteBuffer str, String pattern) {
+    public static boolean contains(final ByteBuffer str, final String pattern) {
         return indexOf(str, pattern) > -1;
     }
 
-    public static boolean contains2(ByteBuffer str, String pattern) {
-        if (pattern.isEmpty()) {
-            return true;
-        }
-        final int remaining = str.remaining() - pattern.length() + 1;
-        final byte firstByte = (byte)(pattern.charAt(0) & 0xFF);
-        int i = 0;
-
-        while (true) {
-            // search for the first same character in str
-            for (; i < remaining && str.get(i) != firstByte; i++) ;
-
-            // if we reached the end of the str then the pattern is not found
-            if (i >= remaining) {
-                return false;
-            }
-
-            // we found the first same character
-            int j = 1;
-            // check if the rest characters are matching from that point
-            for (; j < pattern.length(); j++) {
-                if (str.get(i + j) != (byte) (pattern.charAt(j) & 0xFF)) {
-                    // not all symbols matching
-                    // go to the next position in the string
-                    i++;
-                    break;
-                }
-            }
-            if (j == pattern.length()) {
-                return true;
-            }
-        }
+    public static boolean contains(final String str, final ByteBuffer pattern) {
+        return indexOf(str, pattern) > -1;
     }
 
-    // Simple but slow impl
-    public static boolean contains1(ByteBuffer str, String pattern) {
-        // TODO: optimize by checking the first character to match to start the cycle
-        // TODO: copy-paste from String.contains()
-        final int remaining = str.remaining() - pattern.length() + 1;
-        for (int i = 0; i < remaining; i++) {
-            boolean same = true;
-            for (int j = 0; j < pattern.length(); j++) {
-                if (str.get(i + j) != (byte)(pattern.charAt(j) & 0xFF)) {
-                    same = false;
-                    break;
-                }
-            }
-            if (same) {
-                return true;
-            }
-        }
-        return false;
+    public static boolean contains(final ByteBuffer str, final ByteBuffer pattern) {
+        return indexOf(str, pattern) > -1;
     }
 
-    public static boolean contains(String str, ByteBuffer pattern) {
-        // TODO: implement
-        throw new NotImplementedException();
-    }
-
-    public static boolean contains(ByteBuffer str, ByteBuffer pattern) {
-        // TODO: implement
-        throw new NotImplementedException();
-    }
-
-    public static int indexOf(ByteBuffer str, String pattern) {
+    public static int indexOf(final ByteBuffer str, final String pattern) {
         if (pattern.isEmpty()) {
             return 0;
         }
@@ -379,14 +353,58 @@ public final class ByteBufferUtils {
         return -1;
     }
 
-    public static int indexOf(String str, ByteBuffer pattern) {
-        // TODO: implement
-        throw new NotImplementedException();
+    public static int indexOf(final String str, final ByteBuffer pattern) {
+        if (!pattern.hasRemaining()) {
+            return 0;
+        }
+
+        final byte firstByte = pattern.get(0);
+        final int max = str.length() - pattern.remaining();
+
+        for (int i = 0; i <= max; i++) {
+            // search for the first same character in str
+            if ((byte)(str.charAt(i) & 0xFF) != firstByte) {
+                while (++i <= max && (byte)(str.charAt(i) & 0xFF) != firstByte) ;
+            }
+
+            if (i <= max) {
+                int j = i + 1;
+                final int end = j + pattern.remaining() - 1;
+                for (int k = 1; j < end && (byte)(str.charAt(j) & 0xFF) == pattern.get(k); j++, k++) ;
+
+                if (j == end) {
+                    return i;
+                }
+            }
+        }
+        return -1;
     }
 
-    public static int indexOf(ByteBuffer str, ByteBuffer pattern) {
-        // TODO: implement
-        throw new NotImplementedException();
+    public static int indexOf(final ByteBuffer str, final ByteBuffer pattern) {
+        if (!pattern.hasRemaining()) {
+            return 0;
+        }
+
+        final byte firstByte = pattern.get(0);
+        final int max = str.remaining() - pattern.remaining();
+
+        for (int i = 0; i <= max; i++) {
+            // search for the first same character in str
+            if (str.get(i) != firstByte) {
+                while (++i <= max && str.get(i) != firstByte) ;
+            }
+
+            if (i <= max) {
+                int j = i + 1;
+                final int end = j + pattern.remaining() - 1;
+                for (int k = 1; j < end && str.get(j) == pattern.get(k); j++, k++) ;
+
+                if (j == end) {
+                    return i;
+                }
+            }
+        }
+        return -1;
     }
 }
 

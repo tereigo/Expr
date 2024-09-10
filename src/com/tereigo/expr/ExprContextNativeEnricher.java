@@ -388,7 +388,7 @@ class ExprContextNativeEnricher implements ExprContextEnricher {
       }
     });
 
-    // TODO: add containsIgnoreCase, startsWith, startsWithIgnoreCase, endsWith, endsWithIgnoreCase, indexOf, indexOfIgnoreCase
+    // TODO: add containsIgnoreCase, startsWith, startsWithIgnoreCase, endsWith, endsWithIgnoreCase, indexOfIgnoreCase
 
     ctx.defineFunction("contains", (result, arg1, arg2) -> {
       // alternative syntax. I'm not sure it's better

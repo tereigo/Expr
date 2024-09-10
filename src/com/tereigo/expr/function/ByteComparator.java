@@ -1,4 +1,4 @@
-package com.tereigo.expr.utils;
+package com.tereigo.expr.function;
 
 @FunctionalInterface
 public interface ByteComparator {

@@ -15,7 +15,7 @@ public class FalconUtils {
 
     public ByteBuffer getTuidByClientId(final long clientId) {
         final ByteBuffer tuid = refData.getTuidByClientId((int)clientId);
-        return tuid != null ? tuid : ByteBufferUtils.EMPTY_BUFFER;
+        return tuid != null ? tuid : ByteBufferUtils.empty();
     }
 
     public ByteBuffer getRicByProductId(final long productId, final ByteBuffer ricHolder) {

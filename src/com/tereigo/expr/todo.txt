@@ -1,7 +1,21 @@
  TODO:
+7. Add string operators:
+ startsWith
+ endsWith
+ equalsIgnoreCase
+ charAt
+ indexOf
+ contains
+
+ matches
+ concatenate
+ substring
+ toLowerCase
+ toUpperCase
+ regexp
+
 0. TODO: may be remove ExprContext hierarchy and return ExprContext instead in every"define()" function
-1. Add power function and operator: "pow(2, 5) == 32 and 2 ^ 5 == 32"
-2. add all Math functions
+
 4. May be we should store the context used for optimization and reuse it for evaluation
    And either enforce that for the optimized ast context should not be passed it or check that it's the same context passed in
    (it's hard to do since it's possible to modify the context AFTER AST was optimized)
@@ -28,55 +42,38 @@
    Cons:
    You need to have ExprContext to be able to compile the expression which is not always available. especially when you compile in front-end
 
-1. May be add 'java' domains: 'today', 'system', 'git' to provide access to some generic Java/system functions
-   'today.date', 'today.timeMs', 'region.timeZone' / 'location.timeZone'
+1. Support scientific input for Doubles: 1e6
 
-4. add git hash tag / gitVersion / gitDate functions
-
-5. Can we support optional params in the user-defined functions?
-  'date(2024, 12, 08, 13, 00, 15)'  - year - month - day - hour - min - sec
-  'date(2024, 12, 08, 13, 00)'  - year - month - day - hour - min, time = 13:00
-  'date(2024, 12, 08)'  - year - month - day, time: 0:0:0
-
-2. Support scientific input for Doubles: 1e6
+2. Add power operator: "pow(2, 5) == 32 and 2 ** 5 == 32"
 
 3. Add tests for VariantImpl equals / hashCode
 
 4. Support Arrays, Maps, Lists ?
 
-do it once and store the function directly for reuse to avoid look ups by name during evaluation
+5. May be aff "mat" namespace with a list of functions to work with matrices and a special object type: MATRIX
+   Can it be stored in a GC-free way however?
 
-7. Add string operators:
- startsWith
- endsWith
- equalsIgnoreCase
- charAt
- indexOf
- contains
-
- matches
- concatenate
- substring
- toLowerCase
- toUpperCase
- regexp
+9. Do we NIL ?
+   It feels like it would be nice. For example:
+   "order.executionStyle == NIL" - meaning it was not provided
 
 7. May be rename "defineLong/defineDouble/defineFunction" to "bindLong/bindFunction"
 
-8. Should we expose objects? It may be easier than introducing individual functions
-and instead of: orderQty, orderPrice, orderRic, orderTif, ...
-we will expose: order() as an Object
-and all other functions well be available via reflection
-
 10. Type conversion functions and rounding: toNanos, nanoToSec
-12. May be add function aliases: len / length / size, $tuid / $clientTuid
-14. Do we need to add Int type? we can re-use Variant.longVal
+
+12. May be add function aliases: len / length / size
+
 15. May be we don't need Operator Tokens in Expr classes because Tokens are from parsing
     We really need just type of operation and may be the location of that token in the string to report an error if it happens during evaluation
     It would be also nice to validate the expression to check if the operand types are compatible when we complied AST and before we actually evaluate
     In that case we'll have clear transition objects:
-    (Input) String -> (Scanner) -> Tokens -> (Parser) -> Expression/AST -> (Interpreter) -> Result
+    (Input) String -> (Scanner phase) -> (output) Tokens -> (Parser phase) -> (output) Expression/AST -> (Interpreter phase) -> Result
     And objects from the previous phase should not exist in the next one
+
+4. add git hash tag / gitVersion / gitDate functions
+
+1. May be add 'java' domains: 'today', 'system', 'git' to provide access to some generic Java/system functions
+   'today.date', 'today.timeMs', 'region.timeZone' / 'location.timeZone'
 
 16. Other functions to add:
   random
@@ -98,7 +95,11 @@ and all other functions well be available via reflection
   falconNodeName
   falconReleaseVersion
 
-9. Do we NIL ?
+5. Can we support optional params in the user-defined functions?
+  'date(2024, 12, 08, 13, 00, 15)'  - year - month - day - hour - min - sec
+  'date(2024, 12, 08, 13, 00)'  - year - month - day - hour - min, time = 13:00
+  'date(2024, 12, 08)'  - year - month - day, time: 0:0:0
+
 
 
 
@@ -107,6 +108,13 @@ and all other functions well be available via reflection
 
 
 Done:
+8. Should we expose objects? It may be easier than introducing individual functions
+and instead of: orderQty, orderPrice, orderRic, orderTif, ...
+we will expose: order() as an Object
+and all other functions well be available via reflection
+
+14. Do we need to add Int type? we can re-use Variant.longVal
+2. add all Math functions
 5. Add a test for the optimized version with multiple chained domains/functions
     falcon.order.ric.contains('ABC.L')
 8. Extract performance tests as a separate target

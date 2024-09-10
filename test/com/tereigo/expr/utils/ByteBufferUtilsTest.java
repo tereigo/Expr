@@ -1,10 +1,14 @@
 package com.tereigo.expr.utils;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import static com.tereigo.expr.utils.ByteBufferUtils.constant;
 import static com.tereigo.expr.utils.ByteBufferUtils.contains;
 import static com.tereigo.expr.utils.ByteBufferUtils.indexOf;
+import static com.tereigo.expr.utils.ByteBufferUtils.isEmpty;
+import static com.tereigo.expr.utils.ByteBufferUtils.startsWith;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -13,102 +17,133 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class ByteBufferUtilsTest {
 
     @Test
-    void referenceContainsStringTests() {
-        assertTrue("".contains(""));
-        assertFalse("".contains("A"));
-        assertFalse("".contains("ABC"));
-        assertTrue("A".contains(""));
-        assertTrue("ABC".contains(""));
-
-        assertTrue("ABC".contains("A"));
-        assertTrue("ABC".contains("B"));
-        assertTrue("ABC".contains("C"));
-        assertTrue("ABC".contains("BC"));
-        assertTrue("ABC".contains("ABC"));
-        assertFalse("ABC".contains("D"));
-        assertFalse("ABC".contains("CD"));
-        assertFalse("ABC".contains("ABCD"));
+    void isEmptyTests() {
+        assertTrue(isEmpty(constant("")));
+        assertFalse(isEmpty(constant("A")));
+        assertFalse(isEmpty(constant("ABC")));
+        assertFalse(isEmpty(constant(" ")));
     }
 
-    @Test
-    void containsTests() {
-        assertTrue(contains(constant(""), ""));
-        assertFalse(contains(constant(""), "A"));
-        assertFalse(contains(constant(""), "ABC"));
-        assertTrue(contains(constant("A"), ""));
-        assertTrue(contains(constant("ABC"), ""));
+    @ParameterizedTest
+    @CsvSource({
+            "'', '', true",
+            "'', A, false",
+            "'', ABC, false",
+            "A, '', true",
+            "ABC, '', true",
+            "ABC, A, true",
+            "ABC, B, true",
+            "ABC, C, true",
+            "ABC, BC, true",
+            "ABC, ABC, true",
+            "ABC, D, false",
+            "ABC, CD, false",
+            "ABC, ABCD, false",
 
-        assertTrue(contains(constant("ABC"), "A"));
-        assertTrue(contains(constant("ABC"), "B"));
-        assertTrue(contains(constant("ABC"), "C"));
-        assertTrue(contains(constant("ABC"), "BC"));
-        assertTrue(contains(constant("ABC"), "ABC"));
-        assertFalse(contains(constant("ABC"), "D"));
-        assertFalse(contains(constant("ABC"), "CD"));
-        assertFalse(contains(constant("ABC"), "ABCD"));
+            "aaaaabbb, a, true",
+            "aaaaabbb, aa, true",
+            "aaaaabbb, aaa, true",
+            "aaaaabbb, aaaa, true",
+            "aaaaabbb, aaaaa, true",
+            "aaaaabbb, aaaaaa, false",
+            "aaaaabbb, aaaaab, true",
+            "aaaaabbb, aaaaabb, true",
+            "aaaaabbb, aabbb, true",
+            "aaaaabbb, aaaabbb, true",
+            "aaaaabbb, aaaabbbbb, false",
+            "aaaaabbb, aaaaabbb, true",
 
-        assertTrue(contains(constant("aaaaabbb"), "a"));
-        assertTrue(contains(constant("aaaaabbb"), "aa"));
-        assertTrue(contains(constant("aaaaabbb"), "aaa"));
-        assertTrue(contains(constant("aaaaabbb"), "aaaa"));
-        assertTrue(contains(constant("aaaaabbb"), "aaaaa"));
-        assertFalse(contains(constant("aaaaabbb"), "aaaaaa"));
-        assertTrue(contains(constant("aaaaabbb"), "aaaaab"));
-        assertTrue(contains(constant("aaaaabbb"), "aaaaabb"));
-        assertTrue(contains(constant("aaaaabbb"), "aabbb"));
-        assertTrue(contains(constant("aaaaabbb"), "aaabbb"));
-        assertTrue(contains(constant("aaaaabbb"), "aaaabbb"));
-        assertFalse(contains(constant("aaaaabbb"), "aaaabbbb"));
-        assertTrue(contains(constant("aaaaabbb"), "aaaaabbb"));
-
-        assertTrue(contains(constant("To be or not to be that is a question"), "To be"));
-        assertTrue(contains(constant("To be or not to be that is a question"), "o be that"));
-        assertTrue(contains(constant("To be or not to be that is a question"), "To be or not to be that is"));
-        assertFalse(contains(constant("To be or not to be that is a question"), "To be or not to be that was"));
-        assertTrue(contains(constant("To be or not to be that is a question"), "question"));
-        assertFalse(contains(constant("To be or not to be that is a question"), "question!"));
-        assertFalse(contains(constant("To be or not to be that is a question"), "questiom"));
-        assertTrue(contains(constant("If you also want to run the benchmarks from within your IDE instead of through Gradle, you can do either of the following"), "Gradle"));
-        assertFalse(contains(constant("If you also want to run the benchmarks from within your IDE instead of through Gradle, you can do either of the following"), "gradle"));
-        assertTrue(contains(constant("If you also want to run the benchmarks from within your IDE instead of through Gradle, you can do either of the following"), "the following"));
-        assertTrue(contains(constant("If you also want to run the benchmarks from within your IDE instead of through Gradle, you can do either of the following"), "following"));
-        assertTrue(contains(constant("If you also want to run the benchmarks from within your IDE instead of through Gradle, you can do either of the following"), "you can do either of the following"));
-        assertTrue(contains(constant("If you also want to run the benchmarks from within your IDE instead of through Gradle, you can do either of the following"), "If you also want to run the benchmarks from within your IDE instead of through Gradle, you can do either of the following"));
+            "To be or not to be that is a question, To be, true",
+            "To be or not to be that is a question, o be that, true",
+            "To be or not to be that is a question, To be or not to be that is, true",
+            "To be or not to be that is a question, To be or not to be that was, false",
+            "To be or not to be that is a question, question, true",
+            "To be or not to be that is a question, question!, false",
+            "To be or not to be that is a question, questiom, false",
+            "If you also want to run the benchmarks from within your IDE instead of through Gradle, you can do either of the following, Gradle, true",
+            "If you also want to run the benchmarks from within your IDE instead of through Gradle, you can do either of the following, gradle, false",
+            "If you also want to run the benchmarks from within your IDE instead of through Gradle, you can do either of the following, the following, true",
+            "If you also want to run the benchmarks from within your IDE instead of through Gradle, you can do either of the following, following, true",
+            "If you also want to run the benchmarks from within your IDE instead of through Gradle, you can do either of the following, you can do either of the following, true",
+            "If you also want to run the benchmarks from within your IDE instead of through Gradle, you can do either of the following, If you also want to run the benchmarks from within your IDE instead of through Gradle, you can do either of the following, true",
+    })
+    void containsTests(String str, String pattern, boolean expected) {
+        assertEquals(expected, str.contains(pattern));
+        assertEquals(expected, contains(constant(str), pattern));
+        assertEquals(expected, contains(str, constant(pattern)));
+        assertEquals(expected, contains(constant(str), constant(pattern)));
     }
 
-    @Test
-    void referenceIndexOfStringTests() {
-        assertEquals(0, "".indexOf(""));
-        assertEquals(-1, "".indexOf("A"));
-        assertEquals(-1, "".indexOf("ABC"));
-        assertEquals(0, "A".indexOf(""));
-        assertEquals(0, "ABC".indexOf(""));
+    @ParameterizedTest
+    @CsvSource({
+            "'', '', true",
+            "'', A, false",
+            "'', ABC, false",
+            "A, '', true",
+            "ABC, '', true",
+            "ABC, A, true",
+            "ABC, B, false",
+            "ABC, C, false",
+            "ABC, BC, false",
+            "ABC, ABC, true",
+            "ABC, D, false",
+            "ABC, CD, false",
+            "ABC, ABCD, false",
 
-        assertEquals(0, "ABC".indexOf("A"));
-        assertEquals(1, "ABC".indexOf("B"));
-        assertEquals(2, "ABC".indexOf("C"));
-        assertEquals(1, "ABC".indexOf("BC"));
-        assertEquals(0, "ABC".indexOf("ABC"));
-        assertEquals(-1, "ABC".indexOf("D"));
-        assertEquals(-1, "ABC".indexOf("CD"));
-        assertEquals(-1, "ABC".indexOf("ABCD"));
+            "aaaaabbb, a, true",
+            "aaaaabbb, aa, true",
+            "aaaaabbb, aaa, true",
+            "aaaaabbb, aaaa, true",
+            "aaaaabbb, aaaaa, true",
+            "aaaaabbb, aaaaaa, false",
+            "aaaaabbb, aaaaab, true",
+            "aaaaabbb, aaaaabb, true",
+            "aaaaabbb, aabbb, false",
+            "aaaaabbb, aaaabbb, false",
+            "aaaaabbb, aaaabbbbb, false",
+            "aaaaabbb, aaaaabbb, true",
+
+            "To be or not to be that is a question, To be, true",
+            "To be or not to be that is a question, o be that, false",
+            "To be or not to be that is a question, To be or not to be that is, true",
+            "To be or not to be that is a question, To be or not to be that was, false",
+            "To be or not to be that is a question, question, false",
+            "To be or not to be that is a question, question!, false",
+            "To be or not to be that is a question, questiom, false",
+            "If you also want to run the benchmarks from within your IDE instead of through Gradle, you can do either of the following, Gradle, false",
+            "If you also want to run the benchmarks from within your IDE instead of through Gradle, you can do either of the following, gradle, false",
+            "If you also want to run the benchmarks from within your IDE instead of through Gradle, you can do either of the following, the following, false",
+            "If you also want to run the benchmarks from within your IDE instead of through Gradle, you can do either of the following, following, false",
+            "If you also want to run the benchmarks from within your IDE instead of through Gradle, you can do either of the following, you can do either of the following, false",
+            "If you also want to run the benchmarks from within your IDE instead of through Gradle, you can do either of the following, If you also want to run the benchmarks from within your IDE instead of through Gradle, you can do either of the following, true"
+    })
+    void startsWithTests(String str, String pattern, boolean expected) {
+        assertEquals(expected, str.startsWith(pattern));
+        assertEquals(expected, startsWith(constant(str), pattern));
+        assertEquals(expected, startsWith(str, constant(pattern)));
+        assertEquals(expected, startsWith(constant(str), constant(pattern)));
     }
 
-    @Test
-    void indexOfTests() {
-        assertEquals(0, indexOf(constant(""), ""));
-        assertEquals(-1, indexOf(constant(""), "A"));
-        assertEquals(-1, indexOf(constant(""), "ABC"));
-        assertEquals(0, indexOf(constant("A"), ""));
-        assertEquals(0, indexOf(constant("ABC"), ""));
-
-        assertEquals(0, indexOf(constant("ABC"), "A"));
-        assertEquals(1, indexOf(constant("ABC"), "B"));
-        assertEquals(2, indexOf(constant("ABC"), "C"));
-        assertEquals(1, indexOf(constant("ABC"), "BC"));
-        assertEquals(0, indexOf(constant("ABC"), "ABC"));
-        assertEquals(-1, indexOf(constant("ABC"), "D"));
-        assertEquals(-1, indexOf(constant("ABC"), "CD"));
-        assertEquals(-1, indexOf(constant("ABC"), "ABCD"));
+    @ParameterizedTest
+    @CsvSource({
+            "'', '', 0",
+            "'', A, -1",
+            "'', ABC, -1",
+            "A, '', 0",
+            "ABC, '', 0",
+            "ABC, A, 0",
+            "ABC, B, 1",
+            "ABC, C, 2",
+            "ABC, BC, 1",
+            "ABC, ABC, 0",
+            "ABC, D, -1",
+            "ABC, CD, -1",
+            "ABC, ABCD, -1"
+    })
+    void indexOfTests(String str, String pattern, int expected) {
+        assertEquals(expected, str.indexOf(pattern));
+        assertEquals(expected, indexOf(constant(str), pattern));
+        assertEquals(expected, indexOf(str, constant(pattern)));
+        assertEquals(expected, indexOf(constant(str), constant(pattern)));
     }
 }

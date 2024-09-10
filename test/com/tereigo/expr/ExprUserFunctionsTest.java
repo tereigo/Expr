@@ -100,7 +100,7 @@ class ExprUserFunctionsTest extends ExprEvaluatorTestBase {
             boolean bool = arg3.getAsBoolean();
             String s = arg4.getAsString();
             ByteBuffer bb = arg5.getAsByteBuffer();
-            result.accept(l > d && bool && !s.isEmpty() && ByteBufferUtils.startWith(bb, "CLIENT"));
+            result.accept(l > d && bool && !s.isEmpty() && ByteBufferUtils.startsWith(bb, "CLIENT"));
         });
 
         final MutableExprContext orderCtx = ExprContextFactory.createLocalContext();

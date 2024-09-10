@@ -126,15 +126,15 @@ public final class ByteBufferUtils {
         return (b >= 65 && b <= 90) ? (byte)(b+32) : b;
     }
 
-    public static boolean startWith(ByteBuffer source, ByteBuffer key) {
-        return startWith(source, key, Byte::compare);
+    public static boolean startsWith(ByteBuffer source, ByteBuffer key) {
+        return startsWith(source, key, Byte::compare);
     }
 
     public static boolean startWithCaseInsensitive(ByteBuffer source, ByteBuffer key) {
-        return startWith(source, key, (lhs, rhs) -> Byte.compare(asciiByteToLower(lhs), asciiByteToLower(rhs)));
+        return startsWith(source, key, (lhs, rhs) -> Byte.compare(asciiByteToLower(lhs), asciiByteToLower(rhs)));
     }
 
-    public static boolean startWith(ByteBuffer source, ByteBuffer key, ByteComparator comparator) {
+    public static boolean startsWith(ByteBuffer source, ByteBuffer key, ByteComparator comparator) {
         source.mark();
         key.mark();
         while (source.hasRemaining() && key.hasRemaining()) {
@@ -151,7 +151,7 @@ public final class ByteBufferUtils {
     }
 
     // tereni: Changed!!!
-    public static boolean startWith(ByteBuffer source, CharSequence key) {
+    public static boolean startsWith(ByteBuffer source, CharSequence key) {
         source.mark();
         final int strSize = key.length();
         int i = 0;
@@ -192,7 +192,7 @@ public final class ByteBufferUtils {
         }
         if (buffer != null) {
             return (buffer.remaining() == other.remaining()
-                    && startWith(buffer, other, comparator));
+                    && startsWith(buffer, other, comparator));
         } else {
             return false;
         }
@@ -284,10 +284,50 @@ public final class ByteBufferUtils {
         return sb.toString();
     }
 
-    // TODO: add tests, optimize, what it should return if one of the arg is empty?
     public static boolean contains(ByteBuffer str, String pattern) {
+        return indexOf(str, pattern) > -1;
+    }
+
+    public static boolean contains2(ByteBuffer str, String pattern) {
+        if (pattern.isEmpty()) {
+            return true;
+        }
+        final int remaining = str.remaining() - pattern.length() + 1;
+        final byte firstByte = (byte)(pattern.charAt(0) & 0xFF);
+        int i = 0;
+
+        while (true) {
+            // search for the first same character in str
+            for (; i < remaining && str.get(i) != firstByte; i++) ;
+
+            // if we reached the end of the str then the pattern is not found
+            if (i >= remaining) {
+                return false;
+            }
+
+            // we found the first same character
+            int j = 1;
+            // check if the rest characters are matching from that point
+            for (; j < pattern.length(); j++) {
+                if (str.get(i + j) != (byte) (pattern.charAt(j) & 0xFF)) {
+                    // not all symbols matching
+                    // go to the next position in the string
+                    i++;
+                    break;
+                }
+            }
+            if (j == pattern.length()) {
+                return true;
+            }
+        }
+    }
+
+    // Simple but slow impl
+    public static boolean contains1(ByteBuffer str, String pattern) {
         // TODO: optimize by checking the first character to match to start the cycle
-        for (int i = 0; i < str.remaining() - pattern.length() + 1; i++) {
+        // TODO: copy-paste from String.contains()
+        final int remaining = str.remaining() - pattern.length() + 1;
+        for (int i = 0; i < remaining; i++) {
             boolean same = true;
             for (int j = 0; j < pattern.length(); j++) {
                 if (str.get(i + j) != (byte)(pattern.charAt(j) & 0xFF)) {
@@ -308,6 +348,43 @@ public final class ByteBufferUtils {
     }
 
     public static boolean contains(ByteBuffer str, ByteBuffer pattern) {
+        // TODO: implement
+        throw new NotImplementedException();
+    }
+
+    public static int indexOf(ByteBuffer str, String pattern) {
+        if (pattern.isEmpty()) {
+            return 0;
+        }
+
+        final byte firstByte = (byte)(pattern.charAt(0) & 0xFF);
+        final int max = str.remaining() - pattern.length();
+
+        for (int i = 0; i <= max; i++) {
+            // search for the first same character in str
+            if (str.get(i) != firstByte) {
+                while (++i <= max && str.get(i) != firstByte) ;
+            }
+
+            if (i <= max) {
+                int j = i + 1;
+                final int end = j + pattern.length() - 1;
+                for (int k = 1; j < end && str.get(j) == (byte) (pattern.charAt(k) & 0xFF); j++, k++) ;
+
+                if (j == end) {
+                    return i;
+                }
+            }
+        }
+        return -1;
+    }
+
+    public static int indexOf(String str, ByteBuffer pattern) {
+        // TODO: implement
+        throw new NotImplementedException();
+    }
+
+    public static int indexOf(ByteBuffer str, ByteBuffer pattern) {
         // TODO: implement
         throw new NotImplementedException();
     }

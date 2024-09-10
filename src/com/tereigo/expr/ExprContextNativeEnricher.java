@@ -170,6 +170,7 @@ class ExprContextNativeEnricher implements ExprContextEnricher {
       // alternative syntax. I'm not sure it's better
       if (VariantUtils.isString(arg1)) {
         if (VariantUtils.isString(arg2)) {
+          // TODO: check if it's GC-free and not producing a new string
           result.accept(arg1.getAsString().contains(arg2.getAsString()));
         } else if (VariantUtils.isByteBuffer(arg2)) {
           result.accept(ByteBufferUtils.contains(arg1.getAsString(), arg2.getAsByteBuffer()));
@@ -220,6 +221,29 @@ class ExprContextNativeEnricher implements ExprContextEnricher {
 //        throw new RuntimeException("Operand must be a STRING or BYTE_BUFFER");
 //      }
 //    });
+
+    ctx.defineFunction("indexOf", (result, arg1, arg2) -> {
+      // alternative syntax. I'm not sure it's better
+      if (VariantUtils.isString(arg1)) {
+        if (VariantUtils.isString(arg2)) {
+          result.accept(arg1.getAsString().indexOf(arg2.getAsString()));
+        } else if (VariantUtils.isByteBuffer(arg2)) {
+          result.accept(ByteBufferUtils.indexOf(arg1.getAsString(), arg2.getAsByteBuffer()));
+        } else {
+          throw new RuntimeException("Operand must be a STRING or BYTE_BUFFER");
+        }
+      } else if (VariantUtils.isByteBuffer(arg1)) {
+        if (VariantUtils.isString(arg2)) {
+          result.accept(ByteBufferUtils.indexOf(arg1.getAsByteBuffer(), arg2.getAsString()));
+        } else if (VariantUtils.isByteBuffer(arg2)) {
+          result.accept(ByteBufferUtils.indexOf(arg1.getAsByteBuffer(), arg2.getAsByteBuffer()));
+        } else {
+          throw new RuntimeException("Operand must be a STRING or BYTE_BUFFER");
+        }
+      } else {
+        throw new RuntimeException("Operand must be a STRING or BYTE_BUFFER");
+      }
+    });
 
     ctx.defineFunction("percentOf", (result, pct, value) -> {
       if (VariantUtils.isNumber(pct) && VariantUtils.isNumber(value)) {

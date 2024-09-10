@@ -47,19 +47,21 @@ import static com.tereigo.expr.TokenType.WITHIN;
     http://craftinginterpreters.com/contents.html
 
     It's been refactored significantly to introduce the following main features:
-    1. Support Long values
-    2. Support ByteBuffer values
-    3. Support "IN / WITHIN / BETWEEN" operators
-    4. Make expression evaluation garbage-free
-    5. Hierarchical AST graph output
-    6. Ternary operator
-    7. Domains
-    8. Extendable custom Expression contexts
-
-    But conceptually and architecturally it's an exact replica of what's presented in the book
+    1. Garbage-free expression evaluation!
+    2. Supported types: long, double, boolean, String, ByteBuffer, Enums (as Strings), user-defined objects:
+       "1 != 2 and PI > 3.0 and 'ABC'.contains('BC') and not(true != false) or deployment.type == 'PROD' and today.date > parseDate('30.01.2024')"
+    3. Support all arithmetic / boolean operators: "(5 * 3 == 15) and not (true != false)"
+    4. Support all Java Math and String functions (except those that produce garbage)
+    5. Ternary operator: "5 * (true ? 3 : 1) == 15"
+    6. Support "IN / WITHIN / BETWEEN" operators: "(2 in [1, 2, 3]) or ('Wen' in ['Sat', 'Sun']) and (3 between [2, 5])"
+    7. Support user-defined functions with up to 5 arguments: "isEven(4) or calcSquareArea(w, h) < 100"
+    8. Support adding custom user defined objects/domains: "env.country == 'Russia' and env.type == 'PROD' and today.hour > 12 and algo.activeOrder.qty > 1000"
+    9. Support both traditional and functional syntax: "pctOf(5, 100) == 5.pctOf(100) and round(PI) == 3 and PI.round == 3"
+    10. AST graph optimization by resolving all identifiers during expression parsing
+    11. Multi-line expression
+    12. Hierarchical AST graph output
 
     Another good step-by-step guide of building a parser: https://ruslanspivak.com/lsbasi-part1/
-
 
     Expression language grammar:
 

@@ -1,6 +1,8 @@
  TODO:
-4. This is essentially what we do then we introduce AstOptimizer!
-   May be we should store the context used for optimization and reuse it for evaluation
+0. TODO: may be remove ExprContext hierarchy and return ExprContext instead in every"define()" function
+1. Add power function and operator: "pow(2, 5) == 32 and 2 ^ 5 == 32"
+2. add all Math functions
+4. May be we should store the context used for optimization and reuse it for evaluation
    And either enforce that for the optimized ast context should not be passed it or check that it's the same context passed in
    (it's hard to do since it's possible to modify the context AFTER AST was optimized)
    The best solution would be to change the interface in such a way to prevent the user to pass in the context for the evaluation if AST was optimized
@@ -18,7 +20,7 @@
    It also means that the original expression and it's Expr context are "immutable" after compilation.
    Not "totally immutable" because you can substitute an order still in Supplier but both both Compiled expr and its ExprContext are bound together.
    "evaluate()" will not have "ctx" in that case and it goes into ExprEvaluator constructor:
-        ASTRoot root = ExprCompiler.compile("$ric == \"VOD.L\" and $productId == 123 or 5 != 2");
+        ASTRoot root = ExprCompiler.compile("$ric == 'VOD.L' and $productId == 123 or 5 != 2");
         ExprEvaluator exprEvaluator = new ExprEvaluator(root, ctx);
 
         exprEvaluator.evaluateBool();
@@ -26,11 +28,21 @@
    Cons:
    You need to have ExprContext to be able to compile the expression which is not always available. especially when you compile in front-end
 
+1. May be add 'java' domains: 'today', 'system', 'git' to provide access to some generic Java/system functions
+   'today.date', 'today.timeMs', 'region.timeZone' / 'location.timeZone'
+
+4. add git hash tag / gitVersion / gitDate functions
+
+5. Can we support optional params in the user-defined functions?
+  'date(2024, 12, 08, 13, 00, 15)'  - year - month - day - hour - min - sec
+  'date(2024, 12, 08, 13, 00)'  - year - month - day - hour - min, time = 13:00
+  'date(2024, 12, 08)'  - year - month - day, time: 0:0:0
 
 2. Support scientific input for Doubles: 1e6
 
 3. Add tests for VariantImpl equals / hashCode
-4. add git hash tag / gitVersion / gitDate functions
+
+4. Support Arrays, Maps, Lists ?
 
 do it once and store the function directly for reuse to avoid look ups by name during evaluation
 
@@ -98,7 +110,8 @@ Done:
 5. Add a test for the optimized version with multiple chained domains/functions
     falcon.order.ric.contains('ABC.L')
 8. Extract performance tests as a separate target
-7. After AST optimization there are no lookups!
+7. This is essentially what we do then we introduce AstOptimizer!
+   After AST optimization there are no lookups!
    Can we merge contexts to avoid 2 lookups in this function in ExprContextCombined?
     public MutableVariant get(String name, MutableVariant result) {
         MutableVariant res = ctx1.get(name, result);

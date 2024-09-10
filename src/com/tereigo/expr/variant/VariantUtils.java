@@ -131,7 +131,7 @@ public final class VariantUtils {
 
     public static void addNumbers(MutableVariant result, Variant left, Variant right) {
         if (isLong(left) && isLong(right)) {
-            result.accept(left.getAsLong() + right.getAsLong());
+            result.accept(Math.addExact(left.getAsLong(), right.getAsLong()));
         } else if (isNumber(left) && isNumber(right)) {
             result.accept(left.getAsNumber() + right.getAsNumber());
         } else {
@@ -141,7 +141,7 @@ public final class VariantUtils {
 
     public static void subtractNumbers( MutableVariant result, Variant left, Variant right) {
         if (isLong(left) && isLong(right)) {
-            result.accept(left.getAsLong() - right.getAsLong());
+            result.accept(Math.subtractExact(left.getAsLong(), right.getAsLong()));
         } else if (isNumber(left) && isNumber(right)) {
             result.accept(left.getAsNumber() - right.getAsNumber());
         } else {
@@ -164,7 +164,7 @@ public final class VariantUtils {
 
     public static void multiplyNumbers(MutableVariant result, Variant left, Variant right) {
         if (isLong(left) && isLong(right)) {
-            result.accept(left.getAsLong() * right.getAsLong());
+            result.accept(Math.multiplyExact(left.getAsLong(), right.getAsLong()));
         } else if (isNumber(left) && isNumber(right)) {
             result.accept(left.getAsNumber() * right.getAsNumber());
         } else {
@@ -189,7 +189,7 @@ public final class VariantUtils {
             return;
         }
         if (isLong(operand)) {
-            result.accept(-operand.getAsLong());
+            result.accept(Math.negateExact(operand.getAsLong()));
             return;
         }
         throw new RuntimeException("Operand must be a number");

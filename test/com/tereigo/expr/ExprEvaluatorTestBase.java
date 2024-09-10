@@ -8,127 +8,127 @@ class ExprEvaluatorTestBase {
     protected static final double EPS = 0.00001;
 
     protected ExprContext createContext() {
-        final MutableExprContext ctx = ExprContextFactory.create();
+        final MutableExprContext ctx = ExprContextFactory.createGlobalContext();
         ctx.defineDouble("$PI", () -> 3.14);
         ctx.defineLong("$productId", () -> 123L);
         ctx.defineString("$ric", () -> "VOD.L");
         ctx.defineBool("$enabled", () -> true);
         ctx.defineByteBuffer("$tuid", () -> constant("CLIENT1"));
-        return ctx;
+        return ctx.getAsExprContext();
     }
 
-    protected void evaluate(String text) {
-        ExprEvaluator evaluator = new ExprEvaluator(text);
+    protected void evaluate(final String text) {
+        final ExprEvaluator evaluator = new ExprEvaluator(text);
         evaluator.evaluateAsObject();
     }
 
-    protected void evaluate(String text, ExprContext ctx) {
-        ExprEvaluator evaluator = new ExprEvaluator(text);
+    protected void evaluate(final String text, final ExprContext ctx) {
+        final ExprEvaluator evaluator = new ExprEvaluator(text);
         evaluator.evaluateAsObject(ctx);
     }
 
-    protected void evaluateOptimized(ExprContext ctx, String text) {
-        ExprEvaluator evaluator = new ExprEvaluator(ctx, text);
+    protected void evaluateOptimized(final ExprContext ctx, final String text) {
+        final ExprEvaluator evaluator = new ExprEvaluator(ctx, text);
         evaluator.evaluateAsObject(ctx);
     }
 
-    protected void evaluate(ASTRoot root, ExprContext ctx) {
-        ExprEvaluator evaluator = new ExprEvaluator(root);
+    protected void evaluate(final ASTRoot root, final ExprContext ctx) {
+        final ExprEvaluator evaluator = new ExprEvaluator(root);
         evaluator.evaluateAsObject(ctx);
     }
 
-    protected boolean evaluateBool(ASTRoot root, ExprContext ctx) {
-        ExprEvaluator evaluator = new ExprEvaluator(root);
+    protected boolean evaluateBool(final ASTRoot root, final ExprContext ctx) {
+        final ExprEvaluator evaluator = new ExprEvaluator(root);
         return evaluator.evaluateBool(ctx);
     }
 
-    protected long evaluateLong(String text) {
-        ExprEvaluator evaluator = new ExprEvaluator(text);
+    protected long evaluateLong(final String text) {
+        final ExprEvaluator evaluator = new ExprEvaluator(text);
         return evaluator.evaluateLong();
     }
 
-    protected long evaluateLong(String text, ExprContext ctx) {
-        ExprEvaluator evaluator = new ExprEvaluator(text);
+    protected long evaluateLong(final String text, final ExprContext ctx) {
+        final ExprEvaluator evaluator = new ExprEvaluator(text);
         return evaluator.evaluateLong(ctx);
     }
 
-    protected long evaluateLongOptimized(ExprContext ctx, String text) {
-        ExprEvaluator evaluator = new ExprEvaluator(ctx, text);
+    protected long evaluateLongOptimized(final ExprContext ctx, final String text) {
+        final ExprEvaluator evaluator = new ExprEvaluator(ctx, text);
         return evaluator.evaluateLong(ctx);
     }
 
-    protected double evaluateDouble(String text) {
-        ExprEvaluator evaluator = new ExprEvaluator(text);
+    protected double evaluateDouble(final String text) {
+        final ExprEvaluator evaluator = new ExprEvaluator(text);
         return evaluator.evaluateDouble();
     }
 
-    protected double evaluateDouble(String text, ExprContext ctx) {
-        ExprEvaluator evaluator = new ExprEvaluator(text);
+    protected double evaluateDouble(final String text, final ExprContext ctx) {
+        final ExprEvaluator evaluator = new ExprEvaluator(text);
         return evaluator.evaluateDouble(ctx);
     }
 
-    protected double evaluateDoubleOptimized(ExprContext ctx, String text) {
-        ExprEvaluator evaluator = new ExprEvaluator(ctx, text);
+    protected double evaluateDoubleOptimized(final ExprContext ctx, final String text) {
+        final ExprEvaluator evaluator = new ExprEvaluator(ctx, text);
         return evaluator.evaluateDouble(ctx);
     }
 
-    protected boolean evaluateBool(String text) {
-        ExprEvaluator evaluator = new ExprEvaluator(text);
+    protected boolean evaluateBool(final String text) {
+        final ExprEvaluator evaluator = new ExprEvaluator(text);
         return evaluator.evaluateBool();
     }
 
-    protected boolean evaluateBool(String text, ExprContext ctx) {
-        ExprEvaluator evaluator = new ExprEvaluator(text);
+    protected boolean evaluateBool(final String text, final ExprContext ctx) {
+        final ExprEvaluator evaluator = new ExprEvaluator(text);
         return evaluator.evaluateBool(ctx);
     }
 
-    protected boolean evaluateBoolOptimized(ExprContext ctx, String text) {
-        ExprEvaluator evaluator = new ExprEvaluator(ctx, text);
+    protected boolean evaluateBoolOptimized(final ExprContext ctx, final String text) {
+        final ExprEvaluator evaluator = new ExprEvaluator(ctx, text);
         return evaluator.evaluateBool(ctx);
     }
 
-    protected String evaluateString(String text) {
-        ExprEvaluator evaluator = new ExprEvaluator(text);
+    protected String evaluateString(final String text) {
+        final ExprEvaluator evaluator = new ExprEvaluator(text);
         return evaluator.evaluateString();
     }
 
-    protected String evaluateString(String text, ExprContext ctx) {
-        ExprEvaluator evaluator = new ExprEvaluator(text);
+    protected String evaluateString(final String text, final ExprContext ctx) {
+        final ExprEvaluator evaluator = new ExprEvaluator(text);
         return evaluator.evaluateString(ctx);
     }
 
-    protected String evaluateStringOptimized(ExprContext ctx, String text) {
-        ExprEvaluator evaluator = new ExprEvaluator(ctx, text);
+    protected String evaluateStringOptimized(final ExprContext ctx, final String text) {
+        final ExprEvaluator evaluator = new ExprEvaluator(ctx, text);
         return evaluator.evaluateString(ctx);
     }
 
-    protected ByteBuffer evaluateByteBuffer(String text, ExprContext ctx) {
-        ExprEvaluator evaluator = new ExprEvaluator(text);
+    protected ByteBuffer evaluateByteBuffer(final String text, final ExprContext ctx) {
+        final ExprEvaluator evaluator = new ExprEvaluator(text);
         return evaluator.evaluateByteBuffer(ctx);
     }
 
-    protected ByteBuffer evaluateByteBufferOptimized(ExprContext ctx, String text) {
-        ExprEvaluator evaluator = new ExprEvaluator(ctx, text);
+    protected ByteBuffer evaluateByteBufferOptimized(final ExprContext ctx, final String text) {
+        final ExprEvaluator evaluator = new ExprEvaluator(ctx, text);
         return evaluator.evaluateByteBuffer(ctx);
     }
 
-    protected double evaluateDouble(ASTRoot expr) {
-        ExprEvaluator exprEvaluator = new ExprEvaluator(expr);
+    protected double evaluateDouble(final ASTRoot expr) {
+        final ExprEvaluator exprEvaluator = new ExprEvaluator(expr);
         return exprEvaluator.evaluateDouble();
     }
 
-    protected long evaluateLong(ASTRoot expr) {
-        ExprEvaluator exprEvaluator = new ExprEvaluator(expr);
+    protected long evaluateLong(final ASTRoot expr) {
+        final ExprEvaluator exprEvaluator = new ExprEvaluator(expr);
         return exprEvaluator.evaluateLong();
     }
 
-    protected boolean evaluateBool(ASTRoot expr) {
-        ExprEvaluator exprEvaluator = new ExprEvaluator(expr);
+    protected boolean evaluateBool(final ASTRoot expr) {
+        final ExprEvaluator exprEvaluator = new ExprEvaluator(expr);
         return exprEvaluator.evaluateBool();
     }
 
-    protected String evaluateString(ASTRoot expr) {
-        ExprEvaluator exprEvaluator = new ExprEvaluator(expr);
+    protected String evaluateString(final ASTRoot expr) {
+        final ExprEvaluator exprEvaluator = new ExprEvaluator(expr);
         return exprEvaluator.evaluateString();
     }
 }

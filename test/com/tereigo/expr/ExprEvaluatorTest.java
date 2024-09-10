@@ -16,7 +16,7 @@ class ExprEvaluatorTest extends ExprEvaluatorTestBase {
     @Test
     void conditionTests() {
         ParseError err;
-        RuntimeError runErr;
+        final RuntimeError runErr;
 
         assertEquals(1, evaluateLong("true ? 1 : 2"));
         assertEquals(2, evaluateLong("false ? 1 : 2"));
@@ -76,7 +76,7 @@ class ExprEvaluatorTest extends ExprEvaluatorTestBase {
 
     @Test
     void rerunningTheSameExpressionDouble() {
-        ASTRoot expr = ExprCompiler.compile("(1.0+2.0)");
+        final ASTRoot expr = ExprCompiler.compile("(1.0+2.0)");
         assertEquals(3.0, evaluateDouble(expr), EPS);
         assertEquals(3.0, evaluateDouble(expr), EPS);
         assertEquals(3.0, evaluateDouble(expr), EPS);
@@ -84,7 +84,7 @@ class ExprEvaluatorTest extends ExprEvaluatorTestBase {
 
     @Test
     void rerunningTheSameExpressionLong() {
-        ASTRoot expr = ExprCompiler.compile("(1+2)-(5)+(8+5)");
+        final ASTRoot expr = ExprCompiler.compile("(1+2)-(5)+(8+5)");
         assertEquals(11, evaluateLong(expr));
         assertEquals(11, evaluateLong(expr));
         assertEquals(11, evaluateLong(expr));
@@ -92,7 +92,7 @@ class ExprEvaluatorTest extends ExprEvaluatorTestBase {
 
     @Test
     void rerunningTheSameExpressionBool() {
-        ASTRoot expr = ExprCompiler.compile("not(true) or not (false) and ((true and not(false)) or 5 != 2)");
+        final ASTRoot expr = ExprCompiler.compile("not(true) or not (false) and ((true and not(false)) or 5 != 2)");
         assertTrue(evaluateBool(expr));
         assertTrue(evaluateBool(expr));
         assertTrue(evaluateBool(expr));
@@ -100,7 +100,7 @@ class ExprEvaluatorTest extends ExprEvaluatorTestBase {
 
     @Test
     void rerunningTheSameExpressionString() {
-        ASTRoot expr = ExprCompiler.compile("\"A\" != \"BC\" and \"C\" != \"D\"");
+        final ASTRoot expr = ExprCompiler.compile("\"A\" != \"BC\" and \"C\" != \"D\"");
         assertTrue(evaluateBool(expr));
         assertTrue(evaluateBool(expr));
         assertTrue(evaluateBool(expr));
@@ -292,11 +292,13 @@ class ExprEvaluatorTest extends ExprEvaluatorTestBase {
 
     @Test
     void byteBufferTests() {
-        final MutableExprContext ctx = ExprContextFactory.create();
-        RuntimeError runErr;
+        final MutableExprContext mutCtx = ExprContextFactory.createGlobalContext();
+        final RuntimeError runErr;
 
-        ctx.defineByteBuffer("$tuid", () -> constant("CLIENT1"));
-        ctx.defineByteBuffer("$tuid2", () -> constant("CLIENT2"));
+        mutCtx.defineByteBuffer("$tuid", () -> constant("CLIENT1"));
+        mutCtx.defineByteBuffer("$tuid2", () -> constant("CLIENT2"));
+
+        final ExprContext ctx = mutCtx.getAsExprContext();
 
         assertTrue(evaluateBool("$tuid == \"CLIENT1\"", ctx));
         assertTrue(evaluateBool("$tuid == $tuid", ctx));
@@ -537,34 +539,36 @@ class ExprEvaluatorTest extends ExprEvaluatorTestBase {
         runErr = assertThrows(RuntimeError.class, () -> evaluate("!(1 + 2)"));
         assertEquals("Expression evaluation error [line 1, pos 1]: Operand must be a boolean in expression '!(1 + 2)'", runErr.getMessage());
 
-        final MutableExprContext ctx = ExprContextFactory.create();
-        ctx.defineString("$ric", () -> "VOD.L");
-        ctx.defineLong("$productId", () -> 123L);
-        ctx.defineByteBuffer("$tuid", () -> constant("CLIENT1"));
-        ctx.defineFunction("isEven", (result, arg1) -> {
-            long l = arg1.getAsLong();
+        final MutableExprContext mutCtx = ExprContextFactory.createGlobalContext();
+        mutCtx.defineString("$ric", () -> "VOD.L");
+        mutCtx.defineLong("$productId", () -> 123L);
+        mutCtx.defineByteBuffer("$tuid", () -> constant("CLIENT1"));
+        mutCtx.defineFunction("isEven", (result, arg1) -> {
+            final long l = arg1.getAsLong();
             result.accept(l % 2 == 0);
         });
 
-        ctx.defineFunction("func1", (result, arg1) -> {
-            long l = arg1.getAsLong();
+        mutCtx.defineFunction("func1", (result, arg1) -> {
+            final long l = arg1.getAsLong();
             result.accept(l);
         });
 
-        ctx.defineFunction("func2", (result, arg1, arg2) -> {
-            long l = arg1.getAsLong();
-            double d = arg2.getAsDouble();
+        mutCtx.defineFunction("func2", (result, arg1, arg2) -> {
+            final long l = arg1.getAsLong();
+            final double d = arg2.getAsDouble();
             result.accept(l + d);
         });
 
-        ctx.defineFunction("func5", (result, arg1, arg2, arg3, arg4, arg5) -> {
-            long l = arg1.getAsLong();
-            double d = arg2.getAsDouble();
-            boolean bool = arg3.getAsBoolean();
-            String s = arg4.getAsString();
-            ByteBuffer bb = arg5.getAsByteBuffer();
+        mutCtx.defineFunction("func5", (result, arg1, arg2, arg3, arg4, arg5) -> {
+            final long l = arg1.getAsLong();
+            final double d = arg2.getAsDouble();
+            final boolean bool = arg3.getAsBoolean();
+            final String s = arg4.getAsString();
+            final ByteBuffer bb = arg5.getAsByteBuffer();
             result.accept(l > d && bool && !s.isEmpty() && ByteBufferUtils.startsWith(bb,"CLIENT"));
         });
+
+        final ExprContext ctx = mutCtx.getAsExprContext();
 
         runErr = assertThrows(RuntimeError.class, () -> evaluate("$ric == 1", ctx));
         assertEquals("Expression evaluation error [line 1, pos 6]: Operands of different types cannot be compared: STRING and LONG in expression '$ric == 1'", runErr.getMessage());
@@ -667,7 +671,7 @@ class ExprEvaluatorTest extends ExprEvaluatorTestBase {
         assertEquals("Expression evaluation error [line 1, pos 1]: Unknown function 'unknownFunction' in expression 'unknownFunction($tuid)'", runErr.getMessage());
 
         // running pre-compiled malformed expression
-        ASTRoot root = ExprCompiler.compile("$primary == 123");
+        final ASTRoot root = ExprCompiler.compile("$primary == 123");
         runErr = assertThrows(RuntimeError.class, () -> evaluate(root, ctx));
         assertEquals("Expression evaluation error [line 1, pos 1]: Unknown identifier '$primary' in expression '$primary == 123'", runErr.getMessage());
 

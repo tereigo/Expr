@@ -1,5 +1,6 @@
 package com.tereigo.expr.algo.customization;
 
+import com.tereigo.expr.ExprContext;
 import com.tereigo.expr.ExprEvaluator;
 import com.tereigo.expr.MutableExprContext;
 import com.tereigo.expr.domains.ExprContextBuilder;
@@ -14,10 +15,10 @@ import java.util.List;
 
 @SuppressWarnings("ForLoopReplaceableByForEach")
 public class CustomizationEngine {
-    private final MutableExprContext nodeContext;
+    private final ExprContext nodeContext;
 
     private final OrderFieldSupplierWrapper orderFieldResolver;
-    private final MutableExprContext ruleContext;
+    private final ExprContext ruleContext;
 
     private final List<RuleRecord> rules = new ArrayList<>();
     private final CustomizationReportHandler reportHandler;
@@ -33,10 +34,11 @@ public class CustomizationEngine {
         // initialize the required Expression domains
         OrderDomain.init(falcon.getRefData());
 
-        nodeContext = ExprDomains.falconAlgo(falcon, algo);
+        nodeContext = ExprDomains.falconAlgo(falcon, algo).getAsExprContext();
         orderFieldResolver = new OrderFieldSupplierWrapper();
-        ruleContext = ExprContextBuilder.start().falcon(falcon).algo(algo).orderWithShortcuts(orderFieldResolver).build();
-        additionalOrderExprCtxCreator.enrich(orderFieldResolver, ruleContext);
+        final MutableExprContext mutableRuleContext = ExprContextBuilder.start().falcon(falcon).algo(algo).orderWithShortcuts(orderFieldResolver).build();
+        additionalOrderExprCtxCreator.enrich(orderFieldResolver, mutableRuleContext);
+        ruleContext = mutableRuleContext.getAsExprContext();
         this.reportHandler = reportHandler;
         this.errorHandler = errorHandler;
     }

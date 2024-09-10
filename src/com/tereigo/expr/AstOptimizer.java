@@ -13,11 +13,11 @@ import java.util.List;
 final class AstOptimizer implements Expr.Visitor<Expr> {
   private final ExprContext ctx;
 
-  AstOptimizer(ExprContext ctx) {
+  AstOptimizer(final ExprContext ctx) {
     this.ctx = ctx;
   }
 
-  ASTRoot optimize(ASTRoot root) {
+  ASTRoot optimize(final ASTRoot root) {
     return new ASTRoot(root.source(), root.expr().accept(this));
   }
 
@@ -26,54 +26,54 @@ final class AstOptimizer implements Expr.Visitor<Expr> {
   }
 
   @Override
-  public Expr visitBinaryExpr(Expr.Binary expr) {
+  public Expr visitBinaryExpr(final Expr.Binary expr) {
     return new Expr.Binary(evaluate(expr.left), expr.operator, evaluate(expr.right));
   }
 
   @Override
-  public Expr visitInOperator(Expr.InOperator expr) {
+  public Expr visitInOperator(final Expr.InOperator expr) {
     return new Expr.InOperator(evaluate(expr.operand), expr.operator, convertArgs(expr.values));
   }
 
   @Override
-  public Expr visitWithinOperator(Expr.WithinOperator expr) {
+  public Expr visitWithinOperator(final Expr.WithinOperator expr) {
     return new Expr.WithinOperator(evaluate(expr.operand), expr.operator, evaluate(expr.min), evaluate(expr.max));
   }
 
   @Override
-  public Expr visitBetweenOperator(Expr.BetweenOperator expr) {
+  public Expr visitBetweenOperator(final Expr.BetweenOperator expr) {
     return new Expr.BetweenOperator(evaluate(expr.operand), expr.operator, evaluate(expr.min), evaluate(expr.max));
   }
 
   @Override
-  public Expr visitGroupingExpr(Expr.Grouping expr) {
+  public Expr visitGroupingExpr(final Expr.Grouping expr) {
     // TODO: it feels like we can we return expr.expression here
     // This way we'll remove Grouping from AST
     return expr;
   }
 
   @Override
-  public Expr visitLiteralExpr(Expr.Literal expr) {
+  public Expr visitLiteralExpr(final Expr.Literal expr) {
     return expr;
   }
 
   @Override
-  public Expr visitLogicalExpr(Expr.Logical expr) {
+  public Expr visitLogicalExpr(final Expr.Logical expr) {
     return new Expr.Logical(evaluate(expr.left), expr.operator, evaluate(expr.right));
   }
 
   @Override
-  public Expr visitTernaryExpr(Expr.Ternary expr) {
+  public Expr visitTernaryExpr(final Expr.Ternary expr) {
     return new Expr.Ternary(expr.operator, evaluate(expr.condition), evaluate(expr.trueExpr), evaluate(expr.falseExpr));
   }
 
   @Override
-  public Expr visitUnaryExpr(Expr.Unary expr) {
+  public Expr visitUnaryExpr(final Expr.Unary expr) {
     return new Expr.Unary(expr.operator, evaluate(expr.expression));
   }
 
   @Override
-  public Expr visitIdentifierExpr(Expr.Identifier expr) {
+  public Expr visitIdentifierExpr(final Expr.Identifier expr) {
     final Object funcObj = ctx.getFunction(expr.operator.lexeme);
     if (funcObj instanceof Function0) {
       return new Expr.ResolvedIdentifier(expr.operator, (Function0)funcObj);
@@ -84,13 +84,13 @@ final class AstOptimizer implements Expr.Visitor<Expr> {
   }
 
   @Override
-  public Expr visitResolvedIdentifierExpr(Expr.ResolvedIdentifier expr) {
+  public Expr visitResolvedIdentifierExpr(final Expr.ResolvedIdentifier expr) {
     // in theory this should never be called
     return expr;
   }
 
   @Override
-  public Expr visitCallExpr(Expr.Call expr) {
+  public Expr visitCallExpr(final Expr.Call expr) {
     final Object funcObj = ctx.getFunction(expr.operator.lexeme);
     if (funcObj != null) {
       return new Expr.ResolvedCall(expr.operator, funcObj, convertArgs(expr.args));
@@ -101,13 +101,13 @@ final class AstOptimizer implements Expr.Visitor<Expr> {
   }
 
   @Override
-  public Expr visitResolvedCallExpr(Expr.ResolvedCall expr) {
+  public Expr visitResolvedCallExpr(final Expr.ResolvedCall expr) {
     // in theory this should never be called
     return expr;
   }
 
   @Override
-  public Expr visitObjectCallExpr(Expr.ObjectCall expr) {
+  public Expr visitObjectCallExpr(final Expr.ObjectCall expr) {
     final Expr objResult = evaluate(expr.object);
     // if it's an object call from ExprContext
     if (objResult instanceof Expr.ResolvedIdentifier) {
@@ -134,7 +134,7 @@ final class AstOptimizer implements Expr.Visitor<Expr> {
   }
 
   @Override
-  public Expr visitResolvedObjectCallExpr(Expr.ResolvedObjectCall expr) {
+  public Expr visitResolvedObjectCallExpr(final Expr.ResolvedObjectCall expr) {
     // in theory this should never be called
     return expr;
   }

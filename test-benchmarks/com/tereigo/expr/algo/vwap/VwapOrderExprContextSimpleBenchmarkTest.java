@@ -1,6 +1,6 @@
 package com.tereigo.expr.algo.vwap;
 
-import com.tereigo.expr.ExprContextFactory;
+import com.tereigo.expr.ExprContext;
 import com.tereigo.expr.ExprEvaluator;
 import com.tereigo.expr.MutableExprContext;
 import com.tereigo.expr.domains.ExprContextBuilder;
@@ -17,14 +17,14 @@ import java.util.concurrent.TimeUnit;
 // This class is just for debugging purposes
 class VwapOrderExprContextSimpleBenchmarkTest {
 
-    MutableExprContext ctx = ExprContextFactory.create();
+    ExprContext ctx;
     ExprEvaluator evaluator;
 
     @BeforeEach
     void setUp() {
         final ReferenceDataCacheImpl refData = new ReferenceDataCacheImpl();
 
-        OrderFieldResolverImpl orderFieldResolver;
+        final OrderFieldResolverImpl orderFieldResolver;
 
         final TestVwapOrder order1 = TestVwapOrder.create()
                 .withProductId(123).withClientId(1).withVolumeLimit(0.1);
@@ -42,9 +42,11 @@ class VwapOrderExprContextSimpleBenchmarkTest {
         OrderDomain.init(refData);
 
         orderFieldResolver = new OrderFieldResolverImpl();
-        ctx = ExprContextBuilder.start().orderWithShortcuts(orderFieldResolver).build();
-        VwapOrderExprContextCreator creator = new VwapOrderExprContextCreator();
-        creator.enrich(orderFieldResolver, ctx);
+        final MutableExprContext mutCtx = ExprContextBuilder.start().orderWithShortcuts(orderFieldResolver).build();
+        final VwapOrderExprContextCreator creator = new VwapOrderExprContextCreator();
+        creator.enrich(orderFieldResolver, mutCtx);
+
+        ctx = mutCtx.getAsExprContext();
 
         orderFieldResolver.setOrder(order1);
 
@@ -70,11 +72,11 @@ class VwapOrderExprContextSimpleBenchmarkTest {
 
     @Test
     public void benchmarkSimpleExpression() {
-        long start = System.nanoTime();
+        final long start = System.nanoTime();
         for (int i = 0; i < 10_000_000; i++) {
             evaluator.evaluateBool(ctx);
         }
-        long end = System.nanoTime();
+        final long end = System.nanoTime();
         System.out.println("Test took " + TimeUnit.MILLISECONDS.convert(end - start, TimeUnit.NANOSECONDS) + " ms");
     }
 }

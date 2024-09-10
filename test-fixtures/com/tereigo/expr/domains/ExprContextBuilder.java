@@ -1,6 +1,5 @@
 package com.tereigo.expr.domains;
 
-import com.tereigo.expr.ExprContext;
 import com.tereigo.expr.ExprContextFactory;
 import com.tereigo.expr.MutableExprContext;
 import com.tereigo.expr.domains.algo.AlgoDataProvider;
@@ -19,12 +18,12 @@ public class ExprContextBuilder {
 
     protected final MutableExprContext ctx;
 
-    protected ExprContextBuilder() {
+    private ExprContextBuilder() {
         // include native context by default
         this.ctx = ExprContextFactory.createGlobalContext();
     }
 
-    protected ExprContextBuilder(final MutableExprContext ctx) {
+    private ExprContextBuilder(final MutableExprContext ctx) {
         this.ctx = ctx;
     }
 
@@ -38,23 +37,23 @@ public class ExprContextBuilder {
 
     public ExprContextBuilder falcon(final FalconDataProvider falcon) {
         ctx.enrich(new FalconGlobalExprContextEnricher(falcon));
-        final ExprContext localFalconCtx = ExprContextFactory.createLocalContext(new FalconLocalExprContextEnricher(falcon));
-        ctx.defineExprContext("falcon", () -> localFalconCtx);
+        final MutableExprContext localFalconCtx = ExprContextFactory.createLocalContext(new FalconLocalExprContextEnricher(falcon));
+        ctx.defineExprContext("falcon", localFalconCtx);
         FalconDomain.defineFunctions(ctx);
         return this;
     }
 
     public ExprContextBuilder algo(final AlgoDataProvider algo) {
         ctx.enrich(new AlgoGlobalExprContextEnricher(algo));
-        final ExprContext localAlgoCtx = ExprContextFactory.createLocalContext(new AlgoLocalExprContextEnricher(algo));
-        ctx.defineExprContext("algo", () -> localAlgoCtx);
+        final MutableExprContext localAlgoCtx = ExprContextFactory.createLocalContext(new AlgoLocalExprContextEnricher(algo));
+        ctx.defineExprContext("algo", localAlgoCtx);
         return this;
     }
 
     public ExprContextBuilder order(final OrderFieldResolver orderFieldResolver) {
         ctx.enrich(new OrderGlobalExprContextEnricher(orderFieldResolver));
-        final ExprContext localOrderCtx = ExprContextFactory.createLocalContext(new OrderLocalExprContextEnricher(orderFieldResolver));
-        ctx.defineExprContext("order", () -> localOrderCtx);
+        final MutableExprContext localOrderCtx = ExprContextFactory.createLocalContext(new OrderLocalExprContextEnricher(orderFieldResolver));
+        ctx.defineExprContext("order", localOrderCtx);
         return this;
     }
 

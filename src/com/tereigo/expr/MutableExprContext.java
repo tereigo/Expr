@@ -14,8 +14,7 @@ import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 import java.util.function.LongSupplier;
 
-// TODO: may be remove ExprContext hierarchy and return ExprContext instead in every"define()" function
-public interface MutableExprContext extends ExprContext {
+public interface MutableExprContext extends ExprContextSupplier {
 
   void defineLong(String name, LongSupplier supplier);
 

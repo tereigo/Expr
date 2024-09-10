@@ -1,20 +1,10 @@
  TODO:
-7. Add string operators:
- startsWith
- endsWith
- equalsIgnoreCase
- charAt
- indexOf
- contains
 
- matches
- concatenate
- substring
- toLowerCase
- toUpperCase
- regexp
+1. Introduce an ability to add user-specific constants
+   (may be via functions, may be via tokens)?
+    Ideally via tokens to compile them into Literals straightaway
 
-0. TODO: may be remove ExprContext hierarchy and return ExprContext instead in every"define()" function
+2. Support scientific input for Doubles: 1e6
 
 4. May be we should store the context used for optimization and reuse it for evaluation
    And either enforce that for the optimized ast context should not be passed it or check that it's the same context passed in
@@ -42,15 +32,35 @@
    Cons:
    You need to have ExprContext to be able to compile the expression which is not always available. especially when you compile in front-end
 
-1. Support scientific input for Doubles: 1e6
-
 2. Add power operator: "pow(2, 5) == 32 and 2 ** 5 == 32"
+
+3. See if it's doable to introduce an ability to add user-specific operators
+   For example: Bit logic manipulations
+
+7. Add string operators:
+ startsWithIgnoreCase
+ endsWith
+ endsWithIgnoreCase
+ equalsIgnoreCase
+ charAt
+ indexOf
+ indexOfIgnoreCase
+ contains
+ containsIgnoreCase
+
+// may be add BBUtils but don't hook up to expressions since they modify the data
+ matches
+ concatenate
+ substring
+ toLowerCaseInPlace
+ toUpperCaseInPlace
+
 
 3. Add tests for VariantImpl equals / hashCode
 
 4. Support Arrays, Maps, Lists ?
 
-5. May be aff "mat" namespace with a list of functions to work with matrices and a special object type: MATRIX
+5. May be add "mat" namespace with a list of functions to work with matrices and a special object type: MATRIX
    Can it be stored in a GC-free way however?
 
 9. Do we NIL ?
@@ -108,6 +118,8 @@
 
 
 Done:
+1. TODO: may be remove ExprContext hierarchy and return ExprContext instead in every "define()" function
+
 8. Should we expose objects? It may be easier than introducing individual functions
 and instead of: orderQty, orderPrice, orderRic, orderTif, ...
 we will expose: order() as an Object

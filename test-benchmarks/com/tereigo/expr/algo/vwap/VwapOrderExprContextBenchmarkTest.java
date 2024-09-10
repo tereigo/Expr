@@ -1,6 +1,6 @@
 package com.tereigo.expr.algo.vwap;
 
-import com.tereigo.expr.ExprContextFactory;
+import com.tereigo.expr.ExprContext;
 import com.tereigo.expr.ExprEvaluator;
 import com.tereigo.expr.MutableExprContext;
 import com.tereigo.expr.domains.ExprContextBuilder;
@@ -31,14 +31,14 @@ public class VwapOrderExprContextBenchmarkTest {
 
     @State(Scope.Benchmark)
     public static class BenchmarkState {
-        MutableExprContext ctx = ExprContextFactory.create();
+        ExprContext ctx;
         ExprEvaluator evaluator;
 
         @Setup
         public void prepare() {
             final ReferenceDataCacheImpl refData = new ReferenceDataCacheImpl();
 
-            OrderFieldResolverImpl orderFieldResolver;
+            final OrderFieldResolverImpl orderFieldResolver;
 
             final TestVwapOrder order1 = TestVwapOrder.create()
                     .withProductId(123).withClientId(1).withVolumeLimit(0.1);
@@ -56,9 +56,11 @@ public class VwapOrderExprContextBenchmarkTest {
             OrderDomain.init(refData);
 
             orderFieldResolver = new OrderFieldResolverImpl();
-            ctx = ExprContextBuilder.start().orderWithShortcuts(orderFieldResolver).build();
-            VwapOrderExprContextCreator creator = new VwapOrderExprContextCreator();
-            creator.enrich(orderFieldResolver, ctx);
+            final MutableExprContext mutCtx = ExprContextBuilder.start().orderWithShortcuts(orderFieldResolver).build();
+            final VwapOrderExprContextCreator creator = new VwapOrderExprContextCreator();
+            creator.enrich(orderFieldResolver, mutCtx);
+
+            ctx = mutCtx.getAsExprContext();
 
             orderFieldResolver.setOrder(order1);
 
@@ -91,13 +93,13 @@ public class VwapOrderExprContextBenchmarkTest {
 //    @Measurement(iterations = 3, timeUnit = TimeUnit.MILLISECONDS, time = 5000)
     @Warmup(iterations = 5, timeUnit = TimeUnit.MILLISECONDS, time = 10000)
     @Measurement(iterations = 5, timeUnit = TimeUnit.MILLISECONDS, time = 10000)
-    public void benchmarkSimpleExpression(BenchmarkState state) {
+    public void benchmarkSimpleExpression(final BenchmarkState state) {
         state.evaluator.evaluateBool(state.ctx);
     }
 
     @Test
     public void runBenchmarks() throws RunnerException {
-        Options options = new OptionsBuilder()
+        final Options options = new OptionsBuilder()
                 .include(this.getClass().getName() + ".benchmark*")
                 .build();
 

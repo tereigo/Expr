@@ -25,7 +25,7 @@ class ExprEvaluationWithContextTest extends ExprEvaluatorTestBase {
         ctx.defineBool("$enabled", () -> true);
         ctx.defineByteBuffer("$tuid", () -> constant("CLIENT1"));
 
-        runExpressionWithContextTests(ctx);
+        runExpressionWithContextTests(ctx.getAsExprContext());
     }
 
     @Test
@@ -43,18 +43,18 @@ class ExprEvaluationWithContextTest extends ExprEvaluatorTestBase {
         ctx.defineExprContext("test", () -> testCtx);
 
         {
-            ExprEvaluator evaluator = new ExprEvaluator(ctx, "1.0+$PI");
-            assertEquals(4.14, evaluator.evaluateDouble(ctx), EPS);
+            ExprEvaluator evaluator = new ExprEvaluator(ctx.getAsExprContext(), "1.0+$PI");
+            assertEquals(4.14, evaluator.evaluateDouble(ctx.getAsExprContext()), EPS);
         }
 
         {
-            ExprEvaluator evaluator = new ExprEvaluator(ctx, "not($enabled)");
-            assertFalse(evaluator.evaluateBool(ctx));
+            ExprEvaluator evaluator = new ExprEvaluator(ctx.getAsExprContext(), "not($enabled)");
+            assertFalse(evaluator.evaluateBool(ctx.getAsExprContext()));
         }
 
         {
-            ExprEvaluator evaluator = new ExprEvaluator(ctx, "test.nodeName == 'VWAP1' and 'ABC'.contains('A') and $productId == 123 and $ric == 'VOD.L'");
-            assertTrue(evaluator.evaluateBool(ctx));
+            ExprEvaluator evaluator = new ExprEvaluator(ctx.getAsExprContext(), "test.nodeName == 'VWAP1' and 'ABC'.contains('A') and $productId == 123 and $ric == 'VOD.L'");
+            assertTrue(evaluator.evaluateBool(ctx.getAsExprContext()));
         }
     }
 
@@ -68,14 +68,14 @@ class ExprEvaluationWithContextTest extends ExprEvaluatorTestBase {
         ctx.defineBool("$enabled", () -> true);
         ctx.defineByteBuffer("$tuid", () -> constant("CLIENT1"));
 
-        runOptimizedExpressionWithContextTests(ctx);
+        runOptimizedExpressionWithContextTests(ctx.getAsExprContext());
     }
 
     private static ExprContext createTestObjExprContext(String nodeName, ByteBuffer algoType) {
         final MutableExprContext ctx = ExprContextFactory.createLocalContext();
         ctx.defineString("nodeName", () -> nodeName);
         ctx.defineByteBuffer("algoType", () -> algoType);
-        return ctx;
+        return ctx.getAsExprContext();
     }
 
     @Test
@@ -89,7 +89,7 @@ class ExprEvaluationWithContextTest extends ExprEvaluatorTestBase {
         ctx.defineBool("$enabled", order::enabled);
         ctx.defineByteBuffer("$tuid", order::tuid);
 
-        runExpressionWithContextTests(ctx);
+        runExpressionWithContextTests(ctx.getAsExprContext());
     }
 
     @Test
@@ -97,13 +97,15 @@ class ExprEvaluationWithContextTest extends ExprEvaluatorTestBase {
         SimpleOrderFieldSupplier orderSupplier = new SimpleOrderFieldSupplier();
         TestOrder order1 = new TestOrder("VOD.L", 123L, true, constant("CLIENT1"));
         orderSupplier.setOrder(order1);
-        final MutableExprContext ctx = ExprContextFactory.createGlobalContext();
-        ctx.defineDouble("$PI", () -> 3.14);
-        ctx.defineString("$nodeAlgoType", () -> "Vwap");
-        ctx.defineLong("$productId", orderSupplier::productId);
-        ctx.defineString("$ric", orderSupplier::ric);
-        ctx.defineBool("$enabled", orderSupplier::enabled);
-        ctx.defineByteBuffer("$tuid", orderSupplier::tuid);
+        final MutableExprContext mutCtx = ExprContextFactory.createGlobalContext();
+        mutCtx.defineDouble("$PI", () -> 3.14);
+        mutCtx.defineString("$nodeAlgoType", () -> "Vwap");
+        mutCtx.defineLong("$productId", orderSupplier::productId);
+        mutCtx.defineString("$ric", orderSupplier::ric);
+        mutCtx.defineBool("$enabled", orderSupplier::enabled);
+        mutCtx.defineByteBuffer("$tuid", orderSupplier::tuid);
+
+        final ExprContext ctx = mutCtx.getAsExprContext();
 
         runExpressionWithContextTests(ctx);
 
@@ -169,7 +171,7 @@ class ExprEvaluationWithContextTest extends ExprEvaluatorTestBase {
         runEx = assertThrows(RuntimeException.class, () -> orderCtx.addAlias("unknown", "coolAlias"));
         assertEquals("Unknown identifier 'unknown' for alias 'coolAlias'", runEx.getMessage());
 
-        final ExprContextCombined ctx = ExprContextCombined.create(globalCtx, orderCtx);
+        final ExprContextCombined ctx = ExprContextCombined.create(globalCtx.getAsExprContext(), orderCtx.getAsExprContext());
 
         runExpressionWithContextTests(ctx);
 

@@ -4,10 +4,6 @@ public final class ExprContextFactory {
 
     private ExprContextFactory() { }
 
-    public static MutableExprContext create() {
-        return createEmpty();
-    }
-
     /**
      * For global context we start with the full set of native functions
      */
@@ -18,7 +14,7 @@ public final class ExprContextFactory {
     /**
      * Or we can also add some client-defined additional global "native" functions
      */
-    public static MutableExprContext createGlobalContext(ExprContextEnricher... enrichers) {
+    public static MutableExprContext createGlobalContext(final ExprContextEnricher... enrichers) {
         final MutableExprContext ctx = createNative();
         ctx.enrich(enrichers);
         return ctx;
@@ -30,14 +26,14 @@ public final class ExprContextFactory {
      * In these cases "name" is the function available in the local context of "algo"
      * and "price" is the function available in the local context of "order"
      */
-    public static MutableExprContext createLocalContext(ExprContextEnricher... enrichers) {
+    public static MutableExprContext createLocalContext(final ExprContextEnricher... enrichers) {
         final MutableExprContext ctx = createEmpty();
         ctx.enrich(enrichers);
         return ctx;
     }
 
-    static MutableExprContext createNative() {
-        final MutableExprContext ctx = new ExprContextImpl();
+    static ExprContextImpl createNative() {
+        final ExprContextImpl ctx = new ExprContextImpl();
         ctx.enrich(ExprContextNativeEnricher.get());
         return ctx;
     }

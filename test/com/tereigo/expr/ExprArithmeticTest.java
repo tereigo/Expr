@@ -512,8 +512,9 @@ class ExprArithmeticTest extends ExprEvaluatorTestBase {
         runErr = assertThrows(RuntimeError.class, () -> evaluateLong("$productId / 0", ctx));
         assertEquals("Expression evaluation error [line 1, pos 12]: Division by zero in expression '$productId / 0'", runErr.getMessage());
 
-        final MutableExprContext ctx2 = ExprContextFactory.create();
-        ctx2.defineLong("$zero", () -> 0L);
+        final MutableExprContext mutCtx2 = ExprContextFactory.createGlobalContext();
+        mutCtx2.defineLong("$zero", () -> 0L);
+        final ExprContext ctx2 = mutCtx2.getAsExprContext();
         runErr = assertThrows(RuntimeError.class, () -> evaluateLong("123 / $zero", ctx2));
         assertEquals("Expression evaluation error [line 1, pos 5]: Division by zero in expression '123 / $zero'", runErr.getMessage());
 

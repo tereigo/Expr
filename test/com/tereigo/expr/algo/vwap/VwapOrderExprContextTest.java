@@ -1,7 +1,6 @@
 package com.tereigo.expr.algo.vwap;
 
 import com.tereigo.expr.ExprContext;
-import com.tereigo.expr.ExprContextFactory;
 import com.tereigo.expr.ExprEvaluator;
 import com.tereigo.expr.MutableExprContext;
 import com.tereigo.expr.domains.ExprContextBuilder;
@@ -24,7 +23,7 @@ class VwapOrderExprContextTest {
     ReferenceDataCache refData;
 
     private OrderFieldResolverImpl orderFieldResolver;
-    private MutableExprContext ctx = ExprContextFactory.create();
+    private ExprContext ctx;
     private final TestVwapOrder order1 = TestVwapOrder.create()
             .withProductId(123).withClientId(1).withVolumeLimit(0.1);
     private final TestVwapOrder order2 = TestVwapOrder.create()
@@ -35,6 +34,7 @@ class VwapOrderExprContextTest {
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
+
         when(refData.getTuidByClientId(1)).thenReturn(ByteBufferUtils.constant("CLIENT1"));
         when(refData.getTuidByClientId(2)).thenReturn(ByteBufferUtils.constant("CLIENT2"));
 
@@ -44,9 +44,10 @@ class VwapOrderExprContextTest {
         OrderDomain.init(refData);
 
         orderFieldResolver = new OrderFieldResolverImpl();
-        ctx = ExprContextBuilder.start().orderWithShortcuts(orderFieldResolver).build();
-        VwapOrderExprContextCreator creator = new VwapOrderExprContextCreator();
-        creator.enrich(orderFieldResolver, ctx);
+        final MutableExprContext mutCtx = ExprContextBuilder.start().orderWithShortcuts(orderFieldResolver).build();
+        final VwapOrderExprContextCreator creator = new VwapOrderExprContextCreator();
+        creator.enrich(orderFieldResolver, mutCtx);
+        ctx = mutCtx.getAsExprContext();
 
         orderFieldResolver.setOrder(order1);
     }
@@ -77,23 +78,23 @@ class VwapOrderExprContextTest {
         assertTrue(evaluateBoolOptimized("vwap.volumeLimit == 0.2 and vwap.ric == 'BP.L' and order.ric == 'BP.L' and ric == 'BP.L' and vwap.tuid == 'CLIENT2' and order.tuid == 'CLIENT2' and tuid == 'CLIENT2'", ctx));
     }
 
-    private boolean evaluateBool(String text, ExprContext ctx) {
-        ExprEvaluator evaluator = new ExprEvaluator(text);
+    private boolean evaluateBool(final String text, final ExprContext ctx) {
+        final ExprEvaluator evaluator = new ExprEvaluator(text);
         return evaluator.evaluateBool(ctx);
     }
 
-    private boolean evaluateBoolOptimized(String text, ExprContext ctx) {
-        ExprEvaluator evaluator = new ExprEvaluator(ctx, text);
+    private boolean evaluateBoolOptimized(final String text, final ExprContext ctx) {
+        final ExprEvaluator evaluator = new ExprEvaluator(ctx, text);
         return evaluator.evaluateBool(ctx);
     }
 
-    private double evaluateDouble(String text, ExprContext ctx) {
-        ExprEvaluator evaluator = new ExprEvaluator(text);
+    private double evaluateDouble(final String text, final ExprContext ctx) {
+        final ExprEvaluator evaluator = new ExprEvaluator(text);
         return evaluator.evaluateDouble(ctx);
     }
 
-    private double evaluateDoubleOptimized(String text, ExprContext ctx) {
-        ExprEvaluator evaluator = new ExprEvaluator(ctx, text);
+    private double evaluateDoubleOptimized(final String text, final ExprContext ctx) {
+        final ExprEvaluator evaluator = new ExprEvaluator(ctx, text);
         return evaluator.evaluateDouble(ctx);
     }
 }

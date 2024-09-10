@@ -5,9 +5,9 @@ package com.tereigo.expr;
  */
 class ExprContextNative {
 
-  private static final MutableExprContext INSTANCE = ExprContextFactory.createNative();
+  private static final ExprContext INSTANCE = ExprContextFactory.createNative();
 
-  public static MutableExprContext get() {
+  public static ExprContext get() {
       return INSTANCE;
   }
 

@@ -44,6 +44,7 @@ final class ExprInterpreter implements Expr.Visitor<Variant> {
 
   @Override
   public Variant visitBinaryExpr(final Expr.Binary expr) {
+    // TODO: why they are outside of try?
     final Variant left = evaluate(expr.left);
     final Variant right = evaluate(expr.right);
 
@@ -97,6 +98,7 @@ final class ExprInterpreter implements Expr.Visitor<Variant> {
 
   @Override
   public Variant visitInOperator(final Expr.InOperator expr) {
+    // TODO: why it is outside of try?
     final Variant operand = evaluate(expr.operand);
     try {
       for (int i = 0; i < expr.values.size(); i++) {
@@ -115,6 +117,7 @@ final class ExprInterpreter implements Expr.Visitor<Variant> {
 
   @Override
   public Variant visitWithinOperator(final Expr.WithinOperator expr) {
+    // TODO: why it is outside of try?
     final Variant operand = evaluate(expr.operand);
     try {
       final Variant minVal = evaluate(expr.min);
@@ -134,6 +137,7 @@ final class ExprInterpreter implements Expr.Visitor<Variant> {
 
   @Override
   public Variant visitBetweenOperator(final Expr.BetweenOperator expr) {
+    // TODO: why it is outside of try?
     final Variant operand = evaluate(expr.operand);
     try {
       final Variant minVal = evaluate(expr.min);

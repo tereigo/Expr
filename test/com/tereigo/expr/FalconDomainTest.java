@@ -19,7 +19,7 @@ class FalconDomainTest extends ExprEvaluatorTestBase {
         FalconDomain.defineFunctions(ctx);
 
         optimized = false;
-        runFalconTests(ctx);
+        runFalconTests(ctx.getAsExprContext());
     }
 
     @Test
@@ -29,10 +29,10 @@ class FalconDomainTest extends ExprEvaluatorTestBase {
         FalconDomain.defineFunctions(ctx);
 
         optimized = true;
-        runFalconTests(ctx);
+        runFalconTests(ctx.getAsExprContext());
     }
 
-    private void runFalconTests(MutableExprContext ctx) {
+    private void runFalconTests(ExprContext ctx) {
         RuntimeError runErr;
         // ltod
         assertEquals(0.0, evaluateDouble("ltod(0)", ctx), EPS);

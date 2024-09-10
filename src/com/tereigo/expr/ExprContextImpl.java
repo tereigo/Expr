@@ -128,6 +128,11 @@ final class ExprContextImpl implements ExprContext, MutableExprContext {
   }
 
   @Override
+  public ExprContext getAsExprContext() {
+    return this;
+  }
+
+  @Override
   public String toString() {
     return "functions: " + functions.keySet();
   }

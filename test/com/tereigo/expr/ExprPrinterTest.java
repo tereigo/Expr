@@ -112,7 +112,7 @@ class ExprPrinterTest extends ExprEvaluatorTestBase {
                 "│\n" +
                 "├── $curTime", printer.print(ExprCompiler.compile("func($id, 1) == $curTime")));
 
-        final MutableExprContext ctx = getEvaluationContext();
+        final ExprContext ctx = getEvaluationContext();
 
         assertEquals("==\n" +
                 "│\n" +
@@ -154,12 +154,12 @@ class ExprPrinterTest extends ExprEvaluatorTestBase {
                 "│   ├── 4", printer.print(ExprCompiler.compile("5 + ((1 == 2) ? 3 : 4)")));
     }
 
-    private static MutableExprContext getEvaluationContext() {
+    private static ExprContext getEvaluationContext() {
         final MutableExprContext ctx = ExprContextFactory.createGlobalContext();
         ctx.defineFunction("func", (result, arg1, arg2) -> result.accept(3.14));
         ctx.defineLong("$id", () -> 123L);
         ctx.defineLong("$curTime", () -> 123L);
-        return ctx;
+        return ctx.getAsExprContext();
     }
 
     @Test
@@ -183,7 +183,7 @@ class ExprPrinterTest extends ExprEvaluatorTestBase {
         assertEquals("(in A [A, B])", printer.print(ExprCompiler.compile("\"A\" in [\"A\", \"B\"]")));
         assertEquals("(within 1 [1, 2])", printer.print(ExprCompiler.compile("1 within [1, 2]")));
         assertEquals("(between 1 [1, 2])", printer.print(ExprCompiler.compile("1 between [1, 2]")));
-        final MutableExprContext ctx = getEvaluationContext();
+        final ExprContext ctx = getEvaluationContext();
         assertEquals("(== call func($id, 1) $curTime)", printer.print(ExprCompiler.compile("func($id, 1) == $curTime")));
         assertEquals("(== call func($id, 1) $curTime)", printer.print(ExprOptimizer.optimize(ExprCompiler.compile("func($id, 1) == $curTime"), ctx)));
         assertEquals("(== call func($id, call isEven(call rnd())) $curTime)", printer.print(ExprCompiler.compile("func($id, isEven(rnd())) == $curTime")));

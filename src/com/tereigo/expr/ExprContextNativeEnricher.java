@@ -7,11 +7,11 @@ import com.tereigo.expr.variant.VariantUtils;
   Provides Expr native functions
 
  TODO:
-     add the following functions: equals, equalsIgnoreCase, contains, containsIgnoreCase, startsWith, startsWithIgnoreCase,
-     endsWith, endsWithIgnoreCase, indexOfWith, indexOfIgnoreCase
+     add the following functions: equals, equalsIgnoreCase, containsIgnoreCase, startsWithIgnoreCase,
+     endsWith, endsWithIgnoreCase, indexOfIgnoreCase
 
  */
-class ExprContextNativeEnricher implements ExprContextEnricher {
+final class ExprContextNativeEnricher implements ExprContextEnricher {
   static final ExprContextEnricher INSTANCE = new ExprContextNativeEnricher();
 
   private ExprContextNativeEnricher() { }
@@ -21,7 +21,7 @@ class ExprContextNativeEnricher implements ExprContextEnricher {
   }
 
   @Override
-  public void enrich(MutableExprContext ctx) {
+  public void enrich(final MutableExprContext ctx) {
 
     ctx.defineFunction("round", (result, arg) -> {
       if (VariantUtils.isLong(arg)) {
@@ -413,21 +413,19 @@ class ExprContextNativeEnricher implements ExprContextEnricher {
       }
     });
 
-    // TODO: finish it
-//    ctx.defineFunction("startsWith", (result, arg1, arg2) -> {
-//      if (VariantUtils.isString(arg1) && VariantUtils.isString(arg2)) {
-//        result.accept(arg1.getAsString().startsWith(arg2.getAsString()));
-//      } else if (VariantUtils.isString(arg1) && VariantUtils.isByteBuffer(arg2)) {
-//        // TODO: reimplement - generates garbage
-//        result.accept(arg1.getAsString().startsWith(ByteBufferUtils.parseString(arg2.getAsByteBuffer())));
-//      } else if (VariantUtils.isByteBuffer(arg1) && VariantUtils.isString(arg2)) {
-//        result.accept(ByteBufferUtils.startWith(arg1.getAsByteBuffer(), arg2.getAsString()));
-//      } else if (VariantUtils.isByteBuffer(arg1) && VariantUtils.isByteBuffer(arg2)) {
-//        result.accept(ByteBufferUtils.startWith(arg1.getAsByteBuffer(), arg2.getAsByteBuffer()));
-//      } else {
-//        throw new RuntimeException("Operand must be a STRING or BYTE_BUFFER");
-//      }
-//    });
+    ctx.defineFunction("startsWith", (result, arg1, arg2) -> {
+      if (VariantUtils.isString(arg1) && VariantUtils.isString(arg2)) {
+        result.accept(arg1.getAsString().startsWith(arg2.getAsString()));
+      } else if (VariantUtils.isString(arg1) && VariantUtils.isByteBuffer(arg2)) {
+        result.accept(ByteBufferUtils.startsWith(arg1.getAsString(), arg2.getAsByteBuffer()));
+      } else if (VariantUtils.isByteBuffer(arg1) && VariantUtils.isString(arg2)) {
+        result.accept(ByteBufferUtils.startsWith(arg1.getAsByteBuffer(), arg2.getAsString()));
+      } else if (VariantUtils.isByteBuffer(arg1) && VariantUtils.isByteBuffer(arg2)) {
+        result.accept(ByteBufferUtils.startsWith(arg1.getAsByteBuffer(), arg2.getAsByteBuffer()));
+      } else {
+        throw new RuntimeException("Operand must be a STRING or BYTE_BUFFER");
+      }
+    });
 
     // TODO: finish it
 //    ctx.defineFunction("endsWith", (result, arg1, arg2) -> {

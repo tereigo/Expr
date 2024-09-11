@@ -4,19 +4,19 @@ import com.tereigo.expr.MutableExprContext;
 import com.tereigo.expr.domains.algo.AlgoDataProvider;
 import com.tereigo.expr.domains.falcon.FalconDataProvider;
 
-public final class ExprDomains {
+public final class FalconExprDomains {
 
-    private ExprDomains() { }
+    private FalconExprDomains() { }
 
     public static MutableExprContext falcon(final FalconDataProvider falcon) {
-        return ExprContextBuilder.start().falcon(falcon).build();
+        return FalconExprContextBuilder.start().falcon(falcon).build();
     }
 
     public static MutableExprContext algo(final AlgoDataProvider algo) {
-        return ExprContextBuilder.start().algo(algo).build();
+        return FalconExprContextBuilder.start().algo(algo).build();
     }
 
     public static MutableExprContext falconAlgo(final FalconDataProvider falcon, final AlgoDataProvider algo) {
-        return ExprContextBuilder.start().falcon(falcon).algo(algo).build();
+        return FalconExprContextBuilder.start().falcon(falcon).algo(algo).build();
     }
 }

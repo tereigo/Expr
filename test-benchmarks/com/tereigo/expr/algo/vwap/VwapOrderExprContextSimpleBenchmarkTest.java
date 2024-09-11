@@ -3,7 +3,7 @@ package com.tereigo.expr.algo.vwap;
 import com.tereigo.expr.ExprContext;
 import com.tereigo.expr.ExprEvaluator;
 import com.tereigo.expr.MutableExprContext;
-import com.tereigo.expr.domains.ExprContextBuilder;
+import com.tereigo.expr.domains.FalconExprContextBuilder;
 import com.tereigo.expr.domains.order.OrderDomain;
 import com.tereigo.expr.domains.order.OrderFieldResolverImpl;
 import com.tereigo.expr.falcon.utils.ReferenceDataCacheImpl;
@@ -42,7 +42,7 @@ class VwapOrderExprContextSimpleBenchmarkTest {
         OrderDomain.init(refData);
 
         orderFieldResolver = new OrderFieldResolverImpl();
-        final MutableExprContext mutCtx = ExprContextBuilder.start().orderWithShortcuts(orderFieldResolver).build();
+        final MutableExprContext mutCtx = FalconExprContextBuilder.start().orderWithShortcuts(orderFieldResolver).build();
         final VwapOrderExprContextCreator creator = new VwapOrderExprContextCreator();
         creator.enrich(orderFieldResolver, mutCtx);
 

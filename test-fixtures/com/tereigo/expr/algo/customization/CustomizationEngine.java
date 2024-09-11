@@ -3,8 +3,8 @@ package com.tereigo.expr.algo.customization;
 import com.tereigo.expr.ExprContext;
 import com.tereigo.expr.ExprEvaluator;
 import com.tereigo.expr.MutableExprContext;
-import com.tereigo.expr.domains.ExprContextBuilder;
-import com.tereigo.expr.domains.ExprDomains;
+import com.tereigo.expr.domains.FalconExprContextBuilder;
+import com.tereigo.expr.domains.FalconExprDomains;
 import com.tereigo.expr.domains.algo.AlgoDataProvider;
 import com.tereigo.expr.domains.falcon.FalconDataProvider;
 import com.tereigo.expr.domains.order.OrderDomain;
@@ -34,9 +34,9 @@ public class CustomizationEngine {
         // initialize the required Expression domains
         OrderDomain.init(falcon.getRefData());
 
-        nodeContext = ExprDomains.falconAlgo(falcon, algo).getAsExprContext();
+        nodeContext = FalconExprDomains.falconAlgo(falcon, algo).getAsExprContext();
         orderFieldResolver = new OrderFieldSupplierWrapper();
-        final MutableExprContext mutableRuleContext = ExprContextBuilder.start().falcon(falcon).algo(algo).orderWithShortcuts(orderFieldResolver).build();
+        final MutableExprContext mutableRuleContext = FalconExprContextBuilder.start().falcon(falcon).algo(algo).orderWithShortcuts(orderFieldResolver).build();
         additionalOrderExprCtxCreator.enrich(orderFieldResolver, mutableRuleContext);
         ruleContext = mutableRuleContext.getAsExprContext();
         this.reportHandler = reportHandler;

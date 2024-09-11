@@ -14,28 +14,28 @@ import com.tereigo.expr.domains.order.OrderFieldResolver;
 import com.tereigo.expr.domains.order.OrderGlobalExprContextEnricher;
 import com.tereigo.expr.domains.order.OrderLocalExprContextEnricher;
 
-public class ExprContextBuilder {
+public class FalconExprContextBuilder {
 
     protected final MutableExprContext ctx;
 
-    private ExprContextBuilder() {
+    private FalconExprContextBuilder() {
         // include native context by default
         this.ctx = ExprContextFactory.createGlobalContext();
     }
 
-    private ExprContextBuilder(final MutableExprContext ctx) {
+    private FalconExprContextBuilder(final MutableExprContext ctx) {
         this.ctx = ctx;
     }
 
-    public static ExprContextBuilder start() {
-        return new ExprContextBuilder();
+    public static FalconExprContextBuilder start() {
+        return new FalconExprContextBuilder();
     }
 
-    public static ExprContextBuilder start(final MutableExprContext ctx) {
-        return new ExprContextBuilder(ctx);
+    public static FalconExprContextBuilder start(final MutableExprContext ctx) {
+        return new FalconExprContextBuilder(ctx);
     }
 
-    public ExprContextBuilder falcon(final FalconDataProvider falcon) {
+    public FalconExprContextBuilder falcon(final FalconDataProvider falcon) {
         ctx.enrich(new FalconGlobalExprContextEnricher(falcon));
         final MutableExprContext localFalconCtx = ExprContextFactory.createLocalContext(new FalconLocalExprContextEnricher(falcon));
         ctx.defineExprContext("falcon", localFalconCtx);
@@ -43,21 +43,21 @@ public class ExprContextBuilder {
         return this;
     }
 
-    public ExprContextBuilder algo(final AlgoDataProvider algo) {
+    public FalconExprContextBuilder algo(final AlgoDataProvider algo) {
         ctx.enrich(new AlgoGlobalExprContextEnricher(algo));
         final MutableExprContext localAlgoCtx = ExprContextFactory.createLocalContext(new AlgoLocalExprContextEnricher(algo));
         ctx.defineExprContext("algo", localAlgoCtx);
         return this;
     }
 
-    public ExprContextBuilder order(final OrderFieldResolver orderFieldResolver) {
+    public FalconExprContextBuilder order(final OrderFieldResolver orderFieldResolver) {
         ctx.enrich(new OrderGlobalExprContextEnricher(orderFieldResolver));
         final MutableExprContext localOrderCtx = ExprContextFactory.createLocalContext(new OrderLocalExprContextEnricher(orderFieldResolver));
         ctx.defineExprContext("order", localOrderCtx);
         return this;
     }
 
-    public ExprContextBuilder orderWithShortcuts(final OrderFieldResolver orderFieldResolver) {
+    public FalconExprContextBuilder orderWithShortcuts(final OrderFieldResolver orderFieldResolver) {
         order(orderFieldResolver);
         OrderDomain.defineShortcuts(ctx, orderFieldResolver);
         return this;

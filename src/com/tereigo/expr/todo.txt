@@ -22,7 +22,7 @@
    May be enforce supplying ExprContext during expression compilation to make sure that it's not changed during evaluation?
    It ensures that a client will not apply any GC-type ops to ExprContext during evaluation
    It also means that the original expression and it's Expr context are "immutable" after compilation.
-   Not "totally immutable" because you can substitute an order still in Supplier but both both Compiled expr and its ExprContext are bound together.
+   Not "totally immutable" because you can substitute an order still in Supplier but both Compiled expr and its ExprContext are bound together.
    "evaluate()" will not have "ctx" in that case and it goes into ExprEvaluator constructor:
         ASTRoot root = ExprCompiler.compile("$ric == 'VOD.L' and $productId == 123 or 5 != 2");
         ExprEvaluator exprEvaluator = new ExprEvaluator(root, ctx);
@@ -36,6 +36,14 @@
 
 3. See if it's doable to introduce an ability to add user-specific operators
    For example: Bit logic manipulations
+
+4. is it doable to add an ability to add user types?
+  Like "Bytes" which is a read-only ByteBuffer and can be used to compare with String/ByteBuffer in all read-only operations
+  May be it's possible to introduce Bytes and a BytesToByteBufferWrapper class that will translate all operations?
+  The questions:
+      how it will be stored in Variant
+      how we add support for the new type for various existing functions? contains, isEmpty, startsWith, equals, ...
+      how we add it to "VariantUtils.isString()"
 
 7. Add string operators:
  startsWithIgnoreCase
@@ -60,7 +68,7 @@
 
 4. Support Arrays, Maps, Lists ?
 
-5. May be add "mat" namespace with a list of functions to work with matrices and a special object type: MATRIX
+5. May be add "matrix" namespace with a list of functions to work with matrices and a special object type: MATRIX
    Can it be stored in a GC-free way however?
 
 9. Do we NIL ?

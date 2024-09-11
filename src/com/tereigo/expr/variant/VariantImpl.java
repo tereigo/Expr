@@ -30,25 +30,25 @@ final class VariantImpl implements MutableVariant {
     //
     // IMPORTANT:
     // we use one obj reference for the following types: String, ByteBuffer, ExprContext, Object
-    // and just cast to the required type when required
+    // and just cast to the required type when needed
     private Object objVal;
 
     VariantImpl() {
     }
 
-    VariantImpl(double value) {
+    VariantImpl(final double value) {
         accept(value);
     }
 
-    VariantImpl(long value) {
+    VariantImpl(final long value) {
         accept(value);
     }
 
-    VariantImpl(boolean value) {
+    VariantImpl(final boolean value) {
         accept(value);
     }
 
-    VariantImpl(String value) {
+    VariantImpl(final String value) {
         accept(value);
     }
 
@@ -134,37 +134,37 @@ final class VariantImpl implements MutableVariant {
     }
 
     @Override
-    public void accept(long value) {
+    public void accept(final long value) {
         this.longVal = value;
         this.type = ExprType.LONG;
     }
 
     @Override
-    public void accept(double value) {
+    public void accept(final double value) {
         this.longVal = Double.doubleToLongBits(value);
         this.type = ExprType.DOUBLE;
     }
 
     @Override
-    public void accept(boolean value) {
+    public void accept(final boolean value) {
         this.longVal = value ? 1 : 0;
         this.type = ExprType.BOOL;
     }
 
     @Override
-    public void accept(String value) {
+    public void accept(final String value) {
         this.objVal = value;
         this.type = ExprType.STRING;
     }
 
     @Override
-    public void accept(ByteBuffer value) {
+    public void accept(final ByteBuffer value) {
         this.objVal = value;
         this.type = ExprType.BYTE_BUFFER;
     }
 
     @Override
-    public void accept(ExprContext value) {
+    public void accept(final ExprContext value) {
         this.objVal = value;
         this.type = ExprType.EXPR_CONTEXT;
     }
@@ -177,14 +177,14 @@ final class VariantImpl implements MutableVariant {
 //        this.type = ExprType.OBJECT;
 //    }
 
-    private void sanityCheck(ExprType expected) {
+    private void sanityCheck(final ExprType expected) {
         if (type != expected) {
             throw new RuntimeException("Variant type mismatch: " + type + ", expected: " + expected);
         }
     }
 
     @Override
-    public boolean equals(Object o) {
+    public boolean equals(final Object o) {
         if (this == o) {
             return true;
         }
@@ -192,7 +192,7 @@ final class VariantImpl implements MutableVariant {
             return false;
         }
 
-        VariantImpl variant = (VariantImpl) o;
+        final VariantImpl variant = (VariantImpl) o;
         // TODO: can we just call VariantUtils.isEqual(this, variant)
 
         // see "IMPORTANT NOTE" above

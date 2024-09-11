@@ -7,7 +7,7 @@ import java.util.List;
 
 /**
  * AST tree optimization for the case when ExprContext is known at startup and it doesn't change for evaluation
- * We traverse AST tree with a given static context and resolve functions and identifiers and store them as resolved functions
+ * We traverse AST tree with a given static, and resolve functions and identifiers and store them as resolved functions
  * In that case we don't have to do function lookups by name during evaluation
  */
 final class AstOptimizer implements Expr.Visitor<Expr> {

@@ -3,7 +3,7 @@ package com.tereigo.expr;
 /*
   Context storage for Expr native functions
  */
-class ExprContextNative {
+final class ExprContextNative {
 
   private static final ExprContext INSTANCE = ExprContextFactory.createNative();
 

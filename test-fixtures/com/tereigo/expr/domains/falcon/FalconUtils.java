@@ -13,8 +13,16 @@ public class FalconUtils {
         this.refData = refData;
     }
 
+    public static void init(final ReferenceDataCache refData) {
+        INSTANCE = new FalconUtils(refData);
+    }
+
+    public static FalconUtils get() {
+        return INSTANCE;
+    }
+
     public ByteBuffer getTuidByClientId(final long clientId) {
-        final ByteBuffer tuid = refData.getTuidByClientId((int)clientId);
+        final ByteBuffer tuid = refData.getTuidByClientId((int) clientId);
         return tuid != null ? tuid : ByteBufferUtils.empty();
     }
 
@@ -27,13 +35,5 @@ public class FalconUtils {
         ricHolder.clear();
         ByteBufferUtils.deepCopy(ric, ricHolder);
         return ricHolder;
-    }
-
-    public static void init(final ReferenceDataCache refData) {
-        INSTANCE = new FalconUtils(refData);
-    }
-
-    public static FalconUtils get() {
-        return INSTANCE;
     }
 }

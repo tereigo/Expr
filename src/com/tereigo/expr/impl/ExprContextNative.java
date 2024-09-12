@@ -7,13 +7,13 @@ import com.tereigo.expr.ExprContext;
  */
 final class ExprContextNative {
 
-  private static final ExprContext INSTANCE;
+    private static final ExprContext INSTANCE;
 
-  public static ExprContext get() {
-      return INSTANCE;
-  }
+    static {
+        INSTANCE = new ExprContextImpl(ExprContextNativeEnricher.get());
+    }
 
-  static {
-      INSTANCE = new ExprContextImpl(ExprContextNativeEnricher.get());
-  }
+    public static ExprContext get() {
+        return INSTANCE;
+    }
 }

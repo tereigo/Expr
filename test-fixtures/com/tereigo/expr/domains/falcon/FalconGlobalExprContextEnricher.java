@@ -14,12 +14,12 @@ public class FalconGlobalExprContextEnricher implements ExprContextEnricher {
     }
 
     @Override
-    public void enrich(MutableExprContext ctx) {
+    public void enrich(final MutableExprContext ctx) {
         ctx.defineFunction("falconEngineTimeMs", result -> result.accept(falconDataProvider.getEngineTimeMs()));
 
         ctx.defineFunction("falconRandom", result -> result.accept(falconDataProvider.getNextRandom()));
 
-        ctx.defineFunction("falconTuidByClientId", (result, clientId) -> result.accept(falconDataProvider.getTuidByClientId((int)clientId.getAsLong())));
+        ctx.defineFunction("falconTuidByClientId", (result, clientId) -> result.accept(falconDataProvider.getTuidByClientId((int) clientId.getAsLong())));
 
         ctx.defineFunction("falconNodeName", result -> result.accept(falconDataProvider.getNodeName()));
     }

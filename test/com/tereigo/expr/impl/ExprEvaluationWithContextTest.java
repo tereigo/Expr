@@ -20,6 +20,13 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ExprEvaluationWithContextTest extends ExprEvaluatorTestBase {
 
+    private static ExprContext createTestObjExprContext(final String nodeName, final ByteBuffer algoType) {
+        final MutableExprContext ctx = ExprContextFactory.createLocalContext();
+        ctx.defineString("nodeName", () -> nodeName);
+        ctx.defineByteBuffer("algoType", () -> algoType);
+        return ctx.getAsExprContext();
+    }
+
     @Test
     void contextTestsWithSuppliers() {
         final MutableExprContext ctx = ExprContextFactory.createGlobalContext();
@@ -76,13 +83,6 @@ class ExprEvaluationWithContextTest extends ExprEvaluatorTestBase {
         ctx.defineByteBuffer("$tuid", () -> constant("CLIENT1"));
 
         runOptimizedExpressionWithContextTests(ctx.getAsExprContext());
-    }
-
-    private static ExprContext createTestObjExprContext(final String nodeName, final ByteBuffer algoType) {
-        final MutableExprContext ctx = ExprContextFactory.createLocalContext();
-        ctx.defineString("nodeName", () -> nodeName);
-        ctx.defineByteBuffer("algoType", () -> algoType);
-        return ctx.getAsExprContext();
     }
 
     @Test

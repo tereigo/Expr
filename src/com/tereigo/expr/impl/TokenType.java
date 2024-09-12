@@ -1,46 +1,46 @@
 package com.tereigo.expr.impl;
 
 enum TokenType {
-  // Single-character tokens.
-  LEFT_PAREN,        // '('
-  RIGHT_PAREN,       // ')'
-  LEFT_BRACKET,      // '['
-  RIGHT_BRACKET,     // ']'
-  COMMA,             // ','
-  DOT,               // '.'
-  MINUS,             // '-'
-  PLUS,              // '+'
-  DIV,               // '/'
-  MUL,               // '*'
-  MODULUS,           // '%'
-  TERNARY_IF,        // '?'
-  TERNARY_ELSE,      // ':'
+    // Single-character tokens.
+    LEFT_PAREN,        // '('
+    RIGHT_PAREN,       // ')'
+    LEFT_BRACKET,      // '['
+    RIGHT_BRACKET,     // ']'
+    COMMA,             // ','
+    DOT,               // '.'
+    MINUS,             // '-'
+    PLUS,              // '+'
+    DIV,               // '/'
+    MUL,               // '*'
+    MODULUS,           // '%'
+    TERNARY_IF,        // '?'
+    TERNARY_ELSE,      // ':'
 
-  // One or two character tokens.
-  NOT,              // '!' or 'not'
-  NOT_EQUAL,        // '!='
-  EQUAL_EQUAL,      // '=='
-  GREATER,          // '>'
-  GREATER_EQUAL,    // '>='
-  LESS,             // '<'
-  LESS_EQUAL,       // '<='
+    // One or two character tokens.
+    NOT,              // '!' or 'not'
+    NOT_EQUAL,        // '!='
+    EQUAL_EQUAL,      // '=='
+    GREATER,          // '>'
+    GREATER_EQUAL,    // '>='
+    LESS,             // '<'
+    LESS_EQUAL,       // '<='
 
-  // Literals.
-  IDENTIFIER,
-  STRING,
-  DOUBLE_NUMBER,
-  LONG_NUMBER,
+    // Literals.
+    IDENTIFIER,
+    STRING,
+    DOUBLE_NUMBER,
+    LONG_NUMBER,
 
-  // Keywords.
-  AND,              // 'and'
-  OR,               // 'or'
-  IN,               // 'in'
-  WITHIN,           // 'within'
-  BETWEEN,          // 'between'
-  FALSE,
-  TRUE,
-  MATH_PI,
-  MATH_E,
+    // Keywords.
+    AND,              // 'and'
+    OR,               // 'or'
+    IN,               // 'in'
+    WITHIN,           // 'within'
+    BETWEEN,          // 'between'
+    FALSE,
+    TRUE,
+    MATH_PI,
+    MATH_E,
 
-  EOF
+    EOF
 }

@@ -21,6 +21,11 @@ import java.nio.ByteBuffer;
  */
 public final class ExprEvaluatorFactory {
 
+    private static final Pass PASS = new Pass();
+
+    private ExprEvaluatorFactory() {
+    }
+
     public static ExprEvaluatorWithContext create(final ByteBuffer source) {
         return ExprEvaluatorAccessor.create(PASS, source);
     }
@@ -33,7 +38,8 @@ public final class ExprEvaluatorFactory {
      * Optimized evaluation for the cases where the context is known upfront it and stays immutable for the evaluation
      * It optimized the compiled AST tree before evaluation by resolving all function and object calls and storing them as the direct functions
      * It means it doesn't have to do function/object lookups via hash map during the evaluation
-     * @param ctx - Static immutable evaluation context. This context will be used for the subsequent evaluation
+     *
+     * @param ctx    - Static immutable evaluation context. This context will be used for the subsequent evaluation
      * @param source - Expression
      */
     public static ExprEvaluator create(final ExprContext ctx, final String source) {
@@ -44,8 +50,6 @@ public final class ExprEvaluatorFactory {
         return ExprEvaluatorAccessor.create(PASS, ctx, source);
     }
 
-    private ExprEvaluatorFactory() { }
-
-    private static final Pass PASS = new Pass();
-    public static class Pass { }
+    public static class Pass {
+    }
 }

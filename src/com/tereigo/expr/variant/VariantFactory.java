@@ -4,7 +4,8 @@ public final class VariantFactory {
     private static final Variant BOOL_TRUE = new VariantImpl(true);
     private static final Variant BOOL_FALSE = new VariantImpl(false);
 
-    private VariantFactory() {}
+    private VariantFactory() {
+    }
 
     public static VariantImpl createEmpty() {
         return new VariantImpl();

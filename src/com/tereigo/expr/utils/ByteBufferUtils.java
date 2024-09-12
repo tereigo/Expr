@@ -17,7 +17,8 @@ public final class ByteBufferUtils {
     private static final Comparator<ByteBuffer> BB_CASE_SENSITIVE_COMPARATOR = ByteBufferUtils::compare;
     private static final Comparator<ByteBuffer> BB_CASE_INSENSITIVE_COMPARATOR = ByteBufferUtils::compareCaseInsensitive;
 
-    private ByteBufferUtils() {}
+    private ByteBufferUtils() {
+    }
 
     @GeneratesGarbage
     public static ByteBuffer constant(final String from) {
@@ -36,7 +37,7 @@ public final class ByteBufferUtils {
         final int pos = buffer.position();
         final int end = Math.min(buffer.remaining(), len);
         for (int i = 0; i < end; i++) {
-            byte b = buffer.get();
+            final byte b = buffer.get();
             builder.append((char) (b & 0xFF));
         }
         buffer.position(pos);
@@ -52,7 +53,7 @@ public final class ByteBufferUtils {
     }
 
     @GeneratesGarbage
-    public static String parseString(final ByteBuffer buffer, int len) {
+    public static String parseString(final ByteBuffer buffer, final int len) {
         final byte[] bytes = getBytes(buffer, len);
         return new String(bytes, 0, bytes.length, StandardCharsets.US_ASCII);
     }
@@ -91,7 +92,7 @@ public final class ByteBufferUtils {
         target.clear();
         final int max = Math.min(data.length(), len);
         for (int i = 0; i < max; i++) {
-            target.put((byte)(data.charAt(i) & 0xFF));
+            target.put((byte) (data.charAt(i) & 0xFF));
         }
         target.flip();
         return target;
@@ -129,7 +130,7 @@ public final class ByteBufferUtils {
     }
 
     public static byte asciiByteToLower(final byte b) {
-        return (b >= 65 && b <= 90) ? (byte)(b+32) : b;
+        return (b >= 65 && b <= 90) ? (byte) (b + 32) : b;
     }
 
     public static boolean startsWith(final ByteBuffer source, final ByteBuffer key) {
@@ -167,7 +168,7 @@ public final class ByteBufferUtils {
             return false;
         }
         for (int i = 0; i < keySize; i++) {
-            if (comparator.compare(source.get(i), (byte)(key.charAt(i) & 0xFF)) != 0) {
+            if (comparator.compare(source.get(i), (byte) (key.charAt(i) & 0xFF)) != 0) {
                 return false;
             }
         }
@@ -188,7 +189,7 @@ public final class ByteBufferUtils {
             return false;
         }
         for (int i = 0; i < keySize; i++) {
-            if (comparator.compare((byte)(source.charAt(i) & 0xFF),key.get(i)) != 0) {
+            if (comparator.compare((byte) (source.charAt(i) & 0xFF), key.get(i)) != 0) {
                 return false;
             }
         }
@@ -238,7 +239,7 @@ public final class ByteBufferUtils {
                 return false;
             }
             for (int i = 0; i < str.length(); i++) {
-                if (comparator.compare((byte)(str.charAt(i) & 0xFF), buffer.get(pos + i)) != 0) {
+                if (comparator.compare((byte) (str.charAt(i) & 0xFF), buffer.get(pos + i)) != 0) {
                     return false;
                 }
             }
@@ -309,7 +310,7 @@ public final class ByteBufferUtils {
 
     @GeneratesGarbage
     public static String toString(final ByteBuffer buffer) {
-        StringBuilder sb = new StringBuilder(buffer.remaining());
+        final StringBuilder sb = new StringBuilder(buffer.remaining());
         toString(buffer, sb);
         return sb.toString();
     }
@@ -331,7 +332,7 @@ public final class ByteBufferUtils {
             return 0;
         }
 
-        final byte firstByte = (byte)(pattern.charAt(0) & 0xFF);
+        final byte firstByte = (byte) (pattern.charAt(0) & 0xFF);
         final int max = str.remaining() - pattern.length();
 
         for (int i = 0; i <= max; i++) {
@@ -363,14 +364,14 @@ public final class ByteBufferUtils {
 
         for (int i = 0; i <= max; i++) {
             // search for the first same character in str
-            if ((byte)(str.charAt(i) & 0xFF) != firstByte) {
-                while (++i <= max && (byte)(str.charAt(i) & 0xFF) != firstByte) ;
+            if ((byte) (str.charAt(i) & 0xFF) != firstByte) {
+                while (++i <= max && (byte) (str.charAt(i) & 0xFF) != firstByte) ;
             }
 
             if (i <= max) {
                 int j = i + 1;
                 final int end = j + pattern.remaining() - 1;
-                for (int k = 1; j < end && (byte)(str.charAt(j) & 0xFF) == pattern.get(k); j++, k++) ;
+                for (int k = 1; j < end && (byte) (str.charAt(j) & 0xFF) == pattern.get(k); j++, k++) ;
 
                 if (j == end) {
                     return i;

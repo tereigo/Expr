@@ -5,12 +5,12 @@ import com.tereigo.expr.falcon.msg.EqOrderInstMsgRo;
 public class OrderFieldSupplierFromOrderInstr implements OrderFieldSupplier {
     private EqOrderInstMsgRo order;
 
-    public void setOrder(final EqOrderInstMsgRo order) {
-        this.order = order;
-    }
-
     public EqOrderInstMsgRo getOrder() {
         return order;
+    }
+
+    public void setOrder(final EqOrderInstMsgRo order) {
+        this.order = order;
     }
 
     @Override

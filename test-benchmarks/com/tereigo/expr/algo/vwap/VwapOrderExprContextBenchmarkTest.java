@@ -30,6 +30,27 @@ import java.util.concurrent.TimeUnit;
 
 public class VwapOrderExprContextBenchmarkTest {
 
+    @Benchmark
+    @BenchmarkMode(Mode.Throughput)
+    @OutputTimeUnit(TimeUnit.MILLISECONDS)
+    @Fork(value = 3)
+//    @Warmup(iterations = 3, timeUnit = TimeUnit.MILLISECONDS, time = 5000)
+//    @Measurement(iterations = 3, timeUnit = TimeUnit.MILLISECONDS, time = 5000)
+    @Warmup(iterations = 5, timeUnit = TimeUnit.MILLISECONDS, time = 10000)
+    @Measurement(iterations = 5, timeUnit = TimeUnit.MILLISECONDS, time = 10000)
+    public void benchmarkSimpleExpression(final BenchmarkState state) {
+        state.evaluator.evaluateBool();
+    }
+
+    @Test
+    public void runBenchmarks() throws RunnerException {
+        final Options options = new OptionsBuilder()
+                .include(this.getClass().getName() + ".benchmark*")
+                .build();
+
+        new Runner(options).run();
+    }
+
     @State(Scope.Benchmark)
     public static class BenchmarkState {
         ExprEvaluator evaluator;
@@ -83,26 +104,5 @@ public class VwapOrderExprContextBenchmarkTest {
             // 2100 optimized
             evaluator = ExprEvaluatorFactory.create(ctx, "(vwap.volumeLimit == 0.1) and (vwap.ric == 'VOD.L') and (order.ric == 'VOD.L') and (ric == 'VOD.L') and (vwap.tuid == 'CLIENT1') and (order.tuid == 'CLIENT1') and (tuid == 'CLIENT1') and (ric in ['BT.L', 'VOD.L', 'TSCO.L'])");
         }
-    }
-
-    @Benchmark
-    @BenchmarkMode(Mode.Throughput)
-    @OutputTimeUnit(TimeUnit.MILLISECONDS)
-    @Fork(value = 3)
-//    @Warmup(iterations = 3, timeUnit = TimeUnit.MILLISECONDS, time = 5000)
-//    @Measurement(iterations = 3, timeUnit = TimeUnit.MILLISECONDS, time = 5000)
-    @Warmup(iterations = 5, timeUnit = TimeUnit.MILLISECONDS, time = 10000)
-    @Measurement(iterations = 5, timeUnit = TimeUnit.MILLISECONDS, time = 10000)
-    public void benchmarkSimpleExpression(final BenchmarkState state) {
-        state.evaluator.evaluateBool();
-    }
-
-    @Test
-    public void runBenchmarks() throws RunnerException {
-        final Options options = new OptionsBuilder()
-                .include(this.getClass().getName() + ".benchmark*")
-                .build();
-
-        new Runner(options).run();
     }
 }

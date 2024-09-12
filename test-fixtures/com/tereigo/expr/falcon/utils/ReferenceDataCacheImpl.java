@@ -11,21 +11,21 @@ public class ReferenceDataCacheImpl implements ReferenceDataCache {
         rics = new ArrayIntObjMap<>(1000);
     }
 
-    public void addTuid(int clientId, ByteBuffer tuid) {
+    public void addTuid(final int clientId, final ByteBuffer tuid) {
         tuids.put(clientId, tuid);
     }
 
-    public void addRic(long productId, ByteBuffer ric) {
-        rics.put((int)productId, ric);
+    public void addRic(final long productId, final ByteBuffer ric) {
+        rics.put((int) productId, ric);
     }
 
     @Override
-    public ByteBuffer getTuidByClientId(int clientId) {
+    public ByteBuffer getTuidByClientId(final int clientId) {
         return tuids.get(clientId);
     }
 
     @Override
-    public ByteBuffer getRicByProductId(long productId) {
-        return rics.get((int)productId);
+    public ByteBuffer getRicByProductId(final long productId) {
+        return rics.get((int) productId);
     }
 }

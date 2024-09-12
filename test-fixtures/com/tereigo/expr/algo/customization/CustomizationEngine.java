@@ -70,8 +70,7 @@ public class CustomizationEngine {
                         //reportHandler.onAppliedRule(order, rule.name, rule.action, actionResult);
                         appendAppliedRule(rule);
                     }
-                }
-                catch (final RuntimeException ex) {
+                } catch (final RuntimeException ex) {
                     errorHandler.onOrderError(rule.name, order, ex.getMessage());
                 }
             }

@@ -76,7 +76,7 @@ class ExprScannerTest {
     private void testScanner(final String source, final TokenType... expectedTypes) {
         final ExprScanner scanner = new ExprScanner(source);
         int i = 0;
-        for(final TokenType type: expectedTypes) {
+        for (final TokenType type : expectedTypes) {
             assertEquals(type, scanner.tokens().get(i++).type);
         }
     }

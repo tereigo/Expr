@@ -26,20 +26,20 @@ public class FalconDataProvider {
     }
 
     public long getEngineTimeMs() {
-      return timeProvider.getEngineTimeMs();
-  }
+        return timeProvider.getEngineTimeMs();
+    }
 
     public ReferenceDataCache getRefData() {
         return refData;
     }
 
     public double getNextRandom() {
-      return doubleProvider.getNext();
-  }
+        return doubleProvider.getNext();
+    }
 
-    public ByteBuffer getTuidByClientId(int clientId) {
-      return refData.getTuidByClientId(clientId);
-  }
+    public ByteBuffer getTuidByClientId(final int clientId) {
+        return refData.getTuidByClientId(clientId);
+    }
 
     public String getNodeName() {
         return nodeName;

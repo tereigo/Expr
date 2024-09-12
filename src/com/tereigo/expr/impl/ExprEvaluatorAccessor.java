@@ -9,11 +9,16 @@ import java.nio.ByteBuffer;
 
 public final class ExprEvaluatorAccessor {
 
-    public static ExprEvaluatorWithContext create(final ExprEvaluatorFactory.Pass ignoredPass, final ByteBuffer source) {
+    private ExprEvaluatorAccessor() {
+    }
+
+    public static ExprEvaluatorWithContext create(final ExprEvaluatorFactory.Pass ignoredPass,
+                                                  final ByteBuffer source) {
         return new ExprEvaluatorImpl(source);
     }
 
-    public static ExprEvaluatorWithContext create(final ExprEvaluatorFactory.Pass ignoredPass, final String source) {
+    public static ExprEvaluatorWithContext create(final ExprEvaluatorFactory.Pass ignoredPass,
+                                                  final String source) {
         return new ExprEvaluatorImpl(source);
     }
 
@@ -21,7 +26,8 @@ public final class ExprEvaluatorAccessor {
      * Optimized evaluation for the cases where the context is known upfront it and stays immutable for the evaluation
      * It optimized the compiled AST tree before evaluation by resolving all function and object calls and storing them as the direct functions
      * It means it doesn't have to do function/object lookups via hash map during the evaluation
-     * @param ctx - Static immutable evaluation context. This context will be used for the subsequent evaluation
+     *
+     * @param ctx    - Static immutable evaluation context. This context will be used for the subsequent evaluation
      * @param source - Expression
      */
     public static ExprEvaluator create(final ExprEvaluatorFactory.Pass ignoredPass,
@@ -35,6 +41,4 @@ public final class ExprEvaluatorAccessor {
                                        final ByteBuffer source) {
         return new OptimizedExprEvaluator(ctx, source);
     }
-
-    private ExprEvaluatorAccessor() { }
 }

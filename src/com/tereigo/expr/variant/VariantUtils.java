@@ -6,7 +6,8 @@ import com.tereigo.expr.utils.ByteBufferUtils;
 public final class VariantUtils {
     private static final double EPSILON = 1e-6;
 
-    private VariantUtils() {}
+    private VariantUtils() {
+    }
 
     public static boolean isEmpty(final Variant operand) {
         return operand.exprType() == null;

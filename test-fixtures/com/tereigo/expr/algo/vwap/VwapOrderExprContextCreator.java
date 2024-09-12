@@ -11,7 +11,7 @@ public class VwapOrderExprContextCreator implements OrderExprContextCreator {
     @Override
     public void enrich(final OrderFieldResolver orderFieldResolver, final MutableExprContext ctx) {
         final MutableExprContext vwapExprContext = ExprContextFactory.createLocalContext(new OrderLocalExprContextEnricher(orderFieldResolver),
-                                                                                         new VwapOrderExprContextEnricher(orderFieldResolver));
+                new VwapOrderExprContextEnricher(orderFieldResolver));
         ctx.defineExprContext("vwap", vwapExprContext);
     }
 }

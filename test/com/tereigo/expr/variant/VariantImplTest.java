@@ -10,6 +10,19 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 class VariantImplTest {
 
+    // only for testing
+    // we should not create ByteBuffers during the expression parsing
+    // ByteBuffer can only be fetched from the external data holder
+    private static VariantImpl createByteBuffer(final ByteBuffer value) {
+        final VariantImpl result = new VariantImpl();
+        result.accept(value);
+        return result;
+    }
+
+    static Variant createImmutableByteBuffer(final ByteBuffer value) {
+        return createByteBuffer(value);
+    }
+
     @Test
     void testEquals() {
         assertEquals(VariantFactory.createEmpty(), VariantFactory.createEmpty());
@@ -108,18 +121,5 @@ class VariantImplTest {
         assertEquals(createByteBuffer(constant("")), VariantFactory.createString(""));
         assertEquals(createByteBuffer(constant("A")), VariantFactory.createString("A"));
         assertNotEquals(createByteBuffer(constant("B")), VariantFactory.createString("A"));
-    }
-
-    // only for testing
-    // we should not create ByteBuffers during the expression parsing
-    // ByteBuffer can only be fetched from the external data holder
-    private static VariantImpl createByteBuffer(final ByteBuffer value) {
-        final VariantImpl result = new VariantImpl();
-        result.accept(value);
-        return result;
-    }
-
-    static Variant createImmutableByteBuffer(final ByteBuffer value) {
-        return createByteBuffer(value);
     }
 }

@@ -97,19 +97,19 @@ final class VariantImpl implements MutableVariant {
     @Override
     public String getAsString() {
         sanityCheck(ExprType.STRING);
-        return (String)objVal;
+        return (String) objVal;
     }
 
     @Override
     public ByteBuffer getAsByteBuffer() {
         sanityCheck(ExprType.BYTE_BUFFER);
-        return (ByteBuffer)objVal;
+        return (ByteBuffer) objVal;
     }
 
     @Override
     public ExprContext getAsExprContext() {
         sanityCheck(ExprType.EXPR_CONTEXT);
-        return (ExprContext)objVal;
+        return (ExprContext) objVal;
     }
 
     @GeneratesGarbage
@@ -197,9 +197,9 @@ final class VariantImpl implements MutableVariant {
 
         // see "IMPORTANT NOTE" above
         if (type == ExprType.STRING && variant.type == ExprType.BYTE_BUFFER) {
-            return ByteBufferUtils.equals((ByteBuffer)variant.objVal, (String)objVal);
+            return ByteBufferUtils.equals((ByteBuffer) variant.objVal, (String) objVal);
         } else if (type == ExprType.BYTE_BUFFER && variant.type == ExprType.STRING) {
-            return ByteBufferUtils.equals((ByteBuffer)objVal, (String)variant.objVal);
+            return ByteBufferUtils.equals((ByteBuffer) objVal, (String) variant.objVal);
         }
         return type == variant.type &&
                 longVal == variant.longVal &&

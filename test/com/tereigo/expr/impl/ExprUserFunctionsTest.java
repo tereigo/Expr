@@ -25,30 +25,6 @@ import static org.mockito.Mockito.when;
 class ExprUserFunctionsTest extends ExprEvaluatorTestBase {
     private boolean optimized;
 
-    @Test
-    void userFunctionTests() {
-        final SimpleOrderFieldSupplier orderSupplier = new SimpleOrderFieldSupplier();
-        final TestOrder order1 = new TestOrder("VOD.L", 123L, true, constant("CLIENT1"));
-        orderSupplier.setOrder(order1);
-
-        final ExprContextCombined ctx = createContext(orderSupplier);
-
-        this.optimized = false;
-        userFunctionTestsImpl(ctx, orderSupplier);
-    }
-
-    @Test
-    void userFunctionOptimizedTests() {
-        final SimpleOrderFieldSupplier orderSupplier = new SimpleOrderFieldSupplier();
-        final TestOrder order1 = new TestOrder("VOD.L", 123L, true, constant("CLIENT1"));
-        orderSupplier.setOrder(order1);
-
-        final ExprContextCombined ctx = createContext(orderSupplier);
-
-        this.optimized = true;
-        userFunctionTestsImpl(ctx, orderSupplier);
-    }
-
     private static ExprContextCombined createContext(final SimpleOrderFieldSupplier orderSupplier) {
         final MutableExprContext globalCtx = ExprContextFactory.createGlobalContext();
         globalCtx.defineFunction("nodeAlgoType", result -> result.accept("Vwap"));
@@ -114,6 +90,101 @@ class ExprUserFunctionsTest extends ExprEvaluatorTestBase {
 
         final ExprContextCombined ctx = ExprContextCombined.create(globalCtx.getAsExprContext(), orderCtx.getAsExprContext());
         return ctx;
+    }
+
+    private static ExprContext createObjectsContext() {
+        final TuidResolver tuidResolver = new TestTuidResolver();
+        final MutableExprContext testCtx = createTestObjExprContext("VWAP1", constant("Vwap"), tuidResolver);
+
+        final MutableExprContext ctx = ExprContextFactory.createGlobalContext();
+        ctx.defineExprContext("test", testCtx);
+
+        // adding order context
+        final ReferenceDataCache refData = mock(ReferenceDataCache.class);
+        when(refData.getRicByProductId(123L)).thenReturn(constant("VOD.L"));
+        when(refData.getRicByProductId(124L)).thenReturn(constant("BT.L"));
+        when(refData.getTuidByClientId(1)).thenReturn(constant("CLIENT1"));
+        when(refData.getTuidByClientId(2)).thenReturn(constant("CLIENT2"));
+
+        OrderDomain.init(refData);
+
+        final OrderFieldResolverImpl orderResolver = new OrderFieldResolverImpl();
+        final ExprContext orderCtx = createOrderExprContext(orderResolver);
+        ctx.defineExprContext("order", () -> orderCtx);
+
+        final SampleOrderInstruction order1 = new SampleOrderInstruction(123L, 1);
+        orderResolver.setOrder(order1);
+        return ctx.getAsExprContext();
+    }
+
+    private static ExprContext createChainedContext() {
+
+        final MutableExprContext ctx = ExprContextFactory.createGlobalContext();
+
+        final TuidResolver tuidResolver = new TestTuidResolver();
+        final ReferenceDataCache refData = mock(ReferenceDataCache.class);
+        when(refData.getRicByProductId(123L)).thenReturn(constant("VOD.L"));
+        when(refData.getRicByProductId(124L)).thenReturn(constant("BT.L"));
+        when(refData.getTuidByClientId(1)).thenReturn(constant("CLIENT1"));
+        when(refData.getTuidByClientId(2)).thenReturn(constant("CLIENT2"));
+
+        OrderDomain.init(refData);
+
+        final MutableExprContext localTestCtx = createTestObjExprContext("VWAP1", constant("Vwap"), tuidResolver);
+        final OrderFieldResolverImpl orderResolver = new OrderFieldResolverImpl();
+        final ExprContext orderCtx = createOrderExprContext(orderResolver);
+        final SampleOrderInstruction order1 = new SampleOrderInstruction(123L, 1);
+        orderResolver.setOrder(order1);
+
+        // add "order" context inside "test" context
+        localTestCtx.defineExprContext("order", () -> orderCtx);
+        // add "test" context at the top level
+        ctx.defineExprContext("test", localTestCtx);
+
+        return ctx.getAsExprContext();
+    }
+
+    private static MutableExprContext createTestObjExprContext(final String nodeName, final ByteBuffer algoType, final TuidResolver tuidResolver) {
+        final MutableExprContext ctx = ExprContextFactory.createLocalContext();
+        ctx.defineString("nodeName", () -> nodeName);
+        ctx.defineByteBuffer("algoType", () -> algoType);
+
+        ctx.defineFunction("tuidByClientId", (result, clientId) ->
+                result.accept(tuidResolver.getTuidByClientId((int) clientId.getAsLong()))
+        );
+        return ctx;
+    }
+
+    private static ExprContext createOrderExprContext(final OrderFieldResolver orderResolver) {
+        final MutableExprContext ctx = ExprContextFactory.createLocalContext();
+        ctx.defineLong("productId", orderResolver::productId);
+        ctx.defineByteBuffer("ric", orderResolver::ric);
+        ctx.defineByteBuffer("tuid", orderResolver::tuid);
+        return ctx.getAsExprContext();
+    }
+
+    @Test
+    void userFunctionTests() {
+        final SimpleOrderFieldSupplier orderSupplier = new SimpleOrderFieldSupplier();
+        final TestOrder order1 = new TestOrder("VOD.L", 123L, true, constant("CLIENT1"));
+        orderSupplier.setOrder(order1);
+
+        final ExprContextCombined ctx = createContext(orderSupplier);
+
+        this.optimized = false;
+        userFunctionTestsImpl(ctx, orderSupplier);
+    }
+
+    @Test
+    void userFunctionOptimizedTests() {
+        final SimpleOrderFieldSupplier orderSupplier = new SimpleOrderFieldSupplier();
+        final TestOrder order1 = new TestOrder("VOD.L", 123L, true, constant("CLIENT1"));
+        orderSupplier.setOrder(order1);
+
+        final ExprContextCombined ctx = createContext(orderSupplier);
+
+        this.optimized = true;
+        userFunctionTestsImpl(ctx, orderSupplier);
     }
 
     protected boolean evaluateBool(final String text, final ExprContext ctx) {
@@ -313,61 +384,9 @@ class ExprUserFunctionsTest extends ExprEvaluatorTestBase {
         assertTrue(evaluateBool("test.nodeName().contains('VWAP1') and order.tuid() == 'CLIENT1'", ctx));
     }
 
-    private static ExprContext createObjectsContext() {
-        final TuidResolver tuidResolver = new TestTuidResolver();
-        final MutableExprContext testCtx = createTestObjExprContext("VWAP1", constant("Vwap"), tuidResolver);
-
-        final MutableExprContext ctx = ExprContextFactory.createGlobalContext();
-        ctx.defineExprContext("test", testCtx);
-
-        // adding order context
-        final ReferenceDataCache refData = mock(ReferenceDataCache.class);
-        when(refData.getRicByProductId(123L)).thenReturn(constant("VOD.L"));
-        when(refData.getRicByProductId(124L)).thenReturn(constant("BT.L"));
-        when(refData.getTuidByClientId(1)).thenReturn(constant("CLIENT1"));
-        when(refData.getTuidByClientId(2)).thenReturn(constant("CLIENT2"));
-
-        OrderDomain.init(refData);
-
-        final OrderFieldResolverImpl orderResolver = new OrderFieldResolverImpl();
-        final ExprContext orderCtx = createOrderExprContext(orderResolver);
-        ctx.defineExprContext("order", () -> orderCtx);
-
-        final SampleOrderInstruction order1 = new SampleOrderInstruction(123L, 1);
-        orderResolver.setOrder(order1);
-        return ctx.getAsExprContext();
-    }
-
     private void chainedDomainTests(final ExprContext ctx) {
         assertTrue(evaluateBool("test.nodeName == 'VWAP1' and test.order.ric == 'VOD.L'", ctx));
         assertTrue(evaluateBool("test.order.ric.contains('VOD.L')", ctx));
-    }
-
-    private static ExprContext createChainedContext() {
-
-        final MutableExprContext ctx = ExprContextFactory.createGlobalContext();
-
-        final TuidResolver tuidResolver = new TestTuidResolver();
-        final ReferenceDataCache refData = mock(ReferenceDataCache.class);
-        when(refData.getRicByProductId(123L)).thenReturn(constant("VOD.L"));
-        when(refData.getRicByProductId(124L)).thenReturn(constant("BT.L"));
-        when(refData.getTuidByClientId(1)).thenReturn(constant("CLIENT1"));
-        when(refData.getTuidByClientId(2)).thenReturn(constant("CLIENT2"));
-
-        OrderDomain.init(refData);
-
-        final MutableExprContext localTestCtx = createTestObjExprContext("VWAP1", constant("Vwap"), tuidResolver);
-        final OrderFieldResolverImpl orderResolver = new OrderFieldResolverImpl();
-        final ExprContext orderCtx = createOrderExprContext(orderResolver);
-        final SampleOrderInstruction order1 = new SampleOrderInstruction(123L, 1);
-        orderResolver.setOrder(order1);
-
-        // add "order" context inside "test" context
-        localTestCtx.defineExprContext("order", () -> orderCtx);
-        // add "test" context at the top level
-        ctx.defineExprContext("test", localTestCtx);
-
-        return ctx.getAsExprContext();
     }
 
     private interface TuidResolver {
@@ -379,24 +398,5 @@ class ExprUserFunctionsTest extends ExprEvaluatorTestBase {
         public ByteBuffer getTuidByClientId(final int clientId) {
             return constant("CLIENT" + clientId);
         }
-    }
-
-    private static MutableExprContext createTestObjExprContext(final String nodeName, final ByteBuffer algoType, final TuidResolver tuidResolver) {
-        final MutableExprContext ctx = ExprContextFactory.createLocalContext();
-        ctx.defineString("nodeName", () -> nodeName);
-        ctx.defineByteBuffer("algoType", () -> algoType);
-
-        ctx.defineFunction("tuidByClientId", (result, clientId) ->
-                result.accept(tuidResolver.getTuidByClientId((int)clientId.getAsLong()))
-        );
-        return ctx;
-    }
-
-    private static ExprContext createOrderExprContext(final OrderFieldResolver orderResolver) {
-        final MutableExprContext ctx = ExprContextFactory.createLocalContext();
-        ctx.defineLong("productId", orderResolver::productId);
-        ctx.defineByteBuffer("ric", orderResolver::ric);
-        ctx.defineByteBuffer("tuid", orderResolver::tuid);
-        return ctx.getAsExprContext();
     }
 }

@@ -6,7 +6,8 @@ import com.tereigo.expr.domains.falcon.FalconDataProvider;
 
 public final class FalconExprDomains {
 
-    private FalconExprDomains() { }
+    private FalconExprDomains() {
+    }
 
     public static MutableExprContext falcon(final FalconDataProvider falcon) {
         return FalconExprContextBuilder.start().falcon(falcon).build();

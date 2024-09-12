@@ -14,9 +14,9 @@ import java.util.function.DoubleSupplier;
  * Simple example of Expr usage
  * This application shows how to transform a set of numbers by applying the arbitrary expression:
  * 1, 2, 3 -> apply "x * 2" expression -> 2, 4, 6
- *
+ * <p>
  * Sample output:
- *
+ * <p>
  * Please enter a list of double numbers separated by comma (example: 1,15.0,-128):
  * 1,15, 35.0, -24
  * Please enter a transformation expression where 'x' is used as a variable:

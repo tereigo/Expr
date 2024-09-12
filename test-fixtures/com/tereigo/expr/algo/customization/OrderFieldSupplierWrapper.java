@@ -13,14 +13,14 @@ public class OrderFieldSupplierWrapper implements OrderFieldResolver {
     private OrderFieldSupplier order;
     private ByteBuffer tuid;
 
+    public OrderFieldSupplier getOrder() {
+        return order;
+    }
+
     public void setOrder(final OrderFieldSupplier order) {
         this.order = order;
         ByteBufferUtils.setToEmpty(this.ricHolder);
         this.tuid = null;
-    }
-
-    public OrderFieldSupplier getOrder() {
-        return order;
     }
 
     @Override

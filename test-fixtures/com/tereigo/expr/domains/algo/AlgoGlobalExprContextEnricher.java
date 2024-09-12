@@ -14,8 +14,8 @@ public class AlgoGlobalExprContextEnricher implements ExprContextEnricher {
     }
 
     @Override
-    public void enrich(MutableExprContext ctx) {
-      ctx.defineFunction("algoNodeType", result -> result.accept(algoDataProvider.getAlgoType()));
+    public void enrich(final MutableExprContext ctx) {
+        ctx.defineFunction("algoNodeType", result -> result.accept(algoDataProvider.getAlgoType()));
     }
 
 }

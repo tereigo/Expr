@@ -10,6 +10,14 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 
 class ExprPrinterTest extends ExprEvaluatorTestBase {
 
+    private static ExprContext getEvaluationContext() {
+        final MutableExprContext ctx = ExprContextFactory.createGlobalContext();
+        ctx.defineFunction("func", (result, arg1, arg2) -> result.accept(3.14));
+        ctx.defineLong("$id", () -> 123L);
+        ctx.defineLong("$curTime", () -> 123L);
+        return ctx.getAsExprContext();
+    }
+
     @Test
     void testAstHierarchyPrinter() {
         final AstHierarchyPrinter printer = new AstHierarchyPrinter();
@@ -155,14 +163,6 @@ class ExprPrinterTest extends ExprEvaluatorTestBase {
                 "│   ├── 3\n" +
                 "│   │\n" +
                 "│   ├── 4", printer.print(ExprCompiler.compile("5 + ((1 == 2) ? 3 : 4)")));
-    }
-
-    private static ExprContext getEvaluationContext() {
-        final MutableExprContext ctx = ExprContextFactory.createGlobalContext();
-        ctx.defineFunction("func", (result, arg1, arg2) -> result.accept(3.14));
-        ctx.defineLong("$id", () -> 123L);
-        ctx.defineLong("$curTime", () -> 123L);
-        return ctx.getAsExprContext();
     }
 
     @Test

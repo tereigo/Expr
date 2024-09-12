@@ -2,9 +2,10 @@ package com.tereigo.expr.unused;
 
 final class ExprUtils {
 
-    private ExprUtils() {}
+    private ExprUtils() {
+    }
 
-    public static String stringify(Object object) {
+    public static String stringify(final Object object) {
         if (object instanceof String) {
             return "\"" + object + "\"";
         }

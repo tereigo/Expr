@@ -16,7 +16,8 @@ import com.tereigo.expr.variant.VariantUtils;
 final class ExprContextNativeEnricher implements ExprContextEnricher {
     static final ExprContextEnricher INSTANCE = new ExprContextNativeEnricher();
 
-    private ExprContextNativeEnricher() { }
+    private ExprContextNativeEnricher() {
+    }
 
     public static ExprContextEnricher get() {
         return INSTANCE;

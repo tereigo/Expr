@@ -21,17 +21,16 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 
 class VwapOrderExprContextTest {
-    @Mock
-    ReferenceDataCache refData;
-
-    private OrderFieldResolverImpl orderFieldResolver;
-    private ExprContext ctx;
     private final TestVwapOrder order1 = TestVwapOrder.create()
             .withProductId(123).withClientId(1).withVolumeLimit(0.1);
     private final TestVwapOrder order2 = TestVwapOrder.create()
             .withProductId(124).withClientId(2).withVolumeLimit(0.2);
     private final TestVwapOrder order3 = TestVwapOrder.create()
             .withProductId(124).withClientId(3).withVolumeLimit(0.2);
+    @Mock
+    ReferenceDataCache refData;
+    private OrderFieldResolverImpl orderFieldResolver;
+    private ExprContext ctx;
 
     @BeforeEach
     void setUp() {

@@ -9,16 +9,16 @@ import com.tereigo.expr.falcon.msg.VwapOrderInstMsgRo;
 public final class VwapOrderExprContextEnricher implements ExprContextEnricher {
     private final OrderFieldResolver orderResolver;
 
-    public VwapOrderExprContextEnricher(OrderFieldResolver orderResolver) {
+    public VwapOrderExprContextEnricher(final OrderFieldResolver orderResolver) {
         this.orderResolver = orderResolver;
     }
 
-    @Override
-    public void enrich(MutableExprContext ctx) {
-        ctx.defineFunction("volumeLimit", result -> result.accept(toVwap(orderResolver).getVolumeLimit()));
+    private static VwapOrderInstMsgRo toVwap(final OrderFieldResolver orderResolver) {
+        return (VwapOrderInstMsgRo) ((OrderFieldResolverImpl) orderResolver).getOrder();
     }
 
-    private static VwapOrderInstMsgRo toVwap(OrderFieldResolver orderResolver) {
-        return (VwapOrderInstMsgRo)((OrderFieldResolverImpl)orderResolver).getOrder();
+    @Override
+    public void enrich(final MutableExprContext ctx) {
+        ctx.defineFunction("volumeLimit", result -> result.accept(toVwap(orderResolver).getVolumeLimit()));
     }
 }

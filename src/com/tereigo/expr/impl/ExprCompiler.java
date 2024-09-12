@@ -7,7 +7,8 @@ import java.util.List;
 
 final class ExprCompiler {
 
-    private ExprCompiler() {}
+    private ExprCompiler() {
+    }
 
     static ASTRoot compile(final String source) {
         return compile(ByteBufferUtils.constant(source));

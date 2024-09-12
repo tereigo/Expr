@@ -6,23 +6,23 @@ import com.tereigo.expr.MutableExprContext;
 /*
   Provides access to global functions
  */
-public class FalconLocalExprContextEnricher  implements ExprContextEnricher {
-  private final FalconDataProvider falcon;
+public class FalconLocalExprContextEnricher implements ExprContextEnricher {
+    private final FalconDataProvider falcon;
 
-  public FalconLocalExprContextEnricher(final FalconDataProvider falcon) {
-    this.falcon = falcon;
-  }
+    public FalconLocalExprContextEnricher(final FalconDataProvider falcon) {
+        this.falcon = falcon;
+    }
 
-  @Override
-  public void enrich(MutableExprContext ctx) {
-    ctx.defineLong("engineTimeMs", falcon::getEngineTimeMs);
+    @Override
+    public void enrich(final MutableExprContext ctx) {
+        ctx.defineLong("engineTimeMs", falcon::getEngineTimeMs);
 
-    ctx.defineDouble("random", falcon::getNextRandom);
+        ctx.defineDouble("random", falcon::getNextRandom);
 
-    ctx.defineFunction("tuidByClientId", (result, clientId) ->
-            result.accept(falcon.getTuidByClientId((int)clientId.getAsLong()))
-    );
+        ctx.defineFunction("tuidByClientId", (result, clientId) ->
+                result.accept(falcon.getTuidByClientId((int) clientId.getAsLong()))
+        );
 
-    ctx.defineString("nodeName", falcon::getNodeName);
-  }
+        ctx.defineString("nodeName", falcon::getNodeName);
+    }
 }

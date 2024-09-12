@@ -44,7 +44,7 @@ class CustomizationEngineTest {
         when(refData.getRicByProductId(124)).thenReturn(constant("BT.L"));
         when(refData.getRicByProductId(125)).thenReturn(constant("TSCO.L"));
 
-        FalconDataProvider falcon = new FalconDataProvider(timeProvider, randomProvider, refData, "FALCON_ALGO_NODE1");
+        final FalconDataProvider falcon = new FalconDataProvider(timeProvider, randomProvider, refData, "FALCON_ALGO_NODE1");
 
         reportHandler = new TestCustomizationReportHandler();
         errorHandler = new TestCustomizationErrorHandler();
@@ -73,48 +73,48 @@ class CustomizationEngineTest {
     }
 
     private void vwapNodeTests() {
-        TestOrderFieldSupplier order1 = new TestOrderFieldSupplier(123, 1);
+        final TestOrderFieldSupplier order1 = new TestOrderFieldSupplier(123, 1);
         engine.onNewOrder(order1);
         assertEquals("action1,action5,action6", order1.actions());
         assertEquals("action1,action5,action6", reportHandler.reportAppliedRules);
 
-        TestOrderFieldSupplier order2 = new TestOrderFieldSupplier(124, 1);
+        final TestOrderFieldSupplier order2 = new TestOrderFieldSupplier(124, 1);
         engine.onNewOrder(order2);
         assertEquals("action1,action7", order2.actions());
         assertEquals("action1,action7", reportHandler.reportAppliedRules);
 
-        TestOrderFieldSupplier order3 = new TestOrderFieldSupplier(125, 1);
+        final TestOrderFieldSupplier order3 = new TestOrderFieldSupplier(125, 1);
         engine.onNewOrder(order3);
         assertEquals("action1,action6", order3.actions());
         assertEquals("action1,action6", reportHandler.reportAppliedRules);
 
-        TestOrderFieldSupplier order4 = new TestOrderFieldSupplier(123, 2);
+        final TestOrderFieldSupplier order4 = new TestOrderFieldSupplier(123, 2);
         engine.onNewOrder(order4);
         assertEquals("action2,action3,action8,action9", order4.actions());
         assertEquals("action2,action3,action8,action9", reportHandler.reportAppliedRules);
 
-        TestOrderFieldSupplier order5 = new TestOrderFieldSupplier(124, 2);
+        final TestOrderFieldSupplier order5 = new TestOrderFieldSupplier(124, 2);
         engine.onNewOrder(order5);
         assertEquals("action2,action3,action10", order5.actions());
         assertEquals("action2,action3,action10", reportHandler.reportAppliedRules);
 
-        TestOrderFieldSupplier order6 = new TestOrderFieldSupplier(125, 2);
+        final TestOrderFieldSupplier order6 = new TestOrderFieldSupplier(125, 2);
         engine.onNewOrder(order6);
         assertEquals("action2,action3,action9", order6.actions());
         assertEquals("action2,action3,action9", reportHandler.reportAppliedRules);
 
         // no actions for CLIENT3 because refData returns "null" for getTuidByClientId(3)
-        TestOrderFieldSupplier order7 = new TestOrderFieldSupplier(123, 3);
+        final TestOrderFieldSupplier order7 = new TestOrderFieldSupplier(123, 3);
         engine.onNewOrder(order7);
         assertEquals("", order7.actions());
         assertEquals("", reportHandler.reportAppliedRules);
 
-        TestOrderFieldSupplier order8 = new TestOrderFieldSupplier(124, 3);
+        final TestOrderFieldSupplier order8 = new TestOrderFieldSupplier(124, 3);
         engine.onNewOrder(order8);
         assertEquals("", order8.actions());
         assertEquals("", reportHandler.reportAppliedRules);
 
-        TestOrderFieldSupplier order9 = new TestOrderFieldSupplier(125, 3);
+        final TestOrderFieldSupplier order9 = new TestOrderFieldSupplier(125, 3);
         engine.onNewOrder(order9);
         assertEquals("", order9.actions());
         assertEquals("", reportHandler.reportAppliedRules);
@@ -141,48 +141,48 @@ class CustomizationEngineTest {
     }
 
     void povNodeTests() {
-        TestOrderFieldSupplier order1 = new TestOrderFieldSupplier(123, 1);
+        final TestOrderFieldSupplier order1 = new TestOrderFieldSupplier(123, 1);
         engine.onNewOrder(order1);
         assertEquals("action1,action15,action16,action17", order1.actions());
         assertEquals("action1,action15,action16,action17", reportHandler.reportAppliedRules);
 
-        TestOrderFieldSupplier order2 = new TestOrderFieldSupplier(124, 1);
+        final TestOrderFieldSupplier order2 = new TestOrderFieldSupplier(124, 1);
         engine.onNewOrder(order2);
         assertEquals("action1,action15,action18", order2.actions());
         assertEquals("action1,action15,action18", reportHandler.reportAppliedRules);
 
-        TestOrderFieldSupplier order3 = new TestOrderFieldSupplier(125, 1);
+        final TestOrderFieldSupplier order3 = new TestOrderFieldSupplier(125, 1);
         engine.onNewOrder(order3);
         assertEquals("action1,action15,action17", order3.actions());
         assertEquals("action1,action15,action17", reportHandler.reportAppliedRules);
 
-        TestOrderFieldSupplier order4 = new TestOrderFieldSupplier(123, 2);
+        final TestOrderFieldSupplier order4 = new TestOrderFieldSupplier(123, 2);
         engine.onNewOrder(order4);
         assertEquals("action2,action4,action19,action20,action21", order4.actions());
         assertEquals("action2,action4,action19,action20,action21", reportHandler.reportAppliedRules);
 
-        TestOrderFieldSupplier order5 = new TestOrderFieldSupplier(124, 2);
+        final TestOrderFieldSupplier order5 = new TestOrderFieldSupplier(124, 2);
         engine.onNewOrder(order5);
         assertEquals("action2,action4,action19,action22", order5.actions());
         assertEquals("action2,action4,action19,action22", reportHandler.reportAppliedRules);
 
-        TestOrderFieldSupplier order6 = new TestOrderFieldSupplier(125, 2);
+        final TestOrderFieldSupplier order6 = new TestOrderFieldSupplier(125, 2);
         engine.onNewOrder(order6);
         assertEquals("action2,action4,action19,action21", order6.actions());
         assertEquals("action2,action4,action19,action21", reportHandler.reportAppliedRules);
 
         // no actions for CLIENT3 because refData returns "null" for getTuidByClientId(3)
-        TestOrderFieldSupplier order7 = new TestOrderFieldSupplier(123, 3);
+        final TestOrderFieldSupplier order7 = new TestOrderFieldSupplier(123, 3);
         engine.onNewOrder(order7);
         assertEquals("", order7.actions());
         assertEquals("", reportHandler.reportAppliedRules);
 
-        TestOrderFieldSupplier order8 = new TestOrderFieldSupplier(124, 3);
+        final TestOrderFieldSupplier order8 = new TestOrderFieldSupplier(124, 3);
         engine.onNewOrder(order8);
         assertEquals("", order8.actions());
         assertEquals("", reportHandler.reportAppliedRules);
 
-        TestOrderFieldSupplier order9 = new TestOrderFieldSupplier(125, 3);
+        final TestOrderFieldSupplier order9 = new TestOrderFieldSupplier(125, 3);
         engine.onNewOrder(order9);
         assertEquals("", order9.actions());
         assertEquals("", reportHandler.reportAppliedRules);
@@ -253,12 +253,12 @@ class CustomizationEngineTest {
         assertEquals(15, engine.getRulesCount());
         assertEquals(3, errorHandler.errors.size());
 
-        TestOrderFieldSupplier order1 = new TestOrderFieldSupplier(123, 1);
+        final TestOrderFieldSupplier order1 = new TestOrderFieldSupplier(123, 1);
         engine.onNewOrder(order1);
         assertEquals("action1,action5,action6", order1.actions());
         assertEquals(4, errorHandler.errors.size());
 
-        TestOrderFieldSupplier order2 = new TestOrderFieldSupplier(124, 1);
+        final TestOrderFieldSupplier order2 = new TestOrderFieldSupplier(124, 1);
         engine.onNewOrder(order2);
         assertEquals("action1,action7", order2.actions());
         assertEquals(5, errorHandler.errors.size());
@@ -324,17 +324,20 @@ class CustomizationEngineTest {
         engine.onAddRuleMsg(new AddRuleMsg("not(falcon.nodeName.isEmpty()) and not (isEmpty(algo.nodeType))", "algo.nodeType == \"TWAP\" and order.ric==\"BT.L\"", true, createAction("action27")));
     }
 
+    private TestCustomizationAction createAction(final String name) {
+        return new TestCustomizationAction(name);
+    }
 
     static class TestCustomizationErrorHandler implements CustomizationErrorHandler {
         final List<String> errors = new ArrayList<>();
 
         @Override
-        public void onNodeError(String ruleName, String msg) {
+        public void onNodeError(final String ruleName, final String msg) {
             errors.add(ruleName + ": " + msg);
         }
 
         @Override
-        public void onOrderError(String ruleName, OrderFieldSupplier order, String msg) {
+        public void onOrderError(final String ruleName, final OrderFieldSupplier order, final String msg) {
             errors.add(ruleName + ": " + msg);
         }
     }
@@ -349,7 +352,7 @@ class CustomizationEngineTest {
         }
 
         @Override
-        public void onAppliedRule(OrderFieldSupplier order, String ruleName, CustomizationAction action, long ruleActionResult) {
+        public void onAppliedRule(final OrderFieldSupplier order, final String ruleName, final CustomizationAction action, final long ruleActionResult) {
             if (!appliedRules.isEmpty()) {
                 appliedRules += ",";
             }
@@ -357,8 +360,8 @@ class CustomizationEngineTest {
         }
 
         @Override
-        public void onOrderReport(OrderFieldSupplier order, CharSequence appliedRules) {
-            StringBuilder sb = new StringBuilder();
+        public void onOrderReport(final OrderFieldSupplier order, final CharSequence appliedRules) {
+            final StringBuilder sb = new StringBuilder();
             for (int i = 0; i < appliedRules.length(); i++) {
                 sb.append(appliedRules.charAt(i));
             }
@@ -366,20 +369,16 @@ class CustomizationEngineTest {
         }
     }
 
-    private TestCustomizationAction createAction(String name) {
-        return new TestCustomizationAction(name);    
-    }
-
     static class TestCustomizationAction implements CustomizationAction {
         final String name;
 
-        TestCustomizationAction(String name) {
+        TestCustomizationAction(final String name) {
             this.name = name;
         }
 
         @Override
-        public long apply(final CustomizationParamsList result, Object orderObj) {
-            TestOrderFieldSupplier order = (TestOrderFieldSupplier)orderObj;
+        public long apply(final CustomizationParamsList result, final Object orderObj) {
+            final TestOrderFieldSupplier order = (TestOrderFieldSupplier) orderObj;
             order.applyAction(name);
             return 0;
         }

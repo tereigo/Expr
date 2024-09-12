@@ -9,33 +9,34 @@ public class TestVwapOrder implements VwapOrderInstMsgRo {
     private long price;
     private double volumeLimit;
 
-    private TestVwapOrder() {}
+    private TestVwapOrder() {
+    }
 
     public static TestVwapOrder create() {
         return new TestVwapOrder();
     }
 
-    public TestVwapOrder withProductId(long productId) {
+    public TestVwapOrder withProductId(final long productId) {
         this.productId = productId;
         return this;
     }
 
-    public TestVwapOrder withClientId(long clientId) {
+    public TestVwapOrder withClientId(final long clientId) {
         this.clientId = clientId;
         return this;
     }
 
-    public TestVwapOrder withQty(int qty) {
+    public TestVwapOrder withQty(final int qty) {
         this.qty = qty;
         return this;
     }
 
-    public TestVwapOrder withPrice(long price) {
+    public TestVwapOrder withPrice(final long price) {
         this.price = price;
         return this;
     }
 
-    public TestVwapOrder withVolumeLimit(double volumeLimit) {
+    public TestVwapOrder withVolumeLimit(final double volumeLimit) {
         this.volumeLimit = volumeLimit;
         return this;
     }

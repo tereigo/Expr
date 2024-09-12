@@ -568,7 +568,7 @@ class ExprEvaluatorTest extends ExprEvaluatorTestBase {
             final boolean bool = arg3.getAsBoolean();
             final String s = arg4.getAsString();
             final ByteBuffer bb = arg5.getAsByteBuffer();
-            result.accept(l > d && bool && !s.isEmpty() && ByteBufferUtils.startsWith(bb,"CLIENT"));
+            result.accept(l > d && bool && !s.isEmpty() && ByteBufferUtils.startsWith(bb, "CLIENT"));
         });
 
         final ExprContext ctx = mutCtx.getAsExprContext();

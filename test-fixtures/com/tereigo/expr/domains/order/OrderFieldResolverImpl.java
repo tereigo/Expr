@@ -9,18 +9,18 @@ import com.tereigo.expr.utils.ByteBufferUtils;
 import java.nio.ByteBuffer;
 
 public class OrderFieldResolverImpl implements OrderFieldResolver {
-    private EqOrderInstMsgRo order;
     private final ByteBuffer ricHolder = ByteBuffer.allocate(64);
+    private EqOrderInstMsgRo order;
     private ByteBuffer tuid;
+
+    public EqOrderInstMsgRo getOrder() {
+        return order;
+    }
 
     public void setOrder(final EqOrderInstMsgRo order) {
         this.order = order;
         ByteBufferUtils.setToEmpty(this.ricHolder);
         this.tuid = null;
-    }
-
-    public EqOrderInstMsgRo getOrder() {
-        return order;
     }
 
     @Override

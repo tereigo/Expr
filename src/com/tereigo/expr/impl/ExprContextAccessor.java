@@ -5,7 +5,8 @@ import com.tereigo.expr.MutableExprContext;
 
 public final class ExprContextAccessor {
 
-    private ExprContextAccessor() { }
+    private ExprContextAccessor() {
+    }
 
     public static MutableExprContext createEmpty(final ExprContextFactory.Pass ignoredPass) {
         return new ExprContextImpl();

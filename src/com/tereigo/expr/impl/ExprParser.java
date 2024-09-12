@@ -89,412 +89,412 @@ import static com.tereigo.expr.impl.TokenType.WITHIN;
 
 final class ExprParser {
 
-  private final List<Token> tokens;
-  private int current = 0;
+    private final List<Token> tokens;
+    private int current = 0;
 
-  ExprParser(final List<Token> tokens) {
-    this.tokens = tokens;
-  }
-
-  Expr parse() {
-    final Expr result = expression();
-    if (current < tokens.size() - 1) {
-      throw error(peek(), "Malformed expression: parsing ended prematurely");
-    }
-    return result;
-  }
-
-  // expression : logic_or
-  private Expr expression() {
-    return logic_or();
-  }
-
-  // logic_or   : logic_and ( "or" logic_and )* ;
-  private Expr logic_or() {
-    Expr expr = logic_and();
-
-    while (match(OR)) {
-      final Token operator = previous();
-      final Expr right = logic_and();
-      expr = new Expr.Logical(expr, operator, right);
+    ExprParser(final List<Token> tokens) {
+        this.tokens = tokens;
     }
 
-    return expr;
-  }
-
-  // logic_and  : ternary_if ( "and" in_operator )* ;
-  private Expr logic_and() {
-    Expr expr = ternary_if_operator();
-
-    while (match(AND)) {
-      final Token operator = previous();
-      final Expr right = in_operator();
-      expr = new Expr.Logical(expr, operator, right);
-    }
-
-    return expr;
-  }
-
-  // ternary_if : in_operator ( "?" expression ":" expression ) ;
-  private Expr ternary_if_operator() {
-    Expr expr = in_operator();
-
-    if (match(TERNARY_IF)) {
-      final Token operator = previous();
-      final Expr trueExpr = expression();
-      if (match(TERNARY_ELSE)) {
-        final Expr falseExpr = expression();
-        expr = new Expr.Ternary(operator, expr, trueExpr, falseExpr);
-      } else {
-        throw error(peek(), "Expect ':' after ternary ('?') operator");
-      }
-    }
-
-    return expr;
-  }
-
-  // in_operator: range_operator ( ( "in" | "not in" ) ) "[" expression ( "," expression )* "]" ) ;
-  private Expr in_operator() {
-    final Expr expr = range_operator();
-    // "not in"
-    if (peek().type == NOT && next(1) != null && next(1).type == IN) {
-      final Token not_operator = consume(NOT, "Expected NOT operator");
-      consume(IN, "Expected IN operator");
-      return new Expr.Unary(not_operator, parseInOperands(expr));
-    }
-    if (match(IN)) {
-      return parseInOperands(expr);
-    }
-    return expr;
-  }
-
-  private Expr.InOperator parseInOperands(final Expr expr) {
-    final Token operator = previous();
-    if (match(LEFT_BRACKET)) {
-      final List<Expr> values = list();
-      consume(RIGHT_BRACKET, "Expect ']' after '['");
-      validateInValues(values);
-      return new Expr.InOperator(expr, operator, values);
-    } else {
-      throw error(peek(), "Expect '[' after IN operator");
-    }
-  }
-
-  private void validateInValues(final List<Expr> values) {
-    ExprType type = null;
-    for (int i = 0; i < values.size(); i++) {
-      final Expr expr = values.get(i);
-      if (expr instanceof Expr.Literal) {
-        final Variant val = ((Expr.Literal)expr).result;
-        if (type == null) {
-          type = val.exprType();
-        } else {
-          if (!isTypesCompatible(type, val)) {
-            throw error(peek(), "Different value types in IN operator list: " + type + " and " + val.exprType());
-          }
+    private static boolean isTypesCompatible(final ExprType type, final Variant val) {
+        if ((type == ExprType.DOUBLE || type == ExprType.LONG) && VariantUtils.isNumber(val)) {
+            return true;
         }
-      }
-    }
-  }
-
-  private static boolean isTypesCompatible(final ExprType type, final Variant val) {
-    if ((type == ExprType.DOUBLE || type == ExprType.LONG) && VariantUtils.isNumber(val)) {
-      return true;
-    }
-    if ((type == ExprType.STRING || type == ExprType.BYTE_BUFFER) && VariantUtils.isStringOrByteBuffer(val)) {
-      return true;
-    }
-    return false;
-  }
-
-  private List<Expr> list() {
-    final List<Expr> values = new ArrayList<>();
-    do {
-      final Expr entry = expression();
-      values.add(entry);
-    } while (match(COMMA));
-    return values;
-  }
-
-  // range_operator: equality ( ("within" | "between" | "not within" | "not between") "[" expression "," expression "]" ) ;
-  private Expr range_operator() {
-    final Expr expr = equality();
-
-    // "not within/between"
-    if (peek().type == NOT && next(1) != null && (next(1).type == WITHIN || next(1).type == BETWEEN)) {
-      final Token not_operator = consume(NOT, "Expected NOT operator");
-      match(WITHIN, BETWEEN);
-      return new Expr.Unary(not_operator, parseRangeOperands(expr));
-    }
-    if (match(WITHIN, BETWEEN)) {
-      return parseRangeOperands(expr);
-    }
-    return expr;
-  }
-
-  private Expr.BaseExpr parseRangeOperands(final Expr expr) {
-    final Token operator = previous();
-    if (match(LEFT_BRACKET)) {
-      final Expr val1 = range_entry();
-      consume(COMMA, "Expect 2 values separated by ',' in range operator");
-      final Expr val2 = range_entry();
-      consume(RIGHT_BRACKET, "Expect ']' after '[' and 2 numbers");
-      if (operator.type == WITHIN) {
-        return new Expr.WithinOperator(expr, operator, val1, val2);
-      } else {
-        return new Expr.BetweenOperator(expr, operator, val1, val2);
-      }
-    } else {
-      throw error(peek(), "Expect '[' after WITHIN/BETWEEN operator");
-    }
-  }
-
-  private Expr range_entry() {
-    final Expr expr = expression();
-    if (expr instanceof Expr.Literal) {
-      final Variant val = ((Expr.Literal)expr).result;
-      if (!VariantUtils.isNumber(val)) {
-        throw error(peek(), "Expect a number inside '[]' for range WITHIN/BETWEEN operator");
-      }
-    }
-    return expr;
-  }
-
-  // equality   : comparison ( ( "!=" | "==" ) comparison )* ;
-  private Expr equality() {
-    Expr expr = comparison();
-
-    while (match(NOT_EQUAL, EQUAL_EQUAL)) {
-      final Token operator = previous();
-      final Expr right = comparison();
-      expr = new Expr.Binary(expr, operator, right);
-    }
-
-    return expr;
-  }
-
-  // comparison : term ( ( ">" | ">=" | "<" | "<=" ) term )* ;
-  private Expr comparison() {
-    Expr expr = term();
-
-    while (match(GREATER, GREATER_EQUAL, LESS, LESS_EQUAL)) {
-      final Token operator = previous();
-      final Expr right = term();
-      expr = new Expr.Binary(expr, operator, right);
-    }
-
-    return expr;
-  }
-
-  // term       : factor ( ( "-" | "+" ) factor )* ;
-  private Expr term() {
-    Expr expr = factor();
-
-    while (match(MINUS, PLUS)) {
-      final Token operator = previous();
-      final Expr right = factor();
-      // don't allow double minus syntax ("5 -- 2") since it's confusing
-      // it's possible however to write: "5 - (-2)"
-      if (operator.type == MINUS && right instanceof Expr.Unary) {
-        throw error(previous(), "Double minus syntax ('--') is not supported as erroneous");
-      }
-      expr = new Expr.Binary(expr, operator, right);
-    }
-
-    return expr;
-  }
-
-  // factor     : unary_minus ( ( "/" | "*" | "%" ) unary_minus )* ;
-  private Expr factor() {
-    Expr expr = unary_minus();
-
-    while (match(DIV, MUL, MODULUS)) {
-      final Token operator = previous();
-      final Expr right = unary_minus();
-      expr = new Expr.Binary(expr, operator, right);
-    }
-
-    return expr;
-  }
-
-  // unary_minus: ( "-" call ) | unary_not ;
-  private Expr unary_minus() {
-    if (match(MINUS)) {
-      final Token operator = previous();
-      final Expr right = call();
-      if (operator.type == MINUS && right instanceof Expr.Literal) {
-        final Variant val = ((Expr.Literal)right).result;
-        if (!VariantUtils.isNumber(val)) {
-          throw error(peek(), "Unary minus is applicable to numbers only");
+        if ((type == ExprType.STRING || type == ExprType.BYTE_BUFFER) && VariantUtils.isStringOrByteBuffer(val)) {
+            return true;
         }
-      }
-      return new Expr.Unary(operator, right);
+        return false;
     }
-    return unary_not();
-  }
 
-  // unary_not  : ( "!" "(" expression ")" ) | call;
-  private Expr unary_not() {
-    if (match(NOT)) {
-      final Token operator = previous();
-      if (match(LEFT_PAREN)) {
-        final Expr right = expression();
-        consume(RIGHT_PAREN, "Expect ')' after '('");
-        return new Expr.Unary(operator, right);
-      } else {
-        throw error(peek(), "Operator NOT should be applied to the expression in parens '()'");
-      }
-    }
-    return call();
-  }
-
-  // call       : primary ( "(" arguments? ")" | "." IDENTIFIER "(" arguments? ")" )* ;
-  private Expr call() {
-    Expr expr = primary();
-    while (true) {
-      if (match(LEFT_PAREN)) {
-        if (!(expr instanceof Expr.Identifier)) {
-          throw error(previous(2), "Function name should be an identifier");
+    Expr parse() {
+        final Expr result = expression();
+        if (current < tokens.size() - 1) {
+            throw error(peek(), "Malformed expression: parsing ended prematurely");
         }
-        final List<Expr> args = arguments(5);
-        expr = new Expr.Call(((Expr.Identifier) expr).operator, args);
-      } else if (match(DOT)) {
-        final Token name = consume(IDENTIFIER, "Expect function name after '.'");
-        if (peek().type == LEFT_PAREN) {
-          consume(LEFT_PAREN, "Expect '(' after '.'function_name");
-          final List<Expr> args = arguments(4);
-          expr = new Expr.ObjectCall(expr, name, args);
-        } else {
-          expr = new Expr.ObjectCall(expr, name, Collections.emptyList());
+        return result;
+    }
+
+    // expression : logic_or
+    private Expr expression() {
+        return logic_or();
+    }
+
+    // logic_or   : logic_and ( "or" logic_and )* ;
+    private Expr logic_or() {
+        Expr expr = logic_and();
+
+        while (match(OR)) {
+            final Token operator = previous();
+            final Expr right = logic_and();
+            expr = new Expr.Logical(expr, operator, right);
         }
-      } else {
-        break;
-      }
-    }
-    return expr;
-  }
 
-  // arguments  : expression ( "," expression )* ;
-  private List<Expr> arguments(final int maxArgs) {
-    final List<Expr> args = new ArrayList<>(maxArgs);
-    if (!check(RIGHT_PAREN)) {
-      do {
-        if (args.size() >= maxArgs) {
-          throw error(peek(), "Can't have more than " + maxArgs + " arguments");
-        }
-        args.add(expression());
-      } while (match(COMMA));
-    }
-
-    consume(RIGHT_PAREN, "Expect ')' after arguments");
-
-    return args;
-  }
-
-  // primary    : BOOLEAN | DOUBLE_NUMBER | LONG_NUMBER | STRING | IDENTIFIER | "(" expression ")" ;
-  private Expr primary() {
-    if (match(FALSE)) {
-      return Expr.Literal.BOOL_FALSE;
-    }
-    if (match(TRUE)) {
-      return Expr.Literal.BOOL_TRUE;
-    }
-    if (match(MATH_PI)) {
-      return Expr.Literal.PI;
-    }
-    if (match(MATH_E)) {
-      return Expr.Literal.E;
-    }
-
-    if (match(DOUBLE_NUMBER)) {
-      return new Expr.Literal((double)previous().literal);
-    } else if (match(LONG_NUMBER)) {
-      return new Expr.Literal((long)previous().literal);
-    } else if (match(STRING)) {
-      return new Expr.Literal((String)previous().literal);
-    }
-
-    if (match(IDENTIFIER)) {
-      return new Expr.Identifier(previous());
-    }
-
-    if (match(LEFT_PAREN)) {
-      final Expr expr = expression();
-      consume(RIGHT_PAREN, "Expect ')' after expression");
-      // this is to handle this example: "5 - (-2)", the expected result is 7
-      // in this case if we remove grouping then we'll end up with "5 -- 2" and this double minus syntax is not allowed
-      // hence we have to preserve grouping for such case
-      if (expr instanceof Expr.Unary) {
-        final Token token = ((Expr.Unary) expr).operator;
-        if (token.type == MINUS) {
-          return new Expr.Grouping(expr);
-        } else {
-          return expr;
-        }
-      } else {
         return expr;
-      }
     }
 
-    throw error(peek(), "Expect expression");
-  }
+    // logic_and  : ternary_if ( "and" in_operator )* ;
+    private Expr logic_and() {
+        Expr expr = ternary_if_operator();
 
-  private boolean match(final TokenType... types) {
-    for (final TokenType type : types) {
-      if (check(type)) {
-        advance();
-        return true;
-      }
+        while (match(AND)) {
+            final Token operator = previous();
+            final Expr right = in_operator();
+            expr = new Expr.Logical(expr, operator, right);
+        }
+
+        return expr;
     }
-    return false;
-  }
 
-  private Token consume(final TokenType type, final String message) {
-    if (check(type)) {
-      return advance();
+    // ternary_if : in_operator ( "?" expression ":" expression ) ;
+    private Expr ternary_if_operator() {
+        Expr expr = in_operator();
+
+        if (match(TERNARY_IF)) {
+            final Token operator = previous();
+            final Expr trueExpr = expression();
+            if (match(TERNARY_ELSE)) {
+                final Expr falseExpr = expression();
+                expr = new Expr.Ternary(operator, expr, trueExpr, falseExpr);
+            } else {
+                throw error(peek(), "Expect ':' after ternary ('?') operator");
+            }
+        }
+
+        return expr;
     }
-    throw error(peek(), message);
-  }
 
-  private boolean check(final TokenType type) {
-    if (isAtEnd()) {
-      return false;
+    // in_operator: range_operator ( ( "in" | "not in" ) ) "[" expression ( "," expression )* "]" ) ;
+    private Expr in_operator() {
+        final Expr expr = range_operator();
+        // "not in"
+        if (peek().type == NOT && next(1) != null && next(1).type == IN) {
+            final Token not_operator = consume(NOT, "Expected NOT operator");
+            consume(IN, "Expected IN operator");
+            return new Expr.Unary(not_operator, parseInOperands(expr));
+        }
+        if (match(IN)) {
+            return parseInOperands(expr);
+        }
+        return expr;
     }
-    return peek().type == type;
-  }
 
-  private Token advance() {
-    if (!isAtEnd()) {
-      current++;
+    private Expr.InOperator parseInOperands(final Expr expr) {
+        final Token operator = previous();
+        if (match(LEFT_BRACKET)) {
+            final List<Expr> values = list();
+            consume(RIGHT_BRACKET, "Expect ']' after '['");
+            validateInValues(values);
+            return new Expr.InOperator(expr, operator, values);
+        } else {
+            throw error(peek(), "Expect '[' after IN operator");
+        }
     }
-    return previous();
-  }
 
-  private boolean isAtEnd() {
-    return peek().type == EOF;
-  }
-
-  private Token peek() {
-    return tokens.get(current);
-  }
-
-  private Token next(final int forward) {
-    if (current + forward >= tokens.size()) {
-      return null;
+    private void validateInValues(final List<Expr> values) {
+        ExprType type = null;
+        for (int i = 0; i < values.size(); i++) {
+            final Expr expr = values.get(i);
+            if (expr instanceof Expr.Literal) {
+                final Variant val = ((Expr.Literal) expr).result;
+                if (type == null) {
+                    type = val.exprType();
+                } else {
+                    if (!isTypesCompatible(type, val)) {
+                        throw error(peek(), "Different value types in IN operator list: " + type + " and " + val.exprType());
+                    }
+                }
+            }
+        }
     }
-    return tokens.get(current + forward);
-  }
 
-  private Token previous() {
-    return previous(1);
-  }
+    private List<Expr> list() {
+        final List<Expr> values = new ArrayList<>();
+        do {
+            final Expr entry = expression();
+            values.add(entry);
+        } while (match(COMMA));
+        return values;
+    }
 
-  private Token previous(final int back) {
-    return tokens.get(current - back);
-  }
+    // range_operator: equality ( ("within" | "between" | "not within" | "not between") "[" expression "," expression "]" ) ;
+    private Expr range_operator() {
+        final Expr expr = equality();
 
-  private ParseError error(final Token token, final String message) {
-    return new ParseError(token.line, token.pos + 1, message);
-  }
+        // "not within/between"
+        if (peek().type == NOT && next(1) != null && (next(1).type == WITHIN || next(1).type == BETWEEN)) {
+            final Token not_operator = consume(NOT, "Expected NOT operator");
+            match(WITHIN, BETWEEN);
+            return new Expr.Unary(not_operator, parseRangeOperands(expr));
+        }
+        if (match(WITHIN, BETWEEN)) {
+            return parseRangeOperands(expr);
+        }
+        return expr;
+    }
+
+    private Expr.BaseExpr parseRangeOperands(final Expr expr) {
+        final Token operator = previous();
+        if (match(LEFT_BRACKET)) {
+            final Expr val1 = range_entry();
+            consume(COMMA, "Expect 2 values separated by ',' in range operator");
+            final Expr val2 = range_entry();
+            consume(RIGHT_BRACKET, "Expect ']' after '[' and 2 numbers");
+            if (operator.type == WITHIN) {
+                return new Expr.WithinOperator(expr, operator, val1, val2);
+            } else {
+                return new Expr.BetweenOperator(expr, operator, val1, val2);
+            }
+        } else {
+            throw error(peek(), "Expect '[' after WITHIN/BETWEEN operator");
+        }
+    }
+
+    private Expr range_entry() {
+        final Expr expr = expression();
+        if (expr instanceof Expr.Literal) {
+            final Variant val = ((Expr.Literal) expr).result;
+            if (!VariantUtils.isNumber(val)) {
+                throw error(peek(), "Expect a number inside '[]' for range WITHIN/BETWEEN operator");
+            }
+        }
+        return expr;
+    }
+
+    // equality   : comparison ( ( "!=" | "==" ) comparison )* ;
+    private Expr equality() {
+        Expr expr = comparison();
+
+        while (match(NOT_EQUAL, EQUAL_EQUAL)) {
+            final Token operator = previous();
+            final Expr right = comparison();
+            expr = new Expr.Binary(expr, operator, right);
+        }
+
+        return expr;
+    }
+
+    // comparison : term ( ( ">" | ">=" | "<" | "<=" ) term )* ;
+    private Expr comparison() {
+        Expr expr = term();
+
+        while (match(GREATER, GREATER_EQUAL, LESS, LESS_EQUAL)) {
+            final Token operator = previous();
+            final Expr right = term();
+            expr = new Expr.Binary(expr, operator, right);
+        }
+
+        return expr;
+    }
+
+    // term       : factor ( ( "-" | "+" ) factor )* ;
+    private Expr term() {
+        Expr expr = factor();
+
+        while (match(MINUS, PLUS)) {
+            final Token operator = previous();
+            final Expr right = factor();
+            // don't allow double minus syntax ("5 -- 2") since it's confusing
+            // it's possible however to write: "5 - (-2)"
+            if (operator.type == MINUS && right instanceof Expr.Unary) {
+                throw error(previous(), "Double minus syntax ('--') is not supported as erroneous");
+            }
+            expr = new Expr.Binary(expr, operator, right);
+        }
+
+        return expr;
+    }
+
+    // factor     : unary_minus ( ( "/" | "*" | "%" ) unary_minus )* ;
+    private Expr factor() {
+        Expr expr = unary_minus();
+
+        while (match(DIV, MUL, MODULUS)) {
+            final Token operator = previous();
+            final Expr right = unary_minus();
+            expr = new Expr.Binary(expr, operator, right);
+        }
+
+        return expr;
+    }
+
+    // unary_minus: ( "-" call ) | unary_not ;
+    private Expr unary_minus() {
+        if (match(MINUS)) {
+            final Token operator = previous();
+            final Expr right = call();
+            if (operator.type == MINUS && right instanceof Expr.Literal) {
+                final Variant val = ((Expr.Literal) right).result;
+                if (!VariantUtils.isNumber(val)) {
+                    throw error(peek(), "Unary minus is applicable to numbers only");
+                }
+            }
+            return new Expr.Unary(operator, right);
+        }
+        return unary_not();
+    }
+
+    // unary_not  : ( "!" "(" expression ")" ) | call;
+    private Expr unary_not() {
+        if (match(NOT)) {
+            final Token operator = previous();
+            if (match(LEFT_PAREN)) {
+                final Expr right = expression();
+                consume(RIGHT_PAREN, "Expect ')' after '('");
+                return new Expr.Unary(operator, right);
+            } else {
+                throw error(peek(), "Operator NOT should be applied to the expression in parens '()'");
+            }
+        }
+        return call();
+    }
+
+    // call       : primary ( "(" arguments? ")" | "." IDENTIFIER "(" arguments? ")" )* ;
+    private Expr call() {
+        Expr expr = primary();
+        while (true) {
+            if (match(LEFT_PAREN)) {
+                if (!(expr instanceof Expr.Identifier)) {
+                    throw error(previous(2), "Function name should be an identifier");
+                }
+                final List<Expr> args = arguments(5);
+                expr = new Expr.Call(((Expr.Identifier) expr).operator, args);
+            } else if (match(DOT)) {
+                final Token name = consume(IDENTIFIER, "Expect function name after '.'");
+                if (peek().type == LEFT_PAREN) {
+                    consume(LEFT_PAREN, "Expect '(' after '.'function_name");
+                    final List<Expr> args = arguments(4);
+                    expr = new Expr.ObjectCall(expr, name, args);
+                } else {
+                    expr = new Expr.ObjectCall(expr, name, Collections.emptyList());
+                }
+            } else {
+                break;
+            }
+        }
+        return expr;
+    }
+
+    // arguments  : expression ( "," expression )* ;
+    private List<Expr> arguments(final int maxArgs) {
+        final List<Expr> args = new ArrayList<>(maxArgs);
+        if (!check(RIGHT_PAREN)) {
+            do {
+                if (args.size() >= maxArgs) {
+                    throw error(peek(), "Can't have more than " + maxArgs + " arguments");
+                }
+                args.add(expression());
+            } while (match(COMMA));
+        }
+
+        consume(RIGHT_PAREN, "Expect ')' after arguments");
+
+        return args;
+    }
+
+    // primary    : BOOLEAN | DOUBLE_NUMBER | LONG_NUMBER | STRING | IDENTIFIER | "(" expression ")" ;
+    private Expr primary() {
+        if (match(FALSE)) {
+            return Expr.Literal.BOOL_FALSE;
+        }
+        if (match(TRUE)) {
+            return Expr.Literal.BOOL_TRUE;
+        }
+        if (match(MATH_PI)) {
+            return Expr.Literal.PI;
+        }
+        if (match(MATH_E)) {
+            return Expr.Literal.E;
+        }
+
+        if (match(DOUBLE_NUMBER)) {
+            return new Expr.Literal((double) previous().literal);
+        } else if (match(LONG_NUMBER)) {
+            return new Expr.Literal((long) previous().literal);
+        } else if (match(STRING)) {
+            return new Expr.Literal((String) previous().literal);
+        }
+
+        if (match(IDENTIFIER)) {
+            return new Expr.Identifier(previous());
+        }
+
+        if (match(LEFT_PAREN)) {
+            final Expr expr = expression();
+            consume(RIGHT_PAREN, "Expect ')' after expression");
+            // this is to handle this example: "5 - (-2)", the expected result is 7
+            // in this case if we remove grouping then we'll end up with "5 -- 2" and this double minus syntax is not allowed
+            // hence we have to preserve grouping for such case
+            if (expr instanceof Expr.Unary) {
+                final Token token = ((Expr.Unary) expr).operator;
+                if (token.type == MINUS) {
+                    return new Expr.Grouping(expr);
+                } else {
+                    return expr;
+                }
+            } else {
+                return expr;
+            }
+        }
+
+        throw error(peek(), "Expect expression");
+    }
+
+    private boolean match(final TokenType... types) {
+        for (final TokenType type : types) {
+            if (check(type)) {
+                advance();
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private Token consume(final TokenType type, final String message) {
+        if (check(type)) {
+            return advance();
+        }
+        throw error(peek(), message);
+    }
+
+    private boolean check(final TokenType type) {
+        if (isAtEnd()) {
+            return false;
+        }
+        return peek().type == type;
+    }
+
+    private Token advance() {
+        if (!isAtEnd()) {
+            current++;
+        }
+        return previous();
+    }
+
+    private boolean isAtEnd() {
+        return peek().type == EOF;
+    }
+
+    private Token peek() {
+        return tokens.get(current);
+    }
+
+    private Token next(final int forward) {
+        if (current + forward >= tokens.size()) {
+            return null;
+        }
+        return tokens.get(current + forward);
+    }
+
+    private Token previous() {
+        return previous(1);
+    }
+
+    private Token previous(final int back) {
+        return tokens.get(current - back);
+    }
+
+    private ParseError error(final Token token, final String message) {
+        return new ParseError(token.line, token.pos + 1, message);
+    }
 
 }

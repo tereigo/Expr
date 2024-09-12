@@ -4,16 +4,16 @@ import com.tereigo.expr.variant.Variant;
 
 import static com.tereigo.expr.ExceptionUtils.getExceptionMsg;
 
-final class ExprEvaluatorInterpreter {
+abstract class ExprEvaluatorBase {
     private final String source;
     private final ExprInterpreter interpreter;
 
-    ExprEvaluatorInterpreter(final ASTRoot root) {
+    ExprEvaluatorBase(final ASTRoot root) {
         this.source = root.source();
         this.interpreter = new ExprInterpreter(root.expr());
     }
 
-    Variant evaluate(final ExprContext ctx) {
+    protected Variant evaluate(final ExprContext ctx) {
         try {
             return interpreter.evaluate(ctx);
         } catch (final RuntimeError err) {

@@ -214,7 +214,7 @@ final class ExprInterpreter implements Expr.Visitor<Variant> {
 
   @Override
   public Variant visitIdentifierExpr(final Expr.Identifier expr) {
-    final MutableVariant res = ctx.get(expr.operator.lexeme, expr.result);
+    final Variant res = ctx.get(expr.operator.lexeme, expr.result);
     if (res == null) {
       throw new RuntimeError(expr.operator, "Unknown identifier '" + expr.operator.lexeme + "'");
     }

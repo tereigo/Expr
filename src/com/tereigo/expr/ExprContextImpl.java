@@ -10,6 +10,7 @@ import com.tereigo.expr.function.Function4;
 import com.tereigo.expr.function.Function5;
 import com.tereigo.expr.function.StringSupplier;
 import com.tereigo.expr.variant.MutableVariant;
+import com.tereigo.expr.variant.Variant;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -23,7 +24,7 @@ final class ExprContextImpl implements ExprContext, MutableExprContext {
   private final Map<String, Object> functions = new HashMap<>();
 
   @Override
-  public MutableVariant get(String name, MutableVariant result) {
+  public Variant get(final String name, final MutableVariant result) {
     final Object funcObj = getFunction(name);
     if (funcObj == null) {
       return null;
@@ -33,79 +34,79 @@ final class ExprContextImpl implements ExprContext, MutableExprContext {
   }
 
   @Override
-  public Object getFunction(String name) {
+  public Object getFunction(final String name) {
     return functions.get(name);
   }
 
   @Override
-  public void defineLong(String name, LongSupplier supplier) {
+  public void defineLong(final String name, final LongSupplier supplier) {
     // we wrap all value providers into a function from 0 parameters (Function0)
     defineFunction(name, result -> result.accept(supplier.getAsLong()));
   }
 
   @Override
-  public void defineDouble(String name, DoubleSupplier supplier) {
+  public void defineDouble(final String name, final DoubleSupplier supplier) {
     defineFunction(name, result -> result.accept(supplier.getAsDouble()));
   }
 
   @Override
-  public void defineString(String name, StringSupplier supplier) {
+  public void defineString(final String name, final StringSupplier supplier) {
     defineFunction(name, result -> result.accept(supplier.getAsString()));
   }
 
   @Override
-  public void defineByteBuffer(String name, ByteBufferSupplier supplier) {
+  public void defineByteBuffer(final String name, final ByteBufferSupplier supplier) {
     defineFunction(name, result -> result.accept(supplier.getAsByteBuffer()));
   }
 
   @Override
-  public void defineBool(String name, BooleanSupplier supplier) {
+  public void defineBool(final String name, final BooleanSupplier supplier) {
     defineFunction(name, result -> result.accept(supplier.getAsBoolean()));
   }
 
   @Override
-  public void defineExprContext(String name, ExprContextSupplier supplier) {
+  public void defineExprContext(final String name, final ExprContextSupplier supplier) {
     defineFunction(name, result -> result.accept(supplier.getAsExprContext()));
   }
 
   @Override
-  public void defineFunction(String name, Function0 func) {
+  public void defineFunction(final String name, final Function0 func) {
     validateName(name);
     functions.put(name, func);
   }
 
   @Override
-  public void defineFunction(String name, Function1 func) {
+  public void defineFunction(final String name, final Function1 func) {
     validateName(name);
     functions.put(name, func);
   }
 
   @Override
-  public void defineFunction(String name, Function2 func) {
+  public void defineFunction(final String name, final Function2 func) {
     validateName(name);
     functions.put(name, func);
   }
 
   @Override
-  public void defineFunction(String name, Function3 func) {
+  public void defineFunction(final String name, final Function3 func) {
     validateName(name);
     functions.put(name, func);
   }
 
   @Override
-  public void defineFunction(String name, Function4 func) {
+  public void defineFunction(final String name, final Function4 func) {
     validateName(name);
     functions.put(name, func);
   }
 
   @Override
-  public void defineFunction(String name, Function5 func) {
+  public void defineFunction(final String name, final Function5 func) {
     validateName(name);
     functions.put(name, func);
   }
 
   @Override
-  public void addAlias(String name, String alias) {
+  public void addAlias(final String name, final String alias) {
     if (name == null || alias == null) {
       throw new RuntimeException("Empty name or alias");
     }
@@ -121,8 +122,8 @@ final class ExprContextImpl implements ExprContext, MutableExprContext {
   }
 
   @Override
-  public void enrich(ExprContextEnricher... enrichers) {
-    for (ExprContextEnricher enricher : enrichers) {
+  public void enrich(final ExprContextEnricher... enrichers) {
+    for (final ExprContextEnricher enricher : enrichers) {
       enricher.enrich(this);
     }
   }

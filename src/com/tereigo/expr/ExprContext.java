@@ -1,6 +1,7 @@
 package com.tereigo.expr;
 
 import com.tereigo.expr.variant.MutableVariant;
+import com.tereigo.expr.variant.Variant;
 
 public interface ExprContext {
 
@@ -9,7 +10,7 @@ public interface ExprContext {
     Value can be of any ExprType
     Returns "null" if not found
    */
-  MutableVariant get(String name, MutableVariant result);
+  Variant get(String name, MutableVariant result);
 
   /*
     Retrieve external function by name

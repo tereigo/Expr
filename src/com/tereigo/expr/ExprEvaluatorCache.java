@@ -2,6 +2,7 @@ package com.tereigo.expr;
 
 import com.sun.istack.internal.NotNull;
 import com.tereigo.expr.annotations.GeneratesGarbage;
+import com.tereigo.expr.impl.ExprEvaluatorFactory;
 import com.tereigo.expr.utils.ByteBufferUtils;
 
 import java.nio.ByteBuffer;
@@ -9,7 +10,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 // TODO: test
-final class ExprEvaluatorCache {
+public final class ExprEvaluatorCache {
     private final Map<ByteBuffer, ExprEvaluatorWithContext> cache = new HashMap<>();
 
     @GeneratesGarbage

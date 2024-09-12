@@ -3,8 +3,8 @@ package com.tereigo.expr.transformer;
 import com.tereigo.expr.ExprContext;
 import com.tereigo.expr.ExprContextFactory;
 import com.tereigo.expr.ExprEvaluator;
-import com.tereigo.expr.ExprEvaluatorFactory;
 import com.tereigo.expr.MutableExprContext;
+import com.tereigo.expr.impl.ExprEvaluatorFactory;
 
 import java.util.Arrays;
 import java.util.Scanner;

@@ -1,8 +1,8 @@
 package com.tereigo.expr.variant;
 
 import com.tereigo.expr.ExprContext;
-import com.tereigo.expr.ExprType;
 import com.tereigo.expr.annotations.GeneratesGarbage;
+import com.tereigo.expr.impl.ExprType;
 import com.tereigo.expr.utils.ByteBufferUtils;
 
 import java.nio.ByteBuffer;

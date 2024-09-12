@@ -1,6 +1,6 @@
 package com.tereigo.expr.variant;
 
-import com.tereigo.expr.ExprType;
+import com.tereigo.expr.impl.ExprType;
 import com.tereigo.expr.utils.ByteBufferUtils;
 
 public final class VariantUtils {
@@ -8,51 +8,51 @@ public final class VariantUtils {
 
     private VariantUtils() {}
 
-    public static boolean isEmpty(Variant operand) {
+    public static boolean isEmpty(final Variant operand) {
         return operand.exprType() == null;
     }
 
-    public static boolean isNumber(Variant operand) {
+    public static boolean isNumber(final Variant operand) {
         return isDouble(operand) || isLong(operand);
     }
 
-    public static boolean isLong(Variant operand) {
+    public static boolean isLong(final Variant operand) {
         return operand.exprType() == ExprType.LONG;
     }
 
-    public static boolean isDouble(Variant operand) {
+    public static boolean isDouble(final Variant operand) {
         return operand.exprType() == ExprType.DOUBLE;
     }
 
-    public static boolean isString(Variant operand) {
+    public static boolean isString(final Variant operand) {
         return operand.exprType() == ExprType.STRING;
     }
 
-    public static boolean isByteBuffer(Variant operand) {
+    public static boolean isByteBuffer(final Variant operand) {
         return operand.exprType() == ExprType.BYTE_BUFFER;
     }
 
-    public static boolean isStringOrByteBuffer(Variant operand) {
+    public static boolean isStringOrByteBuffer(final Variant operand) {
         return isString(operand) || isByteBuffer(operand);
     }
 
-    public static boolean isBoolean(Variant operand) {
+    public static boolean isBoolean(final Variant operand) {
         return operand.exprType() == ExprType.BOOL;
     }
 
-    public static boolean isExprContext(Variant operand) {
+    public static boolean isExprContext(final Variant operand) {
         return operand.exprType() == ExprType.EXPR_CONTEXT;
     }
 
-    public static boolean isObject(Variant operand) {
+    public static boolean isObject(final Variant operand) {
         return operand.exprType() == ExprType.OBJECT;
     }
 
-    public static boolean epsilonEquals(double val1, double val2) {
+    public static boolean epsilonEquals(final double val1, final double val2) {
         return Math.abs(val1 - val2) < EPSILON;
     }
 
-    public static boolean isEqual(Variant left, Variant right) {
+    public static boolean isEqual(final Variant left, final Variant right) {
         if (isEmpty(left) && isEmpty(right)) {
             return true;
         }
@@ -93,43 +93,43 @@ public final class VariantUtils {
         throw new RuntimeException("Operands of different types cannot be compared: " + left.exprType() + " and " + right.exprType());
     }
 
-    public static Variant min(Variant left, Variant right) {
+    public static Variant min(final Variant left, final Variant right) {
         return isGreaterNumbers(left, right) ? right : left;
     }
 
-    public static Variant max(Variant left, Variant right) {
+    public static Variant max(final Variant left, final Variant right) {
         return isGreaterNumbers(left, right) ? left : right;
     }
 
-    public static boolean isGreaterNumbers(Variant left, Variant right) {
+    public static boolean isGreaterNumbers(final Variant left, final Variant right) {
         if (isNumber(left) && isNumber(right)) {
             return left.getAsNumber() > right.getAsNumber();
         }
         throw new RuntimeException("Operands must be numbers");
     }
 
-    public static boolean isGreaterOrEqualNumbers(Variant left, Variant right) {
+    public static boolean isGreaterOrEqualNumbers(final Variant left, final Variant right) {
         if (isNumber(left) && isNumber(right)) {
             return left.getAsNumber() >= right.getAsNumber();
         }
         throw new RuntimeException("Operands must be numbers");
     }
 
-    public static boolean isLessNumbers(Variant left, Variant right) {
+    public static boolean isLessNumbers(final Variant left, final Variant right) {
         if (isNumber(left) && isNumber(right)) {
             return left.getAsNumber() < right.getAsNumber();
         }
         throw new RuntimeException("Operands must be numbers");
     }
 
-    public static boolean isLessOrEqualNumbers(Variant left, Variant right) {
+    public static boolean isLessOrEqualNumbers(final Variant left, final Variant right) {
         if (isNumber(left) && isNumber(right)) {
             return left.getAsNumber() <= right.getAsNumber();
         }
         throw new RuntimeException("Operands must be numbers");
     }
 
-    public static void addNumbers(MutableVariant result, Variant left, Variant right) {
+    public static void addNumbers(final MutableVariant result, final Variant left, final Variant right) {
         if (isLong(left) && isLong(right)) {
             result.accept(Math.addExact(left.getAsLong(), right.getAsLong()));
         } else if (isNumber(left) && isNumber(right)) {
@@ -139,7 +139,7 @@ public final class VariantUtils {
         }
     }
 
-    public static void subtractNumbers( MutableVariant result, Variant left, Variant right) {
+    public static void subtractNumbers(final MutableVariant result, final Variant left, final Variant right) {
         if (isLong(left) && isLong(right)) {
             result.accept(Math.subtractExact(left.getAsLong(), right.getAsLong()));
         } else if (isNumber(left) && isNumber(right)) {
@@ -149,7 +149,7 @@ public final class VariantUtils {
         }
     }
 
-    public static void divideNumbers(MutableVariant result, Variant left, Variant right) {
+    public static void divideNumbers(final MutableVariant result, final Variant left, final Variant right) {
         if (isLong(left) && isLong(right)) {
             if (right.getAsLong() == 0) {
                 throw new RuntimeException("Division by zero");
@@ -162,7 +162,7 @@ public final class VariantUtils {
         }
     }
 
-    public static void multiplyNumbers(MutableVariant result, Variant left, Variant right) {
+    public static void multiplyNumbers(final MutableVariant result, final Variant left, final Variant right) {
         if (isLong(left) && isLong(right)) {
             result.accept(Math.multiplyExact(left.getAsLong(), right.getAsLong()));
         } else if (isNumber(left) && isNumber(right)) {
@@ -172,7 +172,7 @@ public final class VariantUtils {
         }
     }
 
-    public static void modulusNumbers(MutableVariant result, Variant left, Variant right) {
+    public static void modulusNumbers(final MutableVariant result, final Variant left, final Variant right) {
         if (isLong(left) && isLong(right)) {
             if (right.getAsLong() == 0) {
                 throw new RuntimeException("Division by zero");
@@ -183,7 +183,7 @@ public final class VariantUtils {
         throw new RuntimeException("Operands must be long numbers");
     }
 
-    public static void negateNumber(MutableVariant result, Variant operand) {
+    public static void negateNumber(final MutableVariant result, final Variant operand) {
         if (isDouble(operand)) {
             result.accept(-operand.getAsDouble());
             return;

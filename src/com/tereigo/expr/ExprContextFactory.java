@@ -1,8 +1,9 @@
 package com.tereigo.expr;
 
-public final class ExprContextFactory {
+import com.tereigo.expr.impl.ExprContextImpl;
+import com.tereigo.expr.impl.ExprContextNativeEnricher;
 
-    private ExprContextFactory() { }
+public final class ExprContextFactory {
 
     /**
      * For global context we start with the full set of native functions
@@ -26,7 +27,7 @@ public final class ExprContextFactory {
         return ctx;
     }
 
-    static ExprContextImpl createNative() {
+    public static ExprContextImpl createNative() {
         final ExprContextImpl ctx = new ExprContextImpl();
         ctx.enrich(ExprContextNativeEnricher.get());
         return ctx;
@@ -35,4 +36,6 @@ public final class ExprContextFactory {
     private static MutableExprContext createEmpty() {
         return new ExprContextImpl();
     }
+
+    private ExprContextFactory() { }
 }

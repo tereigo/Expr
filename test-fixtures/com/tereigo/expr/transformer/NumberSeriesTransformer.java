@@ -43,18 +43,20 @@ public final class NumberSeriesTransformer {
         final ExprEvaluator evaluator = new ExprEvaluator(input);
 
         for (int i = 0; i < numbers.length; i++) {
-            final double val = numbers[i];
+            final double originalVal = numbers[i];
 
             // create evaluation context and add "x/X" as the external identifiers
-            // this context will also include all "native" math functions like sin, sqrt, abs,...
+            // this context will also include all "native" math functions like sin, sqrt, abs, ...
             final MutableExprContext mutCtx = ExprContextFactory.createGlobalContext(ctx -> {
-                ctx.defineDouble("x", () -> val);
+                ctx.defineDouble("x", () -> originalVal);
                 ctx.addAlias("x", "X");
             });
             // convert it to the immutable evaluation context
             final ExprContext ctx = mutCtx.getAsExprContext();
 
-            System.out.println("Value: " + val + " -> " + evaluator.evaluateDouble(ctx));
+            final double transformedValue = evaluator.evaluateDouble(ctx);
+
+            System.out.println("Value: " + originalVal + " -> " + transformedValue);
         }
     }
 }

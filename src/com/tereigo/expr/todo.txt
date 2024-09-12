@@ -2,7 +2,19 @@
 
 1. Introduce an ability to add user-specific constants
    (may be via functions, may be via tokens)?
-    Ideally via tokens to compile them into Literals straightaway
+   Ideally via tokens to compile them into Literals straightaway
+   Optimization partially solves the problem since it resolves the functions
+   but still it make the function call to retrieve the variable
+   May be we need a special API to add Constant Literals to the context
+   In that case during optimization we can resolve them to the direct Literals
+      defineConstant("myPi", 3.1416)
+
+2. May be convert MutableExprContext to Builder pattern:
+        final ExprContextSupplier ctxSupplier = ExprContextBuilder.globalContext()
+                                                                  .defineDouble("$PI", () -> 3.14)
+                                                                  .defineLong("$productId", () -> 123L)
+                                                                  .defineString("$ric", () -> "VOD.L")
+                                                                  .build();
 
 2. Support scientific input for Doubles: 1e6
 

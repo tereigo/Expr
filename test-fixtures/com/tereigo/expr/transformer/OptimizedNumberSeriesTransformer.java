@@ -66,10 +66,11 @@ public final class OptimizedNumberSeriesTransformer {
         final ExprEvaluator evaluator = new ExprEvaluator(ctx, input);
 
         for (int i = 0; i < numbers.length; i++) {
-            final double val = numbers[i];
+            final double originalVal = numbers[i];
             // set the new number to process in the value holder where it will be sourced from during evaluation
-            valueHolder.setValue(val);
-            System.out.println("Value: " + val + " -> " + evaluator.evaluateDouble(ctx));
+            valueHolder.setValue(originalVal);
+            final double transformedVal = evaluator.evaluateDouble(ctx);
+            System.out.println("Value: " + originalVal + " -> " + transformedVal);
         }
     }
 

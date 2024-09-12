@@ -6,7 +6,7 @@ public final class ExprContextFactory {
 
     /**
      * For global context we start with the full set of native functions
-     * We can also add some client-defined additional global "native" functions
+     * We can also add some additional client-defined global "native" functions
      */
     public static MutableExprContext createGlobalContext(final ExprContextEnricher... enrichers) {
         final MutableExprContext ctx = createNative();

@@ -9,7 +9,7 @@ import java.nio.file.Paths;
 
 public final class ExprShell {
 
-  public static void main(String[] args) throws IOException {
+  public static void main(final String[] args) throws IOException {
     if (args.length > 1) {
       System.out.println("Usage: ExprShell [script]");
       System.exit(0);
@@ -20,11 +20,11 @@ public final class ExprShell {
     }
   }
 
-  private static void runFile(String path) throws IOException {
-    byte[] bytes = Files.readAllBytes(Paths.get(path));
+  private static void runFile(final String path) throws IOException {
+    final byte[] bytes = Files.readAllBytes(Paths.get(path));
     try {
       run(new String(bytes, Charset.defaultCharset()));
-    } catch (RuntimeException ex) {
+    } catch (final RuntimeException ex) {
       printToError(ex.getMessage());
       ex.printStackTrace();
       System.exit(1);
@@ -32,40 +32,40 @@ public final class ExprShell {
   }
 
   private static void runPrompt() throws IOException {
-    InputStreamReader input = new InputStreamReader(System.in);
-    BufferedReader reader = new BufferedReader(input);
+    final InputStreamReader input = new InputStreamReader(System.in);
+    final BufferedReader reader = new BufferedReader(input);
 
     for (;;) {
       System.out.print("> ");
-      String line = reader.readLine();
+      final String line = reader.readLine();
       if (line == null) {
         break;
       }
       try {
         run(line);
-      } catch (RuntimeException ex) {
+      } catch (final RuntimeException ex) {
         printToError(ex.getMessage());
       }
     }
   }
 
-  private static void run(String source) {
+  private static void run(final String source) {
     try {
-      AstHierarchyPrinter printer = new AstHierarchyPrinter();
-      String graphView = printer.print(ExprCompiler.compile(source));
+      final AstHierarchyPrinter printer = new AstHierarchyPrinter();
+      final String graphView = printer.print(ExprCompiler.compile(source));
       System.out.println("AST view: \n" + graphView);
       System.out.println("\nResult: \n" + evaluateString(source));
-    } catch (RuntimeError error) {
+    } catch (final RuntimeError error) {
       printToError(error.getMessage() + " [line " + error.token.line + ", pos " + (error.token.pos + 1) + "]");
     }
   }
 
-  private static String evaluateString(String source) {
-    ExprEvaluator evaluator = new ExprEvaluator(source);
+  private static String evaluateString(final String source) {
+    final ExprEvaluatorImpl evaluator = new ExprEvaluatorImpl(source);
     return evaluator.evaluateAsObject().toString();
   }
 
-  static void printToError(String errorMsg) {
+  static void printToError(final String errorMsg) {
     System.err.println(errorMsg);
   }
 }

@@ -66,7 +66,7 @@ final class ExprScanner {
   private int line = 1;
 
   // TODO: switch to ByteBuffer
-  ExprScanner(String source) {
+  ExprScanner(final String source) {
     this.source = source;
     tokenize();
   }
@@ -85,7 +85,7 @@ final class ExprScanner {
   }
 
   private void scanToken() {
-    char c = advance();
+    final char c = advance();
     switch (c) {
       case '(': addToken(LEFT_PAREN); break;
       case ')': addToken(RIGHT_PAREN); break;
@@ -160,7 +160,7 @@ final class ExprScanner {
     while (isAlphaNumeric(peek())) {
       advance();
     }
-    String text = source.substring(start, current).toLowerCase();
+    final String text = source.substring(start, current).toLowerCase();
     TokenType type = KEYWORDS.get(text);
     if (type == null) {
       type = IDENTIFIER;
@@ -184,8 +184,8 @@ final class ExprScanner {
         advance();
       }
     }
-    String literal = source.substring(start, current);
-    double asDouble = Double.parseDouble(literal);
+    final String literal = source.substring(start, current);
+    final double asDouble = Double.parseDouble(literal);
     if (isDouble || asDouble > Long.MAX_VALUE || asDouble < Long.MIN_VALUE) {
       addToken(DOUBLE_NUMBER, asDouble, literal);
     } else {
@@ -196,14 +196,14 @@ final class ExprScanner {
         tokens.remove(tokens.size() - 1);
         addToken(LONG_NUMBER, Long.MIN_VALUE, "-9223372036854775808");
       } else {
-        long asLong = Long.parseLong(literal);
+        final long asLong = Long.parseLong(literal);
         addToken(LONG_NUMBER, asLong, literal);
       }
     }
   }
 
-  private void string(char expectedStringEnd) {
-    int stringStartPos = current - 1;
+  private void string(final char expectedStringEnd) {
+    final int stringStartPos = current - 1;
     while (peek() != expectedStringEnd && !isAtEnd()) {
       if (peek() == '\n') {
         line++;
@@ -220,11 +220,11 @@ final class ExprScanner {
     advance();
 
     // Trim the surrounding quotes.
-    String value = source.substring(start + 1, current - 1);
+    final String value = source.substring(start + 1, current - 1);
     addToken(STRING, value);
   }
 
-  private boolean match(char expected) {
+  private boolean match(final char expected) {
     if (isAtEnd()) {
       return false;
     }
@@ -249,15 +249,15 @@ final class ExprScanner {
     return source.charAt(current + 1);
   }
 
-  private static boolean isAlpha(char c) {
+  private static boolean isAlpha(final char c) {
     return Character.isLetter(c) || c == '_' || c == '$';
   }
 
-  private static boolean isAlphaNumeric(char c) {
+  private static boolean isAlphaNumeric(final char c) {
     return Character.isLetterOrDigit(c);
   }
 
-  private static boolean isDigit(char c) {
+  private static boolean isDigit(final char c) {
     return Character.isDigit(c);
   }
 
@@ -270,20 +270,20 @@ final class ExprScanner {
     return source.charAt(current - 1);
   }
 
-  private void addToken(TokenType type) {
+  private void addToken(final TokenType type) {
     addToken(type, null);
   }
 
-  private void addToken(TokenType type, Object literal) {
-    String text = source.substring(start, current);
+  private void addToken(final TokenType type, final Object literal) {
+    final String text = source.substring(start, current);
     addToken(type, literal, text);
   }
 
-  private void addToken(TokenType type, Object literal, String text) {
+  private void addToken(final TokenType type, final Object literal, final String text) {
     tokens.add(new Token(type, text, literal, line, start));
   }
 
-  static void error(int line, int start, String message) {
+  static void error(final int line, final int start, final String message) {
     throw new ParseError(line, start + 1, message);
   }
 

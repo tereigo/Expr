@@ -2,6 +2,8 @@ package com.tereigo.expr.algo.vwap;
 
 import com.tereigo.expr.ExprContext;
 import com.tereigo.expr.ExprEvaluator;
+import com.tereigo.expr.ExprEvaluatorFactory;
+import com.tereigo.expr.ExprEvaluatorWithContext;
 import com.tereigo.expr.MutableExprContext;
 import com.tereigo.expr.domains.FalconExprContextBuilder;
 import com.tereigo.expr.domains.order.OrderDomain;
@@ -79,22 +81,22 @@ class VwapOrderExprContextTest {
     }
 
     private boolean evaluateBool(final String text, final ExprContext ctx) {
-        final ExprEvaluator evaluator = new ExprEvaluator(text);
+        final ExprEvaluatorWithContext evaluator = ExprEvaluatorFactory.create(text);
         return evaluator.evaluateBool(ctx);
     }
 
     private boolean evaluateBoolOptimized(final String text, final ExprContext ctx) {
-        final ExprEvaluator evaluator = new ExprEvaluator(ctx, text);
-        return evaluator.evaluateBool(ctx);
+        final ExprEvaluator evaluator = ExprEvaluatorFactory.create(ctx, text);
+        return evaluator.evaluateBool();
     }
 
     private double evaluateDouble(final String text, final ExprContext ctx) {
-        final ExprEvaluator evaluator = new ExprEvaluator(text);
+        final ExprEvaluatorWithContext evaluator = ExprEvaluatorFactory.create(text);
         return evaluator.evaluateDouble(ctx);
     }
 
     private double evaluateDoubleOptimized(final String text, final ExprContext ctx) {
-        final ExprEvaluator evaluator = new ExprEvaluator(ctx, text);
-        return evaluator.evaluateDouble(ctx);
+        final ExprEvaluator evaluator = ExprEvaluatorFactory.create(ctx, text);
+        return evaluator.evaluateDouble();
     }
 }

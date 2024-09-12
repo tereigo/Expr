@@ -10,15 +10,15 @@ import java.util.Map;
 
 // TODO: test
 final class ExprEvaluatorCache {
-    private final Map<ByteBuffer, ExprEvaluator> cache = new HashMap<>();
+    private final Map<ByteBuffer, ExprEvaluatorWithContext> cache = new HashMap<>();
 
     @GeneratesGarbage
     @NotNull
-    public ExprEvaluator getExprEvaluator(final ByteBuffer expr) {
-        ExprEvaluator entry = cache.get(expr);
+    public ExprEvaluatorWithContext getExprEvaluator(final ByteBuffer expr) {
+        ExprEvaluatorWithContext entry = cache.get(expr);
         if (entry == null) {
             final ByteBuffer exprClone = ByteBufferUtils.clone(expr);
-            entry = new ExprEvaluator(exprClone);
+            entry = ExprEvaluatorFactory.create(exprClone);
             cache.put(exprClone, entry);
         }
         return entry;

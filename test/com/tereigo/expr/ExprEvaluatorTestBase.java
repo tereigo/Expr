@@ -18,117 +18,117 @@ class ExprEvaluatorTestBase {
     }
 
     protected void evaluate(final String text) {
-        final ExprEvaluator evaluator = new ExprEvaluator(text);
+        final ExprEvaluatorWithContext evaluator = ExprEvaluatorFactory.create(text);
         evaluator.evaluateAsObject();
     }
 
     protected void evaluate(final String text, final ExprContext ctx) {
-        final ExprEvaluator evaluator = new ExprEvaluator(text);
+        final ExprEvaluatorWithContext evaluator = ExprEvaluatorFactory.create(text);
         evaluator.evaluateAsObject(ctx);
     }
 
     protected void evaluateOptimized(final ExprContext ctx, final String text) {
-        final ExprEvaluator evaluator = new ExprEvaluator(ctx, text);
-        evaluator.evaluateAsObject(ctx);
-    }
-
-    protected void evaluate(final ASTRoot root, final ExprContext ctx) {
-        final ExprEvaluator evaluator = new ExprEvaluator(root);
-        evaluator.evaluateAsObject(ctx);
-    }
-
-    protected boolean evaluateBool(final ASTRoot root, final ExprContext ctx) {
-        final ExprEvaluator evaluator = new ExprEvaluator(root);
-        return evaluator.evaluateBool(ctx);
+        final ExprEvaluator evaluator = ExprEvaluatorFactory.create(ctx, text);
+        evaluator.evaluateAsObject();
     }
 
     protected long evaluateLong(final String text) {
-        final ExprEvaluator evaluator = new ExprEvaluator(text);
+        final ExprEvaluatorWithContext evaluator = ExprEvaluatorFactory.create(text);
         return evaluator.evaluateLong();
     }
 
     protected long evaluateLong(final String text, final ExprContext ctx) {
-        final ExprEvaluator evaluator = new ExprEvaluator(text);
+        final ExprEvaluatorWithContext evaluator = ExprEvaluatorFactory.create(text);
         return evaluator.evaluateLong(ctx);
     }
 
     protected long evaluateLongOptimized(final ExprContext ctx, final String text) {
-        final ExprEvaluator evaluator = new ExprEvaluator(ctx, text);
-        return evaluator.evaluateLong(ctx);
+        final ExprEvaluator evaluator = ExprEvaluatorFactory.create(ctx, text);
+        return evaluator.evaluateLong();
     }
 
     protected double evaluateDouble(final String text) {
-        final ExprEvaluator evaluator = new ExprEvaluator(text);
+        final ExprEvaluatorWithContext evaluator = ExprEvaluatorFactory.create(text);
         return evaluator.evaluateDouble();
     }
 
     protected double evaluateDouble(final String text, final ExprContext ctx) {
-        final ExprEvaluator evaluator = new ExprEvaluator(text);
+        final ExprEvaluatorWithContext evaluator = ExprEvaluatorFactory.create(text);
         return evaluator.evaluateDouble(ctx);
     }
 
     protected double evaluateDoubleOptimized(final ExprContext ctx, final String text) {
-        final ExprEvaluator evaluator = new ExprEvaluator(ctx, text);
-        return evaluator.evaluateDouble(ctx);
+        final ExprEvaluator evaluator = ExprEvaluatorFactory.create(ctx, text);
+        return evaluator.evaluateDouble();
     }
 
     protected boolean evaluateBool(final String text) {
-        final ExprEvaluator evaluator = new ExprEvaluator(text);
+        final ExprEvaluatorWithContext evaluator = ExprEvaluatorFactory.create(text);
         return evaluator.evaluateBool();
     }
 
     protected boolean evaluateBool(final String text, final ExprContext ctx) {
-        final ExprEvaluator evaluator = new ExprEvaluator(text);
+        final ExprEvaluatorWithContext evaluator = ExprEvaluatorFactory.create(text);
         return evaluator.evaluateBool(ctx);
     }
 
     protected boolean evaluateBoolOptimized(final ExprContext ctx, final String text) {
-        final ExprEvaluator evaluator = new ExprEvaluator(ctx, text);
-        return evaluator.evaluateBool(ctx);
+        final ExprEvaluator evaluator = ExprEvaluatorFactory.create(ctx, text);
+        return evaluator.evaluateBool();
     }
 
     protected String evaluateString(final String text) {
-        final ExprEvaluator evaluator = new ExprEvaluator(text);
+        final ExprEvaluatorWithContext evaluator = ExprEvaluatorFactory.create(text);
         return evaluator.evaluateString();
     }
 
     protected String evaluateString(final String text, final ExprContext ctx) {
-        final ExprEvaluator evaluator = new ExprEvaluator(text);
+        final ExprEvaluatorWithContext evaluator = ExprEvaluatorFactory.create(text);
         return evaluator.evaluateString(ctx);
     }
 
     protected String evaluateStringOptimized(final ExprContext ctx, final String text) {
-        final ExprEvaluator evaluator = new ExprEvaluator(ctx, text);
-        return evaluator.evaluateString(ctx);
+        final ExprEvaluator evaluator = ExprEvaluatorFactory.create(ctx, text);
+        return evaluator.evaluateString();
     }
 
     protected ByteBuffer evaluateByteBuffer(final String text, final ExprContext ctx) {
-        final ExprEvaluator evaluator = new ExprEvaluator(text);
+        final ExprEvaluatorWithContext evaluator = ExprEvaluatorFactory.create(text);
         return evaluator.evaluateByteBuffer(ctx);
     }
 
     protected ByteBuffer evaluateByteBufferOptimized(final ExprContext ctx, final String text) {
-        final ExprEvaluator evaluator = new ExprEvaluator(ctx, text);
-        return evaluator.evaluateByteBuffer(ctx);
+        final ExprEvaluator evaluator = ExprEvaluatorFactory.create(ctx, text);
+        return evaluator.evaluateByteBuffer();
+    }
+
+    protected void evaluate(final ASTRoot root, final ExprContext ctx) {
+        final ExprEvaluatorImpl evaluator = new ExprEvaluatorImpl(root);
+        evaluator.evaluateAsObject(ctx);
+    }
+
+    protected boolean evaluateBool(final ASTRoot root, final ExprContext ctx) {
+        final ExprEvaluatorImpl evaluator = new ExprEvaluatorImpl(root);
+        return evaluator.evaluateBool(ctx);
     }
 
     protected double evaluateDouble(final ASTRoot expr) {
-        final ExprEvaluator exprEvaluator = new ExprEvaluator(expr);
+        final ExprEvaluatorImpl exprEvaluator = new ExprEvaluatorImpl(expr);
         return exprEvaluator.evaluateDouble();
     }
 
     protected long evaluateLong(final ASTRoot expr) {
-        final ExprEvaluator exprEvaluator = new ExprEvaluator(expr);
+        final ExprEvaluatorImpl exprEvaluator = new ExprEvaluatorImpl(expr);
         return exprEvaluator.evaluateLong();
     }
 
     protected boolean evaluateBool(final ASTRoot expr) {
-        final ExprEvaluator exprEvaluator = new ExprEvaluator(expr);
+        final ExprEvaluatorImpl exprEvaluator = new ExprEvaluatorImpl(expr);
         return exprEvaluator.evaluateBool();
     }
 
     protected String evaluateString(final ASTRoot expr) {
-        final ExprEvaluator exprEvaluator = new ExprEvaluator(expr);
+        final ExprEvaluatorImpl exprEvaluator = new ExprEvaluatorImpl(expr);
         return exprEvaluator.evaluateString();
     }
 }

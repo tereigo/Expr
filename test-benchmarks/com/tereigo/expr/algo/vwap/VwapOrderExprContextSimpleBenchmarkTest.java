@@ -2,6 +2,7 @@ package com.tereigo.expr.algo.vwap;
 
 import com.tereigo.expr.ExprContext;
 import com.tereigo.expr.ExprEvaluator;
+import com.tereigo.expr.ExprEvaluatorFactory;
 import com.tereigo.expr.MutableExprContext;
 import com.tereigo.expr.domains.FalconExprContextBuilder;
 import com.tereigo.expr.domains.order.OrderDomain;
@@ -67,14 +68,14 @@ class VwapOrderExprContextSimpleBenchmarkTest {
         // 7184 / 7288 / 7746 / 7222 / 7414
 //          evaluator = new ExprEvaluator("(vwap.volumeLimit == 0.1) and (vwap.ric == 'VOD.L') and (order.ric == 'VOD.L') and (ric == 'VOD.L') and (vwap.tuid == 'CLIENT1') and (order.tuid == 'CLIENT1') and (tuid == 'CLIENT1') and (ric in ['BT.L', 'VOD.L', 'TSCO.L'])");
         // optimized: 5066 / 4790 / 5367 / 5069 / 4957
-        evaluator = new ExprEvaluator(ctx, "(vwap.volumeLimit == 0.1) and (vwap.ric == 'VOD.L') and (order.ric == 'VOD.L') and (ric == 'VOD.L') and (vwap.tuid == 'CLIENT1') and (order.tuid == 'CLIENT1') and (tuid == 'CLIENT1') and (ric in ['BT.L', 'VOD.L', 'TSCO.L'])");
+        evaluator = ExprEvaluatorFactory.create(ctx, "(vwap.volumeLimit == 0.1) and (vwap.ric == 'VOD.L') and (order.ric == 'VOD.L') and (ric == 'VOD.L') and (vwap.tuid == 'CLIENT1') and (order.tuid == 'CLIENT1') and (tuid == 'CLIENT1') and (ric in ['BT.L', 'VOD.L', 'TSCO.L'])");
     }
 
     @Test
     public void benchmarkSimpleExpression() {
         final long start = System.nanoTime();
         for (int i = 0; i < 10_000_000; i++) {
-            evaluator.evaluateBool(ctx);
+            evaluator.evaluateBool();
         }
         final long end = System.nanoTime();
         System.out.println("Test took " + TimeUnit.MILLISECONDS.convert(end - start, TimeUnit.NANOSECONDS) + " ms");

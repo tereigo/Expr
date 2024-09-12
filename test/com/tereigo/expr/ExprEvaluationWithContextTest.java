@@ -30,31 +30,33 @@ class ExprEvaluationWithContextTest extends ExprEvaluatorTestBase {
 
     @Test
     void contextTestsAfterOptimizationForDebug() {
-        final MutableExprContext ctx = ExprContextFactory.createGlobalContext();
-        ctx.defineDouble("$PI", () -> 3.14);
-        ctx.defineLong("$productId", () -> 123L);
-        ctx.defineString("$ric", () -> "VOD.L");
-        ctx.defineString("$nodeAlgoType", () -> "Vwap");
-        ctx.defineBool("$enabled", () -> true);
-        ctx.defineByteBuffer("$tuid", () -> constant("CLIENT1"));
+        final MutableExprContext mutCtx = ExprContextFactory.createGlobalContext();
+        mutCtx.defineDouble("$PI", () -> 3.14);
+        mutCtx.defineLong("$productId", () -> 123L);
+        mutCtx.defineString("$ric", () -> "VOD.L");
+        mutCtx.defineString("$nodeAlgoType", () -> "Vwap");
+        mutCtx.defineBool("$enabled", () -> true);
+        mutCtx.defineByteBuffer("$tuid", () -> constant("CLIENT1"));
 
         final ExprContext testCtx = createTestObjExprContext("VWAP1", constant("Vwap"));
 
-        ctx.defineExprContext("test", () -> testCtx);
+        mutCtx.defineExprContext("test", () -> testCtx);
+
+        final ExprContext ctx = mutCtx.getAsExprContext();
 
         {
-            ExprEvaluator evaluator = new ExprEvaluator(ctx.getAsExprContext(), "1.0+$PI");
-            assertEquals(4.14, evaluator.evaluateDouble(ctx.getAsExprContext()), EPS);
+            final ExprEvaluator evaluator = ExprEvaluatorFactory.create(ctx, "1.0+$PI");
+            assertEquals(4.14, evaluator.evaluateDouble(), EPS);
         }
 
         {
-            ExprEvaluator evaluator = new ExprEvaluator(ctx.getAsExprContext(), "not($enabled)");
-            assertFalse(evaluator.evaluateBool(ctx.getAsExprContext()));
+            final ExprEvaluator evaluator = ExprEvaluatorFactory.create(ctx, "not($enabled)");
+            assertFalse(evaluator.evaluateBool());
         }
 
         {
-            ExprEvaluator evaluator = new ExprEvaluator(ctx.getAsExprContext(), "test.nodeName == 'VWAP1' and 'ABC'.contains('A') and $productId == 123 and $ric == 'VOD.L'");
-            assertTrue(evaluator.evaluateBool(ctx.getAsExprContext()));
+            final ExprEvaluator evaluator = ExprEvaluatorFactory.create(ctx, "test.nodeName == 'VWAP1' and 'ABC'.contains('A') and $productId == 123 and $ric == 'VOD.L'");
+            assertTrue(evaluator.evaluateBool());
         }
     }
 
@@ -71,7 +73,7 @@ class ExprEvaluationWithContextTest extends ExprEvaluatorTestBase {
         runOptimizedExpressionWithContextTests(ctx.getAsExprContext());
     }
 
-    private static ExprContext createTestObjExprContext(String nodeName, ByteBuffer algoType) {
+    private static ExprContext createTestObjExprContext(final String nodeName, final ByteBuffer algoType) {
         final MutableExprContext ctx = ExprContextFactory.createLocalContext();
         ctx.defineString("nodeName", () -> nodeName);
         ctx.defineByteBuffer("algoType", () -> algoType);
@@ -80,7 +82,7 @@ class ExprEvaluationWithContextTest extends ExprEvaluatorTestBase {
 
     @Test
     void contextTestsWithSuppliersForOrder() {
-        TestOrder order = new TestOrder("VOD.L", 123L, true, constant("CLIENT1"));
+        final TestOrder order = new TestOrder("VOD.L", 123L, true, constant("CLIENT1"));
         final MutableExprContext ctx = ExprContextFactory.createGlobalContext();
         ctx.defineDouble("$PI", () -> 3.14);
         ctx.defineString("$nodeAlgoType", () -> "Vwap");
@@ -94,8 +96,8 @@ class ExprEvaluationWithContextTest extends ExprEvaluatorTestBase {
 
     @Test
     void contextTestsWithOrderSupplier() {
-        SimpleOrderFieldSupplier orderSupplier = new SimpleOrderFieldSupplier();
-        TestOrder order1 = new TestOrder("VOD.L", 123L, true, constant("CLIENT1"));
+        final SimpleOrderFieldSupplier orderSupplier = new SimpleOrderFieldSupplier();
+        final TestOrder order1 = new TestOrder("VOD.L", 123L, true, constant("CLIENT1"));
         orderSupplier.setOrder(order1);
         final MutableExprContext mutCtx = ExprContextFactory.createGlobalContext();
         mutCtx.defineDouble("$PI", () -> 3.14);
@@ -110,7 +112,7 @@ class ExprEvaluationWithContextTest extends ExprEvaluatorTestBase {
         runExpressionWithContextTests(ctx);
 
         // Change the order
-        TestOrder order2 = new TestOrder("BT.L", 456L, false, constant("CLIENT2"));
+        final TestOrder order2 = new TestOrder("BT.L", 456L, false, constant("CLIENT2"));
         orderSupplier.setOrder(order2);
 
         // and execute with the same context
@@ -134,10 +136,10 @@ class ExprEvaluationWithContextTest extends ExprEvaluatorTestBase {
     @Test
     void globalAndLocalContextTests() {
         RuntimeError runErr;
-        ParseError err;
+        final ParseError err;
 
-        SimpleOrderFieldSupplier orderSupplier = new SimpleOrderFieldSupplier();
-        TestOrder order1 = new TestOrder("VOD.L", 123L, true, constant("CLIENT1"));
+        final SimpleOrderFieldSupplier orderSupplier = new SimpleOrderFieldSupplier();
+        final TestOrder order1 = new TestOrder("VOD.L", 123L, true, constant("CLIENT1"));
         orderSupplier.setOrder(order1);
 
         final MutableExprContext globalCtx = ExprContextFactory.createGlobalContext();
@@ -212,7 +214,7 @@ class ExprEvaluationWithContextTest extends ExprEvaluatorTestBase {
         assertFalse(evaluateBool("$tuid in ['CLIENT0', 'CLIENT2']", ctx));
 
         // Change the order
-        TestOrder order2 = new TestOrder("BT.L", 456L, false, constant("CLIENT2"));
+        final TestOrder order2 = new TestOrder("BT.L", 456L, false, constant("CLIENT2"));
         orderSupplier.setOrder(order2);
 
         // and execute with the same context
@@ -231,7 +233,7 @@ class ExprEvaluationWithContextTest extends ExprEvaluatorTestBase {
         assertTrue(evaluateBool("$tuid in ['CLIENT0', 'CLIENT2']", ctx));
     }
 
-    private void runExpressionWithContextTests(ExprContext ctx) {
+    private void runExpressionWithContextTests(final ExprContext ctx) {
         assertEquals(4.14, evaluateDouble("1.0+$PI", ctx), EPS);
         assertEquals(6.28, evaluateDouble(" $PI  + $PI  ", ctx), EPS);
         assertEquals(0.0, evaluateDouble("($PI  + PI) * 0.0", ctx), EPS);
@@ -263,7 +265,7 @@ class ExprEvaluationWithContextTest extends ExprEvaluatorTestBase {
         assertEquals("CLIENT1", parseString(evaluateByteBuffer("$tuid", ctx)));
     }
 
-    private void runOptimizedExpressionWithContextTests(ExprContext ctx) {
+    private void runOptimizedExpressionWithContextTests(final ExprContext ctx) {
         assertEquals(4.14, evaluateDoubleOptimized(ctx, "1.0+$PI"), EPS);
         assertEquals(6.28, evaluateDoubleOptimized(ctx, " $PI  + $PI  "), EPS);
         assertEquals(0.0, evaluateDoubleOptimized(ctx, "($PI  + PI) * 0.0"), EPS);

@@ -91,7 +91,7 @@ final class ExprInterpreter implements Expr.Visitor<Variant> {
           break;
       }
       return expr.result;
-    } catch (RuntimeException ex) {
+    } catch (final RuntimeException ex) {
       throw new RuntimeError(expr.operator, getExceptionMsg(ex), ex);
     }
   }
@@ -108,7 +108,7 @@ final class ExprInterpreter implements Expr.Visitor<Variant> {
           return expr.result;
         }
       }
-    } catch (RuntimeException ex) {
+    } catch (final RuntimeException ex) {
       throw new RuntimeError(expr.operator, getExceptionMsg(ex), ex);
     }
     expr.result.accept(false);
@@ -128,7 +128,7 @@ final class ExprInterpreter implements Expr.Visitor<Variant> {
         expr.result.accept(true);
         return expr.result;
       }
-    } catch (RuntimeException ex) {
+    } catch (final RuntimeException ex) {
       throw new RuntimeError(expr.operator, getExceptionMsg(ex), ex);
     }
     expr.result.accept(false);
@@ -148,7 +148,7 @@ final class ExprInterpreter implements Expr.Visitor<Variant> {
         expr.result.accept(true);
         return expr.result;
       }
-    } catch (RuntimeException ex) {
+    } catch (final RuntimeException ex) {
       throw new RuntimeError(expr.operator, getExceptionMsg(ex), ex);
     }
     expr.result.accept(false);
@@ -262,17 +262,17 @@ final class ExprInterpreter implements Expr.Visitor<Variant> {
         case 4: ((Function4)funcObj).call(expr.result, objResult, evaluate(expr.args.get(0)), evaluate(expr.args.get(1)), evaluate(expr.args.get(2))); break;
         case 5: ((Function5)funcObj).call(expr.result, objResult, evaluate(expr.args.get(0)), evaluate(expr.args.get(1)), evaluate(expr.args.get(2)), evaluate(expr.args.get(3))); break;
       }
-    } catch (ClassCastException castEx) {
+    } catch (final ClassCastException castEx) {
       throw new RuntimeError(expr.operator, "ClassCastException in function '" + expr.operator.lexeme + "': " + getExceptionMsg(castEx));
     }
-    catch (RuntimeException runtimeEx) {
+    catch (final RuntimeException runtimeEx) {
       throw new RuntimeError(expr.operator, "RuntimeException in function '" + expr.operator.lexeme + "': " + getExceptionMsg(runtimeEx));
     }
     return expr.result;
   }
 
   @Override
-  public Variant visitResolvedObjectCallExpr(Expr.ResolvedObjectCall expr) {
+  public Variant visitResolvedObjectCallExpr(final Expr.ResolvedObjectCall expr) {
     final Variant objResult = evaluate(expr.object);
     // if it's an object call from ExprContext
     if (isExprContext(objResult)) {
@@ -289,10 +289,10 @@ final class ExprInterpreter implements Expr.Visitor<Variant> {
         case 4: ((Function4)funcObj).call(expr.result, objResult, evaluate(expr.args.get(0)), evaluate(expr.args.get(1)), evaluate(expr.args.get(2))); break;
         case 5: ((Function5)funcObj).call(expr.result, objResult, evaluate(expr.args.get(0)), evaluate(expr.args.get(1)), evaluate(expr.args.get(2)), evaluate(expr.args.get(3))); break;
       }
-    } catch (ClassCastException castEx) {
+    } catch (final ClassCastException castEx) {
       throw new RuntimeError(expr.operator, "ClassCastException in function '" + expr.operator.lexeme + "': " + getExceptionMsg(castEx));
     }
-    catch (RuntimeException runtimeEx) {
+    catch (final RuntimeException runtimeEx) {
       throw new RuntimeError(expr.operator, "RuntimeException in function '" + expr.operator.lexeme + "': " + getExceptionMsg(runtimeEx));
     }
     return expr.result;
@@ -312,9 +312,9 @@ final class ExprInterpreter implements Expr.Visitor<Variant> {
         case 4: ((Function4)funcObj).call(result, evaluate(args.get(0)), evaluate(args.get(1)), evaluate(args.get(2)), evaluate(args.get(3))); break;
         case 5: ((Function5)funcObj).call(result, evaluate(args.get(0)), evaluate(args.get(1)), evaluate(args.get(2)), evaluate(args.get(3)), evaluate(args.get(4))); break;
       }
-    } catch (ClassCastException castEx) {
+    } catch (final ClassCastException castEx) {
       throw new RuntimeError(token, "ClassCastException in function '" + token.lexeme + "': " + getExceptionMsg(castEx));
-    } catch (RuntimeException runtimeEx) {
+    } catch (final RuntimeException runtimeEx) {
       throw new RuntimeError(token, "RuntimeException in function '" + token.lexeme + "': " + getExceptionMsg(runtimeEx));
     }
     return result;
@@ -323,7 +323,7 @@ final class ExprInterpreter implements Expr.Visitor<Variant> {
   private void negateNumber(final Token token, final MutableVariant result, final Variant operand) {
     try {
       VariantUtils.negateNumber(result, operand);
-    } catch (RuntimeException ex) {
+    } catch (final RuntimeException ex) {
       throw new RuntimeError(token, getExceptionMsg(ex), ex);
     }
   }

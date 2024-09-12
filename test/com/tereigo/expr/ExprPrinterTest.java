@@ -9,7 +9,7 @@ class ExprPrinterTest extends ExprEvaluatorTestBase {
 
     @Test
     void testAstHierarchyPrinter() {
-        AstHierarchyPrinter printer = new AstHierarchyPrinter();
+        final AstHierarchyPrinter printer = new AstHierarchyPrinter();
         assertEquals("+\n" +
                 "│\n" +
                 "├── 1\n" +
@@ -164,7 +164,7 @@ class ExprPrinterTest extends ExprEvaluatorTestBase {
 
     @Test
     void testAstPolishPrinter() {
-        AstPolishPrinter printer = new AstPolishPrinter();
+        final AstPolishPrinter printer = new AstPolishPrinter();
         assertEquals("true", printer.print(ExprCompiler.compile("true")));
         assertEquals("(not true)", printer.print(ExprCompiler.compile("not(true)")));
         assertEquals("1.0", printer.print(ExprCompiler.compile("1.0")));
@@ -198,10 +198,10 @@ class ExprPrinterTest extends ExprEvaluatorTestBase {
 
     @Test
     void testAstPrinterTheSameExpression() {
-        AstPolishPrinter printer = new AstPolishPrinter();
+        final AstPolishPrinter printer = new AstPolishPrinter();
         ASTRoot expr = ExprCompiler.compile("(1.0+2.0)");
         assertEquals("(+ 1.0 2.0)", printer.print(expr));
-        ExprEvaluator exprEvaluator = new ExprEvaluator(expr);
+        ExprEvaluatorImpl exprEvaluator = new ExprEvaluatorImpl(expr);
         assertEquals(3.0, exprEvaluator.evaluateDouble(), EPS);
         assertEquals("(+ 1.0 2.0)", printer.print(expr));
         assertEquals(3.0, exprEvaluator.evaluateDouble(), EPS);
@@ -209,7 +209,7 @@ class ExprPrinterTest extends ExprEvaluatorTestBase {
         assertEquals(3.0, exprEvaluator.evaluateDouble(), EPS);
 
         expr = ExprCompiler.compile("not (true) and (not (false or true)) or 1==2");
-        exprEvaluator = new ExprEvaluator(expr);
+        exprEvaluator = new ExprEvaluatorImpl(expr);
         assertEquals("(or (and (not true) (not (or false true))) (== 1 2))", printer.print(expr));
         assertFalse(exprEvaluator.evaluateBool());
         assertEquals("(or (and (not true) (not (or false true))) (== 1 2))", printer.print(expr));

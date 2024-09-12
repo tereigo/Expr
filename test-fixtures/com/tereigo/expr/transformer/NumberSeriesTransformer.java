@@ -2,7 +2,8 @@ package com.tereigo.expr.transformer;
 
 import com.tereigo.expr.ExprContext;
 import com.tereigo.expr.ExprContextFactory;
-import com.tereigo.expr.ExprEvaluator;
+import com.tereigo.expr.ExprEvaluatorFactory;
+import com.tereigo.expr.ExprEvaluatorWithContext;
 import com.tereigo.expr.MutableExprContext;
 
 import java.util.Arrays;
@@ -40,7 +41,7 @@ public final class NumberSeriesTransformer {
         scanner.close();
 
         // compile expression string and create an evaluator for it
-        final ExprEvaluator evaluator = new ExprEvaluator(input);
+        final ExprEvaluatorWithContext evaluator = ExprEvaluatorFactory.create(input);
 
         for (int i = 0; i < numbers.length; i++) {
             final double originalVal = numbers[i];
@@ -53,7 +54,7 @@ public final class NumberSeriesTransformer {
             });
             // convert it to the immutable evaluation context
             final ExprContext ctx = mutCtx.getAsExprContext();
-
+            // apply transformation with a given context
             final double transformedValue = evaluator.evaluateDouble(ctx);
 
             System.out.println("Value: " + originalVal + " -> " + transformedValue);

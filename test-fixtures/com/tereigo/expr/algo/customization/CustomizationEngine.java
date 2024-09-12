@@ -1,7 +1,8 @@
 package com.tereigo.expr.algo.customization;
 
 import com.tereigo.expr.ExprContext;
-import com.tereigo.expr.ExprEvaluator;
+import com.tereigo.expr.ExprEvaluatorFactory;
+import com.tereigo.expr.ExprEvaluatorWithContext;
 import com.tereigo.expr.MutableExprContext;
 import com.tereigo.expr.domains.FalconExprContextBuilder;
 import com.tereigo.expr.domains.FalconExprDomains;
@@ -43,26 +44,26 @@ public class CustomizationEngine {
         this.errorHandler = errorHandler;
     }
 
-    public void onAddRuleMsg(AddRuleMsg addRuleMsg) {
+    public void onAddRuleMsg(final AddRuleMsg addRuleMsg) {
         try {
-            final ExprEvaluator nodeEvaluator = new ExprEvaluator(addRuleMsg.nodePredicate);
-            boolean isApplicable = nodeEvaluator.evaluateBool(nodeContext);
+            final ExprEvaluatorWithContext nodeEvaluator = ExprEvaluatorFactory.create(addRuleMsg.nodePredicate);
+            final boolean isApplicable = nodeEvaluator.evaluateBool(nodeContext);
             if (isApplicable) {
-                rules.add(new RuleRecord(addRuleMsg.name, new ExprEvaluator(addRuleMsg.rulePredicate), addRuleMsg.enabled, addRuleMsg.action));
+                rules.add(new RuleRecord(addRuleMsg.name, ExprEvaluatorFactory.create(addRuleMsg.rulePredicate), addRuleMsg.enabled, addRuleMsg.action));
             }
-        } catch (RuntimeException ex) {
+        } catch (final RuntimeException ex) {
             errorHandler.onNodeError(addRuleMsg.name, ex.getMessage());
         }
     }
 
-    public void onNewOrder(OrderFieldSupplier order) {
+    public void onNewOrder(final OrderFieldSupplier order) {
         appliedRules.setLength(0);
         orderFieldResolver.setOrder(order);
         for (int i = 0; i < rules.size(); i++) {
             final RuleRecord rule = rules.get(i);
             if (rule.enabled) {
                 try {
-                    boolean result = rule.evaluator.evaluateBool(ruleContext);
+                    final boolean result = rule.evaluator.evaluateBool(ruleContext);
                     if (result) {
                         final long actionResult = rule.action.apply(null, order);
                         // TODO: call this function
@@ -70,7 +71,7 @@ public class CustomizationEngine {
                         appendAppliedRule(rule);
                     }
                 }
-                catch (RuntimeException ex) {
+                catch (final RuntimeException ex) {
                     errorHandler.onOrderError(rule.name, order, ex.getMessage());
                 }
             }
@@ -92,11 +93,11 @@ public class CustomizationEngine {
 
     private static final class RuleRecord {
         final String name;
-        final ExprEvaluator evaluator;
+        final ExprEvaluatorWithContext evaluator;
         final boolean enabled;
         final CustomizationAction action;
 
-        private RuleRecord(String name, ExprEvaluator evaluator, boolean enabled, CustomizationAction action) {
+        private RuleRecord(final String name, final ExprEvaluatorWithContext evaluator, final boolean enabled, final CustomizationAction action) {
             this.name = name;
             this.evaluator = evaluator;
             this.enabled = enabled;

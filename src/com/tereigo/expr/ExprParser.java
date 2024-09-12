@@ -92,12 +92,12 @@ final class ExprParser {
   private final List<Token> tokens;
   private int current = 0;
 
-  ExprParser(List<Token> tokens) {
+  ExprParser(final List<Token> tokens) {
     this.tokens = tokens;
   }
 
   Expr parse() {
-    Expr result = expression();
+    final Expr result = expression();
     if (current < tokens.size() - 1) {
       throw error(peek(), "Malformed expression: parsing ended prematurely");
     }
@@ -114,8 +114,8 @@ final class ExprParser {
     Expr expr = logic_and();
 
     while (match(OR)) {
-      Token operator = previous();
-      Expr right = logic_and();
+      final Token operator = previous();
+      final Expr right = logic_and();
       expr = new Expr.Logical(expr, operator, right);
     }
 
@@ -127,8 +127,8 @@ final class ExprParser {
     Expr expr = ternary_if_operator();
 
     while (match(AND)) {
-      Token operator = previous();
-      Expr right = in_operator();
+      final Token operator = previous();
+      final Expr right = in_operator();
       expr = new Expr.Logical(expr, operator, right);
     }
 
@@ -140,10 +140,10 @@ final class ExprParser {
     Expr expr = in_operator();
 
     if (match(TERNARY_IF)) {
-      Token operator = previous();
-      Expr trueExpr = expression();
+      final Token operator = previous();
+      final Expr trueExpr = expression();
       if (match(TERNARY_ELSE)) {
-        Expr falseExpr = expression();
+        final Expr falseExpr = expression();
         expr = new Expr.Ternary(operator, expr, trueExpr, falseExpr);
       } else {
         throw error(peek(), "Expect ':' after ternary ('?') operator");
@@ -155,10 +155,10 @@ final class ExprParser {
 
   // in_operator: range_operator ( ( "in" | "not in" ) ) "[" expression ( "," expression )* "]" ) ;
   private Expr in_operator() {
-    Expr expr = range_operator();
+    final Expr expr = range_operator();
     // "not in"
     if (peek().type == NOT && next(1) != null && next(1).type == IN) {
-      Token not_operator = consume(NOT, "Expected NOT operator");
+      final Token not_operator = consume(NOT, "Expected NOT operator");
       consume(IN, "Expected IN operator");
       return new Expr.Unary(not_operator, parseInOperands(expr));
     }
@@ -168,10 +168,10 @@ final class ExprParser {
     return expr;
   }
 
-  private Expr.InOperator parseInOperands(Expr expr) {
-    Token operator = previous();
+  private Expr.InOperator parseInOperands(final Expr expr) {
+    final Token operator = previous();
     if (match(LEFT_BRACKET)) {
-      List<Expr> values = list();
+      final List<Expr> values = list();
       consume(RIGHT_BRACKET, "Expect ']' after '['");
       validateInValues(values);
       return new Expr.InOperator(expr, operator, values);
@@ -180,10 +180,10 @@ final class ExprParser {
     }
   }
 
-  private void validateInValues(List<Expr> values) {
+  private void validateInValues(final List<Expr> values) {
     ExprType type = null;
     for (int i = 0; i < values.size(); i++) {
-      Expr expr = values.get(i);
+      final Expr expr = values.get(i);
       if (expr instanceof Expr.Literal) {
         final Variant val = ((Expr.Literal)expr).result;
         if (type == null) {
@@ -210,7 +210,7 @@ final class ExprParser {
   private List<Expr> list() {
     final List<Expr> values = new ArrayList<>();
     do {
-      Expr entry = expression();
+      final Expr entry = expression();
       values.add(entry);
     } while (match(COMMA));
     return values;
@@ -218,11 +218,11 @@ final class ExprParser {
 
   // range_operator: equality ( ("within" | "between" | "not within" | "not between") "[" expression "," expression "]" ) ;
   private Expr range_operator() {
-    Expr expr = equality();
+    final Expr expr = equality();
 
     // "not within/between"
     if (peek().type == NOT && next(1) != null && (next(1).type == WITHIN || next(1).type == BETWEEN)) {
-      Token not_operator = consume(NOT, "Expected NOT operator");
+      final Token not_operator = consume(NOT, "Expected NOT operator");
       match(WITHIN, BETWEEN);
       return new Expr.Unary(not_operator, parseRangeOperands(expr));
     }
@@ -232,8 +232,8 @@ final class ExprParser {
     return expr;
   }
 
-  private Expr.BaseExpr parseRangeOperands(Expr expr) {
-    Token operator = previous();
+  private Expr.BaseExpr parseRangeOperands(final Expr expr) {
+    final Token operator = previous();
     if (match(LEFT_BRACKET)) {
       final Expr val1 = range_entry();
       consume(COMMA, "Expect 2 values separated by ',' in range operator");
@@ -265,8 +265,8 @@ final class ExprParser {
     Expr expr = comparison();
 
     while (match(NOT_EQUAL, EQUAL_EQUAL)) {
-      Token operator = previous();
-      Expr right = comparison();
+      final Token operator = previous();
+      final Expr right = comparison();
       expr = new Expr.Binary(expr, operator, right);
     }
 
@@ -278,8 +278,8 @@ final class ExprParser {
     Expr expr = term();
 
     while (match(GREATER, GREATER_EQUAL, LESS, LESS_EQUAL)) {
-      Token operator = previous();
-      Expr right = term();
+      final Token operator = previous();
+      final Expr right = term();
       expr = new Expr.Binary(expr, operator, right);
     }
 
@@ -291,8 +291,8 @@ final class ExprParser {
     Expr expr = factor();
 
     while (match(MINUS, PLUS)) {
-      Token operator = previous();
-      Expr right = factor();
+      final Token operator = previous();
+      final Expr right = factor();
       // don't allow double minus syntax ("5 -- 2") since it's confusing
       // it's possible however to write: "5 - (-2)"
       if (operator.type == MINUS && right instanceof Expr.Unary) {
@@ -309,8 +309,8 @@ final class ExprParser {
     Expr expr = unary_minus();
 
     while (match(DIV, MUL, MODULUS)) {
-      Token operator = previous();
-      Expr right = unary_minus();
+      final Token operator = previous();
+      final Expr right = unary_minus();
       expr = new Expr.Binary(expr, operator, right);
     }
 
@@ -320,8 +320,8 @@ final class ExprParser {
   // unary_minus: ( "-" call ) | unary_not ;
   private Expr unary_minus() {
     if (match(MINUS)) {
-      Token operator = previous();
-      Expr right = call();
+      final Token operator = previous();
+      final Expr right = call();
       if (operator.type == MINUS && right instanceof Expr.Literal) {
         final Variant val = ((Expr.Literal)right).result;
         if (!VariantUtils.isNumber(val)) {
@@ -336,9 +336,9 @@ final class ExprParser {
   // unary_not  : ( "!" "(" expression ")" ) | call;
   private Expr unary_not() {
     if (match(NOT)) {
-      Token operator = previous();
+      final Token operator = previous();
       if (match(LEFT_PAREN)) {
-        Expr right = expression();
+        final Expr right = expression();
         consume(RIGHT_PAREN, "Expect ')' after '('");
         return new Expr.Unary(operator, right);
       } else {
@@ -356,13 +356,13 @@ final class ExprParser {
         if (!(expr instanceof Expr.Identifier)) {
           throw error(previous(2), "Function name should be an identifier");
         }
-        List<Expr> args = arguments(5);
+        final List<Expr> args = arguments(5);
         expr = new Expr.Call(((Expr.Identifier) expr).operator, args);
       } else if (match(DOT)) {
-        Token name = consume(IDENTIFIER, "Expect function name after '.'");
+        final Token name = consume(IDENTIFIER, "Expect function name after '.'");
         if (peek().type == LEFT_PAREN) {
           consume(LEFT_PAREN, "Expect '(' after '.'function_name");
-          List<Expr> args = arguments(4);
+          final List<Expr> args = arguments(4);
           expr = new Expr.ObjectCall(expr, name, args);
         } else {
           expr = new Expr.ObjectCall(expr, name, Collections.emptyList());
@@ -375,8 +375,8 @@ final class ExprParser {
   }
 
   // arguments  : expression ( "," expression )* ;
-  private List<Expr> arguments(int maxArgs) {
-    List<Expr> args = new ArrayList<>(maxArgs);
+  private List<Expr> arguments(final int maxArgs) {
+    final List<Expr> args = new ArrayList<>(maxArgs);
     if (!check(RIGHT_PAREN)) {
       do {
         if (args.size() >= maxArgs) {
@@ -419,7 +419,7 @@ final class ExprParser {
     }
 
     if (match(LEFT_PAREN)) {
-      Expr expr = expression();
+      final Expr expr = expression();
       consume(RIGHT_PAREN, "Expect ')' after expression");
       // this is to handle this example: "5 - (-2)", the expected result is 7
       // in this case if we remove grouping then we'll end up with "5 -- 2" and this double minus syntax is not allowed
@@ -439,8 +439,8 @@ final class ExprParser {
     throw error(peek(), "Expect expression");
   }
 
-  private boolean match(TokenType... types) {
-    for (TokenType type : types) {
+  private boolean match(final TokenType... types) {
+    for (final TokenType type : types) {
       if (check(type)) {
         advance();
         return true;
@@ -449,14 +449,14 @@ final class ExprParser {
     return false;
   }
 
-  private Token consume(TokenType type, String message) {
+  private Token consume(final TokenType type, final String message) {
     if (check(type)) {
       return advance();
     }
     throw error(peek(), message);
   }
 
-  private boolean check(TokenType type) {
+  private boolean check(final TokenType type) {
     if (isAtEnd()) {
       return false;
     }
@@ -478,7 +478,7 @@ final class ExprParser {
     return tokens.get(current);
   }
 
-  private Token next(int forward) {
+  private Token next(final int forward) {
     if (current + forward >= tokens.size()) {
       return null;
     }
@@ -489,11 +489,11 @@ final class ExprParser {
     return previous(1);
   }
 
-  private Token previous(int back) {
+  private Token previous(final int back) {
     return tokens.get(current - back);
   }
 
-  private ParseError error(Token token, String message) {
+  private ParseError error(final Token token, final String message) {
     return new ParseError(token.line, token.pos + 1, message);
   }
 

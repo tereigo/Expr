@@ -3,6 +3,7 @@ package com.tereigo.expr.transformer;
 import com.tereigo.expr.ExprContext;
 import com.tereigo.expr.ExprContextFactory;
 import com.tereigo.expr.ExprEvaluator;
+import com.tereigo.expr.ExprEvaluatorFactory;
 import com.tereigo.expr.MutableExprContext;
 
 import java.util.Arrays;
@@ -63,13 +64,15 @@ public final class OptimizedNumberSeriesTransformer {
         // (meaning that it's not supposed to change from this moment till evaluation)
         // and the same context is supposed to be passed for the evaluation: evaluator.evaluateDouble(ctx)
         // In this case ExprEvaluator will "optimize" the expression during parsing
-        final ExprEvaluator evaluator = new ExprEvaluator(ctx, input);
+        final ExprEvaluator evaluator = ExprEvaluatorFactory.create(ctx, input);
 
         for (int i = 0; i < numbers.length; i++) {
             final double originalVal = numbers[i];
             // set the new number to process in the value holder where it will be sourced from during evaluation
             valueHolder.setValue(originalVal);
-            final double transformedVal = evaluator.evaluateDouble(ctx);
+            // apply transformation (the context in use is the one which was provided when ExprEvaluator was created)
+            final double transformedVal = evaluator.evaluateDouble();
+
             System.out.println("Value: " + originalVal + " -> " + transformedVal);
         }
     }

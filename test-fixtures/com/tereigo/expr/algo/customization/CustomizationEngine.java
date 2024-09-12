@@ -1,6 +1,7 @@
 package com.tereigo.expr.algo.customization;
 
 import com.tereigo.expr.ExprContext;
+import com.tereigo.expr.ExprEvaluatorFactory;
 import com.tereigo.expr.ExprEvaluatorWithContext;
 import com.tereigo.expr.MutableExprContext;
 import com.tereigo.expr.domains.FalconExprContextBuilder;
@@ -9,7 +10,6 @@ import com.tereigo.expr.domains.algo.AlgoDataProvider;
 import com.tereigo.expr.domains.falcon.FalconDataProvider;
 import com.tereigo.expr.domains.order.OrderDomain;
 import com.tereigo.expr.domains.order.OrderExprContextCreator;
-import com.tereigo.expr.impl.ExprEvaluatorFactory;
 
 import java.util.ArrayList;
 import java.util.List;

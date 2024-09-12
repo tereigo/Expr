@@ -2,12 +2,12 @@ package com.tereigo.expr.algo.vwap;
 
 import com.tereigo.expr.ExprContext;
 import com.tereigo.expr.ExprEvaluator;
+import com.tereigo.expr.ExprEvaluatorFactory;
 import com.tereigo.expr.MutableExprContext;
 import com.tereigo.expr.domains.FalconExprContextBuilder;
 import com.tereigo.expr.domains.order.OrderDomain;
 import com.tereigo.expr.domains.order.OrderFieldResolverImpl;
 import com.tereigo.expr.falcon.utils.ReferenceDataCacheImpl;
-import com.tereigo.expr.impl.ExprEvaluatorFactory;
 import com.tereigo.expr.order.TestVwapOrder;
 import com.tereigo.expr.utils.ByteBufferUtils;
 import org.junit.jupiter.api.BeforeEach;

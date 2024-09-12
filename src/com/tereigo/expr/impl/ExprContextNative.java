@@ -1,17 +1,19 @@
 package com.tereigo.expr.impl;
 
 import com.tereigo.expr.ExprContext;
-import com.tereigo.expr.ExprContextFactory;
 
 /*
   Context storage for Expr native functions
  */
 final class ExprContextNative {
 
-  private static final ExprContext INSTANCE = ExprContextFactory.createNative();
+  private static final ExprContext INSTANCE;
 
   public static ExprContext get() {
       return INSTANCE;
   }
 
+  static {
+      INSTANCE = new ExprContextImpl(ExprContextNativeEnricher.get());
+  }
 }

@@ -2,7 +2,6 @@ package com.tereigo.expr;
 
 import com.sun.istack.internal.NotNull;
 import com.tereigo.expr.annotations.GeneratesGarbage;
-import com.tereigo.expr.impl.ExprEvaluatorFactory;
 import com.tereigo.expr.utils.ByteBufferUtils;
 
 import java.nio.ByteBuffer;

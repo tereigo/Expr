@@ -1,7 +1,6 @@
 package com.tereigo.expr;
 
-import com.tereigo.expr.impl.ExprContextImpl;
-import com.tereigo.expr.impl.ExprContextNativeEnricher;
+import com.tereigo.expr.impl.ExprContextAccessor;
 
 public final class ExprContextFactory {
 
@@ -10,7 +9,7 @@ public final class ExprContextFactory {
      * We can also add some additional client-defined global "native" functions
      */
     public static MutableExprContext createGlobalContext(final ExprContextEnricher... enrichers) {
-        final MutableExprContext ctx = createNative();
+        final MutableExprContext ctx = ExprContextAccessor.createNative(PASS);
         ctx.enrich(enrichers);
         return ctx;
     }
@@ -22,20 +21,13 @@ public final class ExprContextFactory {
      * and "price" is the function available in the local context of "order"
      */
     public static MutableExprContext createLocalContext(final ExprContextEnricher... enrichers) {
-        final MutableExprContext ctx = createEmpty();
+        final MutableExprContext ctx = ExprContextAccessor.createEmpty(PASS);
         ctx.enrich(enrichers);
         return ctx;
     }
 
-    public static ExprContextImpl createNative() {
-        final ExprContextImpl ctx = new ExprContextImpl();
-        ctx.enrich(ExprContextNativeEnricher.get());
-        return ctx;
-    }
-
-    private static MutableExprContext createEmpty() {
-        return new ExprContextImpl();
-    }
-
     private ExprContextFactory() { }
+
+    private static final Pass PASS = new Pass();
+    public static class Pass { }
 }

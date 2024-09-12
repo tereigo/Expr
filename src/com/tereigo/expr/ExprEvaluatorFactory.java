@@ -1,13 +1,11 @@
-package com.tereigo.expr.impl;
+package com.tereigo.expr;
 
-import com.tereigo.expr.ExprContext;
-import com.tereigo.expr.ExprEvaluator;
-import com.tereigo.expr.ExprEvaluatorWithContext;
+import com.tereigo.expr.impl.ExprEvaluatorAccessor;
 
 import java.nio.ByteBuffer;
 
 /*
-   This is the main public class for clients
+   This is the main entry point for the clients
 
    It can be used for the evaluation of the raw string:
         ExprEvaluatorWithContext evaluator = ExprEvaluatorFactory.create("1 == 1 + 1");
@@ -21,15 +19,14 @@ import java.nio.ByteBuffer;
         ExprEvaluator evaluator = ExprEvaluatorFactory.create(ctx, "$ric == 'VOD.L' and $productId == 123 or 5 != 2");
         evaluator.evaluateBool();
  */
-// TODO: can we move it to the interface somehow?
 public final class ExprEvaluatorFactory {
 
     public static ExprEvaluatorWithContext create(final ByteBuffer source) {
-        return new ExprEvaluatorImpl(source);
+        return ExprEvaluatorAccessor.create(PASS, source);
     }
 
     public static ExprEvaluatorWithContext create(final String source) {
-        return new ExprEvaluatorImpl(source);
+        return ExprEvaluatorAccessor.create(PASS, source);
     }
 
     /**
@@ -40,12 +37,15 @@ public final class ExprEvaluatorFactory {
      * @param source - Expression
      */
     public static ExprEvaluator create(final ExprContext ctx, final String source) {
-        return new OptimizedExprEvaluator(ctx, source);
+        return ExprEvaluatorAccessor.create(PASS, ctx, source);
     }
 
     public static ExprEvaluator create(final ExprContext ctx, final ByteBuffer source) {
-        return new OptimizedExprEvaluator(ctx, source);
+        return ExprEvaluatorAccessor.create(PASS, ctx, source);
     }
 
     private ExprEvaluatorFactory() { }
+
+    private static final Pass PASS = new Pass();
+    public static class Pass { }
 }

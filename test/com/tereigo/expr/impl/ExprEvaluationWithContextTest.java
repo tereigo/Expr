@@ -159,26 +159,25 @@ class ExprEvaluationWithContextTest extends ExprEvaluatorTestBase {
         globalCtx.addAlias("$falconEnv", "falconEnv");
         globalCtx.addAlias("$timeNs", "timeNs");
 
-        final MutableExprContext orderCtx = ExprContextFactory.createLocalContext();
-        orderCtx.defineLong("$productId", orderSupplier::productId);
-        orderCtx.defineString("$ric", orderSupplier::ric);
-        orderCtx.defineBool("$enabled", orderSupplier::enabled);
-        orderCtx.defineByteBuffer("$tuid", orderSupplier::tuid);
+        globalCtx.defineLong("$productId", orderSupplier::productId);
+        globalCtx.defineString("$ric", orderSupplier::ric);
+        globalCtx.defineBool("$enabled", orderSupplier::enabled);
+        globalCtx.defineByteBuffer("$tuid", orderSupplier::tuid);
 
-        orderCtx.addAlias("$productId", "productId");
-        orderCtx.addAlias("$ric", "ric");
-        orderCtx.addAlias("$enabled", "enabled");
-        orderCtx.addAlias("$tuid", "tuid");
+        globalCtx.addAlias("$productId", "productId");
+        globalCtx.addAlias("$ric", "ric");
+        globalCtx.addAlias("$enabled", "enabled");
+        globalCtx.addAlias("$tuid", "tuid");
         // let's define an alias on alias
-        orderCtx.addAlias("tuid", "clientID");
+        globalCtx.addAlias("tuid", "clientID");
 
-        RuntimeException runEx = assertThrows(RuntimeException.class, () -> orderCtx.addAlias("$tuid", "$tuid"));
+        RuntimeException runEx = assertThrows(RuntimeException.class, () -> globalCtx.addAlias("$tuid", "$tuid"));
         assertEquals("Identical name and alias: '$tuid'", runEx.getMessage());
 
-        runEx = assertThrows(RuntimeException.class, () -> orderCtx.addAlias("unknown", "coolAlias"));
+        runEx = assertThrows(RuntimeException.class, () -> globalCtx.addAlias("unknown", "coolAlias"));
         assertEquals("Unknown identifier 'unknown' for alias 'coolAlias'", runEx.getMessage());
 
-        final ExprContextCombined ctx = ExprContextCombined.create(globalCtx.getAsExprContext(), orderCtx.getAsExprContext());
+        final ExprContext ctx = globalCtx.getAsExprContext();
 
         runExpressionWithContextTests(ctx);
 

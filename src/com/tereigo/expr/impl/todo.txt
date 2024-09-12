@@ -1,14 +1,5 @@
  TODO:
 
-1. Introduce an ability to add user-specific constants
-   (may be via functions, may be via tokens)?
-   Ideally via tokens to compile them into Literals straightaway
-   Optimization partially solves the problem since it resolves the functions
-   but it still makes the function call to retrieve the variable
-   May be we need a special API to add Constant Literals to the context
-   In that case during optimization we can resolve them to the direct Literals
-      defineConstant("myPi", 3.1416)
-
 2. May be convert MutableExprContext to Builder pattern:
         final ExprContextSupplier ctxSupplier = ExprContextBuilder.globalContext()
                                                                   .defineDouble("$PI", () -> 3.14)
@@ -19,7 +10,9 @@
 3. Make ExprContext truly immutable for Optimized evaluations
 
    It should generate an immutable new instance on the last step:
-   ExprContextBuilder.globalContext().defineDouble("$PI", () -> 3.14).build();  <------------ in build()
+   ExprContextBuilder.globalContext()
+                     .defineDouble("$PI", () -> 3.14)
+                     .build();  <------------ in build()
 
          final MutableExprContext mutCtx = ExprContextFactory.createGlobalContext();
          mutCtx.defineString("region", () -> "EMEA");
@@ -29,12 +22,21 @@
 
    if it's not done then there is always a possibility for the context to be amended by calling MutableExprContext before evaluate()
 
-2. Support scientific input for Doubles: 1e6
-
 3. in ExprInterpreter
     public Variant visitInOperator(final Expr.InOperator expr) {
     // TODO: why it is outside of try?
     final Variant operand = evaluate(expr.operand);
+
+2. Support scientific input for Doubles: 1e6
+
+1. Introduce an ability to add user-specific constants
+   (may be via functions, may be via tokens)?
+   Ideally via tokens to compile them into Literals straightaway
+   Optimization partially solves the problem since it resolves the functions
+   but it still makes the function call to retrieve the variable
+   May be we need a special API to add Constant Literals to the context
+   In that case during optimization we can resolve them to the direct Literals
+      defineConstant("myPi", 3.1416)
 
 2. Add power operator: "pow(2, 5) == 32 and 2 ** 5 == 32"
 
@@ -130,6 +132,16 @@
 
 
 Done:
+7. This is essentially what we do then we introduce AstOptimizer!
+   After AST optimization there are no lookups!
+   Can we merge contexts to avoid 2 lookups in this function in ExprContextCombined?
+    public MutableVariant get(String name, MutableVariant result) {
+        MutableVariant res = ctx1.get(name, result);
+        return res != null ? res : ctx2 != null ? ctx2.get(name, result) : null;
+    }
+
+    if contexts don't change at runtime then we are allowed to merge them
+
 4. May be we should store the context used for optimization and reuse it for evaluation
    And either enforce that for the optimized ast context should not be passed it or check that it's the same context passed in
    (it's hard to do since it's possible to modify the context AFTER AST was optimized)
@@ -168,15 +180,6 @@ and all other functions well be available via reflection
 5. Add a test for the optimized version with multiple chained domains/functions
     falcon.order.ric.contains('ABC.L')
 8. Extract performance tests as a separate target
-7. This is essentially what we do then we introduce AstOptimizer!
-   After AST optimization there are no lookups!
-   Can we merge contexts to avoid 2 lookups in this function in ExprContextCombined?
-    public MutableVariant get(String name, MutableVariant result) {
-        MutableVariant res = ctx1.get(name, result);
-        return res != null ? res : ctx2 != null ? ctx2.get(name, result) : null;
-    }
-
-    if contexts don't change at runtime then we are allowed to merge them
 
 6. Optimize expressions by caching the functions so that instead of fetching a function from the map:
    if (isExprContext(objResult)) {

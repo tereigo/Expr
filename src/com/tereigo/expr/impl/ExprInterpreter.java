@@ -22,20 +22,14 @@ import static com.tereigo.expr.variant.VariantUtils.isExprContext;
  */
 final class ExprInterpreter implements Expr.Visitor<Variant> {
     private final Expr expression;
-    private final ExprContextCombined ctx = new ExprContextCombined();
+    private ExprContext ctx;
 
     ExprInterpreter(final Expr expression) {
         this.expression = expression;
     }
 
-    Variant evaluate() {
-        this.ctx.init(ExprContextNative.get());
-        return evaluate(expression);
-    }
-
     Variant evaluate(final ExprContext ctx) {
-        // TODO: if we make sure ExprContext always contains native context then we won't need to have 2
-        this.ctx.init(ctx, ExprContextNative.get());
+        this.ctx = ctx;
         return evaluate(expression);
     }
 

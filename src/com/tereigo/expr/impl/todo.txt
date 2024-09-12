@@ -19,7 +19,9 @@
 3. Make ExprContext truly immutable for Optimized evaluations
 
    It should generate an immutable new instance on the last step:
-   ExprContextBuilder.globalContext().defineDouble("$PI", () -> 3.14).build();  <------------ in build()
+   ExprContextBuilder.globalContext()
+                     .defineDouble("$PI", () -> 3.14)
+                     .build();  <------------ in build()
 
          final MutableExprContext mutCtx = ExprContextFactory.createGlobalContext();
          mutCtx.defineString("region", () -> "EMEA");

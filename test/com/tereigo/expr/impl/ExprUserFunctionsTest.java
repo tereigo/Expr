@@ -25,7 +25,7 @@ import static org.mockito.Mockito.when;
 class ExprUserFunctionsTest extends ExprEvaluatorTestBase {
     private boolean optimized;
 
-    private static ExprContextCombined createContext(final SimpleOrderFieldSupplier orderSupplier) {
+    private static ExprContext createContext(final SimpleOrderFieldSupplier orderSupplier) {
         final MutableExprContext globalCtx = ExprContextFactory.createGlobalContext();
         globalCtx.defineFunction("nodeAlgoType", result -> result.accept("Vwap"));
         globalCtx.defineFunction("region", result -> result.accept("EMEA"));
@@ -82,14 +82,12 @@ class ExprUserFunctionsTest extends ExprEvaluatorTestBase {
             result.accept(l > d && bool && !s.isEmpty() && ByteBufferUtils.startsWith(bb, "CLIENT"));
         });
 
-        final MutableExprContext orderCtx = ExprContextFactory.createLocalContext();
-        orderCtx.defineLong("$productId", orderSupplier::productId);
-        orderCtx.defineString("$ric", orderSupplier::ric);
-        orderCtx.defineBool("$enabled", orderSupplier::enabled);
-        orderCtx.defineByteBuffer("$tuid", orderSupplier::tuid);
+        globalCtx.defineLong("$productId", orderSupplier::productId);
+        globalCtx.defineString("$ric", orderSupplier::ric);
+        globalCtx.defineBool("$enabled", orderSupplier::enabled);
+        globalCtx.defineByteBuffer("$tuid", orderSupplier::tuid);
 
-        final ExprContextCombined ctx = ExprContextCombined.create(globalCtx.getAsExprContext(), orderCtx.getAsExprContext());
-        return ctx;
+        return globalCtx.getAsExprContext();
     }
 
     private static ExprContext createObjectsContext() {
@@ -169,7 +167,7 @@ class ExprUserFunctionsTest extends ExprEvaluatorTestBase {
         final TestOrder order1 = new TestOrder("VOD.L", 123L, true, constant("CLIENT1"));
         orderSupplier.setOrder(order1);
 
-        final ExprContextCombined ctx = createContext(orderSupplier);
+        final ExprContext ctx = createContext(orderSupplier);
 
         this.optimized = false;
         userFunctionTestsImpl(ctx, orderSupplier);
@@ -181,7 +179,7 @@ class ExprUserFunctionsTest extends ExprEvaluatorTestBase {
         final TestOrder order1 = new TestOrder("VOD.L", 123L, true, constant("CLIENT1"));
         orderSupplier.setOrder(order1);
 
-        final ExprContextCombined ctx = createContext(orderSupplier);
+        final ExprContext ctx = createContext(orderSupplier);
 
         this.optimized = true;
         userFunctionTestsImpl(ctx, orderSupplier);
@@ -203,7 +201,7 @@ class ExprUserFunctionsTest extends ExprEvaluatorTestBase {
         return optimized ? super.evaluateDoubleOptimized(ctx, text) : super.evaluateDouble(text, ctx);
     }
 
-    private void userFunctionTestsImpl(final ExprContextCombined ctx, final SimpleOrderFieldSupplier orderSupplier) {
+    private void userFunctionTestsImpl(final ExprContext ctx, final SimpleOrderFieldSupplier orderSupplier) {
         assertTrue(evaluateBool("timeNs() > $productId", ctx));
         assertTrue(evaluateBool("6 < 2 * PI", ctx));
         assertTrue(evaluateBool("region() == \"EMEA\" and falconEnv() == \"PROD\"", ctx));

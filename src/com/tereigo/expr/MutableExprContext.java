@@ -16,31 +16,31 @@ import java.util.function.LongSupplier;
 
 public interface MutableExprContext extends ExprContextSupplier {
 
-    void defineLong(String name, LongSupplier supplier);
+    void defineLong(final String name, final LongSupplier supplier);
 
-    void defineDouble(String name, DoubleSupplier supplier);
+    void defineDouble(final String name, final DoubleSupplier supplier);
 
-    void defineString(String name, StringSupplier supplier);
+    void defineString(final String name, final StringSupplier supplier);
 
-    void defineByteBuffer(String name, ByteBufferSupplier supplier);
+    void defineByteBuffer(final String name, final ByteBufferSupplier supplier);
 
-    void defineBool(String name, BooleanSupplier supplier);
+    void defineBool(final String name, final BooleanSupplier supplier);
 
-    void defineExprContext(String name, ExprContextSupplier supplier);
+    void defineExprContext(final String name, final ExprContextSupplier supplier);
 
-    void defineFunction(String name, Function0 func);
+    void defineFunction(final String name, final Function0 func);
 
-    void defineFunction(String name, Function1 func);
+    void defineFunction(final String name, final Function1 func);
 
-    void defineFunction(String name, Function2 func);
+    void defineFunction(final String name, final Function2 func);
 
-    void defineFunction(String name, Function3 func);
+    void defineFunction(final String name, final Function3 func);
 
-    void defineFunction(String name, Function4 func);
+    void defineFunction(final String name, final Function4 func);
 
-    void defineFunction(String name, Function5 func);
+    void defineFunction(final String name, final Function5 func);
 
-    void addAlias(String name, String alias);
+    void addAlias(final String name, final String alias);
 
-    void enrich(ExprContextEnricher... enrichers);
+    void enrich(final ExprContextEnricher... enrichers);
 }

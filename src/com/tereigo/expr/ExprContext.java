@@ -10,12 +10,12 @@ public interface ExprContext {
       Value can be of any ExprType
       Returns "null" if not found
      */
-    Variant get(String name, MutableVariant result);
+    Variant get(final String name, final MutableVariant result);
 
     /*
       Retrieve external function by name
       Returns "null" if not found
      */
-    Object getFunction(String name);
+    Object getFunction(final String name);
 
 }

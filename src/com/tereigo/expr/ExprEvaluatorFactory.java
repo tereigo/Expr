@@ -21,11 +21,6 @@ import java.nio.ByteBuffer;
  */
 public final class ExprEvaluatorFactory {
 
-    private static final Pass PASS = new Pass();
-
-    private ExprEvaluatorFactory() {
-    }
-
     public static ExprEvaluatorWithContext create(final ByteBuffer source) {
         return ExprEvaluatorAccessor.create(PASS, source);
     }
@@ -50,6 +45,8 @@ public final class ExprEvaluatorFactory {
         return ExprEvaluatorAccessor.create(PASS, ctx, source);
     }
 
-    public static class Pass {
-    }
+    private static final Pass PASS = new Pass();
+    public static class Pass { }
+
+    private ExprEvaluatorFactory() { }
 }

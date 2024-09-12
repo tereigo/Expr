@@ -4,11 +4,6 @@ import com.tereigo.expr.impl.ExprContextAccessor;
 
 public final class ExprContextFactory {
 
-    private static final Pass PASS = new Pass();
-
-    private ExprContextFactory() {
-    }
-
     /**
      * For global context we start with the full set of native functions
      * We can also add some additional client-defined global "native" functions
@@ -31,6 +26,9 @@ public final class ExprContextFactory {
         return ctx;
     }
 
-    public static class Pass {
-    }
+    public static class Pass { }
+    private static final Pass PASS = new Pass();
+
+    private ExprContextFactory() { }
+
 }

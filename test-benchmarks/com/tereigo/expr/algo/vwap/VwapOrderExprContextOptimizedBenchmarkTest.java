@@ -1,8 +1,8 @@
 package com.tereigo.expr.algo.vwap;
 
 import com.tereigo.expr.ExprContext;
+import com.tereigo.expr.ExprEvaluator;
 import com.tereigo.expr.ExprEvaluatorFactory;
-import com.tereigo.expr.ExprEvaluatorWithContext;
 import com.tereigo.expr.MutableExprContext;
 import com.tereigo.expr.domains.FalconExprContextBuilder;
 import com.tereigo.expr.domains.order.OrderDomain;
@@ -28,7 +28,7 @@ import org.openjdk.jmh.runner.options.OptionsBuilder;
 
 import java.util.concurrent.TimeUnit;
 
-public class VwapOrderExprContextBenchmarkTest {
+public class VwapOrderExprContextOptimizedBenchmarkTest {
 
     @Benchmark
     @BenchmarkMode(Mode.Throughput)
@@ -39,7 +39,7 @@ public class VwapOrderExprContextBenchmarkTest {
     @Warmup(iterations = 5, timeUnit = TimeUnit.MILLISECONDS, time = 10000)
     @Measurement(iterations = 5, timeUnit = TimeUnit.MILLISECONDS, time = 10000)
     public void benchmarkSimpleExpression(final BenchmarkState state) {
-        state.evaluator.evaluateBool(state.ctx);
+        state.evaluator.evaluateBool();
     }
 
     @Test
@@ -53,8 +53,7 @@ public class VwapOrderExprContextBenchmarkTest {
 
     @State(Scope.Benchmark)
     public static class BenchmarkState {
-        ExprEvaluatorWithContext evaluator;
-        ExprContext ctx;
+        ExprEvaluator evaluator;
 
         @Setup
         public void prepare() {
@@ -82,7 +81,7 @@ public class VwapOrderExprContextBenchmarkTest {
             final VwapOrderExprContextCreator creator = new VwapOrderExprContextCreator();
             creator.enrich(orderFieldResolver, mutCtx);
 
-            ctx = mutCtx.getAsExprContext();
+            final ExprContext ctx = mutCtx.getAsExprContext();
 
             orderFieldResolver.setOrder(order1);
 
@@ -101,7 +100,9 @@ public class VwapOrderExprContextBenchmarkTest {
             // 7152 +- 427
 //            evaluator = ExprEvaluatorFactory.create("vwap.volumeLimit == 0.1 and ric in ['BT.L', 'VOD.L', 'TSCO.L']");
             // 1553
-            evaluator = ExprEvaluatorFactory.create("(vwap.volumeLimit == 0.1) and (vwap.ric == 'VOD.L') and (order.ric == 'VOD.L') and (ric == 'VOD.L') and (vwap.tuid == 'CLIENT1') and (order.tuid == 'CLIENT1') and (tuid == 'CLIENT1') and (ric in ['BT.L', 'VOD.L', 'TSCO.L'])");
+//            evaluator = ExprEvaluatorFactory.create("(vwap.volumeLimit == 0.1) and (vwap.ric == 'VOD.L') and (order.ric == 'VOD.L') and (ric == 'VOD.L') and (vwap.tuid == 'CLIENT1') and (order.tuid == 'CLIENT1') and (tuid == 'CLIENT1') and (ric in ['BT.L', 'VOD.L', 'TSCO.L'])");
+            // 2100 optimized
+            evaluator = ExprEvaluatorFactory.create(ctx, "(vwap.volumeLimit == 0.1) and (vwap.ric == 'VOD.L') and (order.ric == 'VOD.L') and (ric == 'VOD.L') and (vwap.tuid == 'CLIENT1') and (order.tuid == 'CLIENT1') and (tuid == 'CLIENT1') and (ric in ['BT.L', 'VOD.L', 'TSCO.L'])");
         }
     }
 }

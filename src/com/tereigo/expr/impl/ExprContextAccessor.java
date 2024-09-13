@@ -5,14 +5,13 @@ import com.tereigo.expr.MutableExprContext;
 
 public final class ExprContextAccessor {
 
-    private ExprContextAccessor() {
-    }
+    private ExprContextAccessor() { }
 
     public static MutableExprContext createEmpty(final ExprContextFactory.Pass ignoredPass) {
-        return new ExprContextImpl();
+        return new ExprContextMutable();
     }
 
     public static MutableExprContext createNative(final ExprContextFactory.Pass ignoredPass) {
-        return new ExprContextImpl(ExprContextNativeEnricher.get());
+        return new ExprContextMutable(ExprContextNativeEnricher.get());
     }
 }

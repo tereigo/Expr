@@ -7,18 +7,18 @@ import com.tereigo.expr.variant.Variant;
 
 import java.nio.ByteBuffer;
 
-final class OptimizedExprEvaluator extends ExprEvaluatorBase implements ExprEvaluator {
+final class ExprEvaluatorOptimized extends ExprEvaluatorBase implements ExprEvaluator {
     private final ExprContext ctx;
 
-    OptimizedExprEvaluator(final ExprContext ctx, final String source) {
+    ExprEvaluatorOptimized(final ExprContext ctx, final String source) {
         this(ExprOptimizer.optimize(ExprCompiler.compile(source), ctx), ctx);
     }
 
-    OptimizedExprEvaluator(final ExprContext ctx, final ByteBuffer source) {
+    ExprEvaluatorOptimized(final ExprContext ctx, final ByteBuffer source) {
         this(ExprOptimizer.optimize(ExprCompiler.compile(source), ctx), ctx);
     }
 
-    private OptimizedExprEvaluator(final ASTRoot root, final ExprContext ctx) {
+    private ExprEvaluatorOptimized(final ASTRoot root, final ExprContext ctx) {
         super(root);
         this.ctx = ctx;
     }

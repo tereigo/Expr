@@ -7,21 +7,6 @@
                                                                   .defineString("$ric", () -> "VOD.L")
                                                                   .build();
 
-3. Make ExprContext truly immutable for Optimized evaluations
-
-   It should generate an immutable new instance on the last step:
-   ExprContextBuilder.globalContext()
-                     .defineDouble("$PI", () -> 3.14)
-                     .build();  <------------ in build()
-
-         final MutableExprContext mutCtx = ExprContextFactory.createGlobalContext();
-         mutCtx.defineString("region", () -> "EMEA");
-         mutCtx.defineFunction("algoType", result -> result.accept("Algo1"));
-
-         final ExprContext ctx = mutCtx.getAsExprContext();     <---------- in getAsExprContext()
-
-   if it's not done then there is always a possibility for the context to be amended by calling MutableExprContext before evaluate()
-
 3. in ExprInterpreter
     public Variant visitInOperator(final Expr.InOperator expr) {
     // TODO: why it is outside of try?
@@ -128,10 +113,25 @@
 
 
 
+///////////////////////////////////////////////////////////////////////////////////////////
+// Done:
+///////////////////////////////////////////////////////////////////////////////////////////
 
+3. Make ExprContext truly immutable for Optimized evaluations
 
+   It should generate an immutable new instance on the last step:
+   ExprContextBuilder.globalContext()
+                     .defineDouble("$PI", () -> 3.14)
+                     .build();  <------------ in build()
 
-Done:
+         final MutableExprContext mutCtx = ExprContextFactory.createGlobalContext();
+         mutCtx.defineString("region", () -> "EMEA");
+         mutCtx.defineFunction("algoType", result -> result.accept("Algo1"));
+
+         final ExprContext ctx = mutCtx.getAsExprContext();     <---------- in getAsExprContext()
+
+   if it's not done then there is always a possibility for the context to be amended by calling MutableExprContext before evaluate()
+
 7. This is essentially what we do then we introduce AstOptimizer!
    After AST optimization there are no lookups!
    Can we merge contexts to avoid 2 lookups in this function in ExprContextCombined?

@@ -33,12 +33,12 @@ public final class ExprEvaluatorAccessor {
     public static ExprEvaluator create(final ExprEvaluatorFactory.Pass ignoredPass,
                                        final ExprContext ctx,
                                        final String source) {
-        return new OptimizedExprEvaluator(ctx, source);
+        return new ExprEvaluatorOptimized(ctx, source);
     }
 
     public static ExprEvaluator create(final ExprEvaluatorFactory.Pass ignoredPass,
                                        final ExprContext ctx,
                                        final ByteBuffer source) {
-        return new OptimizedExprEvaluator(ctx, source);
+        return new ExprEvaluatorOptimized(ctx, source);
     }
 }

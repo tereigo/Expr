@@ -2,7 +2,7 @@ package com.tereigo.expr.impl;
 
 import com.tereigo.expr.ExprContext;
 import com.tereigo.expr.ExprContextBuilder;
-import com.tereigo.expr.ExprContextBuilderFactory;
+import com.tereigo.expr.ExprContextFactory;
 import com.tereigo.expr.domains.falcon.FalconDomain;
 import com.tereigo.expr.falcon.utils.OrderPrice;
 import org.junit.jupiter.api.Test;
@@ -18,7 +18,7 @@ class FalconDomainTest extends ExprEvaluatorTestBase {
     @Test
     void falconTests() {
 
-        final ExprContextBuilder ctx = ExprContextBuilderFactory.globalContext();
+        final ExprContextBuilder ctx = ExprContextFactory.globalContext();
         FalconDomain.defineFunctions(ctx);
 
         optimized = false;
@@ -28,7 +28,7 @@ class FalconDomainTest extends ExprEvaluatorTestBase {
     @Test
     void falconOptimizedTests() {
 
-        final ExprContextBuilder ctx = ExprContextBuilderFactory.globalContext();
+        final ExprContextBuilder ctx = ExprContextFactory.globalContext();
         FalconDomain.defineFunctions(ctx);
 
         optimized = true;

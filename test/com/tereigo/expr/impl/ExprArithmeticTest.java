@@ -2,7 +2,7 @@ package com.tereigo.expr.impl;
 
 import com.tereigo.expr.ExprContext;
 import com.tereigo.expr.ExprContextBuilder;
-import com.tereigo.expr.ExprContextBuilderFactory;
+import com.tereigo.expr.ExprContextFactory;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -515,7 +515,7 @@ class ExprArithmeticTest extends ExprEvaluatorTestBase {
         runErr = assertThrows(RuntimeError.class, () -> evaluateLong("$productId / 0", ctx));
         assertEquals("Expression evaluation error [line 1, pos 12]: Division by zero in expression '$productId / 0'", runErr.getMessage());
 
-        final ExprContextBuilder mutCtx2 = ExprContextBuilderFactory.globalContext();
+        final ExprContextBuilder mutCtx2 = ExprContextFactory.globalContext();
         mutCtx2.addLong("$zero", () -> 0L);
         final ExprContext ctx2 = mutCtx2.getAsExprContext();
         runErr = assertThrows(RuntimeError.class, () -> evaluateLong("123 / $zero", ctx2));

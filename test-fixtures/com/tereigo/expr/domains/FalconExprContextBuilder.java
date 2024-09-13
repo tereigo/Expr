@@ -1,7 +1,7 @@
 package com.tereigo.expr.domains;
 
 import com.tereigo.expr.ExprContextBuilder;
-import com.tereigo.expr.ExprContextBuilderFactory;
+import com.tereigo.expr.ExprContextFactory;
 import com.tereigo.expr.domains.algo.AlgoDataProvider;
 import com.tereigo.expr.domains.algo.AlgoGlobalExprContextEnricher;
 import com.tereigo.expr.domains.algo.AlgoLocalExprContextEnricher;
@@ -20,7 +20,7 @@ public class FalconExprContextBuilder {
 
     private FalconExprContextBuilder() {
         // include native context by default
-        this.ctx = ExprContextBuilderFactory.globalContext();
+        this.ctx = ExprContextFactory.globalContext();
     }
 
     private FalconExprContextBuilder(final ExprContextBuilder ctx) {
@@ -37,7 +37,7 @@ public class FalconExprContextBuilder {
 
     public FalconExprContextBuilder falcon(final FalconDataProvider falcon) {
         ctx.enrich(new FalconGlobalExprContextEnricher(falcon));
-        final ExprContextBuilder localFalconCtx = ExprContextBuilderFactory.localContext(new FalconLocalExprContextEnricher(falcon));
+        final ExprContextBuilder localFalconCtx = ExprContextFactory.localContext(new FalconLocalExprContextEnricher(falcon));
         ctx.addExprContext("falcon", localFalconCtx.getAsExprContext());
         FalconDomain.defineFunctions(ctx);
         return this;
@@ -45,14 +45,14 @@ public class FalconExprContextBuilder {
 
     public FalconExprContextBuilder algo(final AlgoDataProvider algo) {
         ctx.enrich(new AlgoGlobalExprContextEnricher(algo));
-        final ExprContextBuilder localAlgoCtx = ExprContextBuilderFactory.localContext(new AlgoLocalExprContextEnricher(algo));
+        final ExprContextBuilder localAlgoCtx = ExprContextFactory.localContext(new AlgoLocalExprContextEnricher(algo));
         ctx.addExprContext("algo", localAlgoCtx.getAsExprContext());
         return this;
     }
 
     public FalconExprContextBuilder order(final OrderFieldResolver orderFieldResolver) {
         ctx.enrich(new OrderGlobalExprContextEnricher(orderFieldResolver));
-        final ExprContextBuilder localOrderCtx = ExprContextBuilderFactory.localContext(new OrderLocalExprContextEnricher(orderFieldResolver));
+        final ExprContextBuilder localOrderCtx = ExprContextFactory.localContext(new OrderLocalExprContextEnricher(orderFieldResolver));
         ctx.addExprContext("order", localOrderCtx.getAsExprContext());
         return this;
     }

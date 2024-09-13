@@ -2,7 +2,7 @@ package com.tereigo.expr.impl;
 
 import com.tereigo.expr.ExprContext;
 import com.tereigo.expr.ExprContextBuilder;
-import com.tereigo.expr.ExprContextBuilderFactory;
+import com.tereigo.expr.ExprContextFactory;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -11,7 +11,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 class ExprPrinterTest extends ExprEvaluatorTestBase {
 
     private static ExprContext getEvaluationContext() {
-        final ExprContextBuilder ctx = ExprContextBuilderFactory.globalContext();
+        final ExprContextBuilder ctx = ExprContextFactory.globalContext();
         ctx.addFunction("func", (result, arg1, arg2) -> result.accept(3.14));
         ctx.addLong("$id", () -> 123L);
         ctx.addLong("$curTime", () -> 123L);

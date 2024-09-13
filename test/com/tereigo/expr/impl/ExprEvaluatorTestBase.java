@@ -2,7 +2,7 @@ package com.tereigo.expr.impl;
 
 import com.tereigo.expr.ExprContext;
 import com.tereigo.expr.ExprContextBuilder;
-import com.tereigo.expr.ExprContextBuilderFactory;
+import com.tereigo.expr.ExprContextFactory;
 import com.tereigo.expr.ExprEvaluator;
 import com.tereigo.expr.ExprEvaluatorFactory;
 import com.tereigo.expr.ExprEvaluatorWithContext;
@@ -15,7 +15,7 @@ class ExprEvaluatorTestBase {
     protected static final double EPS = 0.00001;
 
     protected ExprContext createContext() {
-        final ExprContextBuilder ctx = ExprContextBuilderFactory.globalContext();
+        final ExprContextBuilder ctx = ExprContextFactory.globalContext();
         ctx.addDouble("$PI", () -> 3.14);
         ctx.addLong("$productId", () -> 123L);
         ctx.addString("$ric", () -> "VOD.L");

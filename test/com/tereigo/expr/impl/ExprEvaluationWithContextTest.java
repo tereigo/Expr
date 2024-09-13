@@ -2,7 +2,7 @@ package com.tereigo.expr.impl;
 
 import com.tereigo.expr.ExprContext;
 import com.tereigo.expr.ExprContextBuilder;
-import com.tereigo.expr.ExprContextBuilderFactory;
+import com.tereigo.expr.ExprContextFactory;
 import com.tereigo.expr.ExprEvaluator;
 import com.tereigo.expr.ExprEvaluatorFactory;
 import com.tereigo.expr.order.SimpleOrderFieldSupplier;
@@ -21,7 +21,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class ExprEvaluationWithContextTest extends ExprEvaluatorTestBase {
 
     private static ExprContext createTestObjExprContext(final String nodeName, final ByteBuffer algoType) {
-        return ExprContextBuilderFactory.localContext()
+        return ExprContextFactory.localContext()
                 .addString("nodeName", () -> nodeName)
                 .addByteBuffer("algoType", () -> algoType)
                 .getAsExprContext();
@@ -29,7 +29,7 @@ class ExprEvaluationWithContextTest extends ExprEvaluatorTestBase {
 
     @Test
     void contextTestsWithSuppliers() {
-        final ExprContext ctx = ExprContextBuilderFactory.globalContext()
+        final ExprContext ctx = ExprContextFactory.globalContext()
                 .addDouble("$PI", () -> 3.14)
                 .addLong("$productId", () -> 123L)
                 .addString("$ric", () -> "VOD.L")
@@ -45,7 +45,7 @@ class ExprEvaluationWithContextTest extends ExprEvaluatorTestBase {
     void contextTestsAfterOptimizationForDebug() {
         final ExprContext testCtx = createTestObjExprContext("VWAP1", constant("Vwap"));
 
-        final ExprContext ctx = ExprContextBuilderFactory.globalContext()
+        final ExprContext ctx = ExprContextFactory.globalContext()
                 .addDouble("$PI", () -> 3.14)
                 .addLong("$productId", () -> 123L)
                 .addString("$ric", () -> "VOD.L")
@@ -73,7 +73,7 @@ class ExprEvaluationWithContextTest extends ExprEvaluatorTestBase {
 
     @Test
     void contextTestsAfterOptimization() {
-        final ExprContext ctx = ExprContextBuilderFactory.globalContext()
+        final ExprContext ctx = ExprContextFactory.globalContext()
                 .addDouble("$PI", () -> 3.14)
                 .addLong("$productId", () -> 123L)
                 .addString("$ric", () -> "VOD.L")
@@ -88,7 +88,7 @@ class ExprEvaluationWithContextTest extends ExprEvaluatorTestBase {
     @Test
     void contextTestsWithSuppliersForOrder() {
         final TestOrder order = new TestOrder("VOD.L", 123L, true, constant("CLIENT1"));
-        final ExprContext ctx = ExprContextBuilderFactory.globalContext()
+        final ExprContext ctx = ExprContextFactory.globalContext()
                 .addDouble("$PI", () -> 3.14)
                 .addString("$nodeAlgoType", () -> "Vwap")
                 .addLong("$productId", order::productId)
@@ -105,7 +105,7 @@ class ExprEvaluationWithContextTest extends ExprEvaluatorTestBase {
         final SimpleOrderFieldSupplier orderSupplier = new SimpleOrderFieldSupplier();
         final TestOrder order1 = new TestOrder("VOD.L", 123L, true, constant("CLIENT1"));
         orderSupplier.setOrder(order1);
-        final ExprContextBuilder mutCtx = ExprContextBuilderFactory.globalContext();
+        final ExprContextBuilder mutCtx = ExprContextFactory.globalContext();
         mutCtx.addDouble("$PI", () -> 3.14);
         mutCtx.addString("$nodeAlgoType", () -> "Vwap");
         mutCtx.addLong("$productId", orderSupplier::productId);
@@ -148,7 +148,7 @@ class ExprEvaluationWithContextTest extends ExprEvaluatorTestBase {
         final TestOrder order1 = new TestOrder("VOD.L", 123L, true, constant("CLIENT1"));
         orderSupplier.setOrder(order1);
 
-        final ExprContextBuilder globalCtx = ExprContextBuilderFactory.globalContext();
+        final ExprContextBuilder globalCtx = ExprContextFactory.globalContext();
         globalCtx.addDouble("$PI", () -> 3.14);
         globalCtx.addString("$nodeAlgoType", () -> "Vwap");
         globalCtx.addString("$region", () -> "EMEA");

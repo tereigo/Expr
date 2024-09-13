@@ -1,7 +1,7 @@
 package com.tereigo.expr.transformer;
 
 import com.tereigo.expr.ExprContext;
-import com.tereigo.expr.ExprContextBuilderFactory;
+import com.tereigo.expr.ExprContextFactory;
 import com.tereigo.expr.ExprEvaluator;
 import com.tereigo.expr.ExprEvaluatorFactory;
 
@@ -50,7 +50,7 @@ public final class OptimizedNumberSeriesTransformer {
 
         // create evaluation context and add "x/X" as the external identifiers
         // this context will also include all "native" math functions like sin, sqrt, abs, ...
-        final ExprContext ctx = ExprContextBuilderFactory.globalContext()
+        final ExprContext ctx = ExprContextFactory.globalContext()
                                                          .addDouble("x", valueHolder)
                                                          .addAlias("x", "X")
                                                          .getAsExprContext();

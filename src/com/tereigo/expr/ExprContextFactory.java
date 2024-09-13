@@ -2,7 +2,7 @@ package com.tereigo.expr;
 
 import com.tereigo.expr.impl.ExprContextAccessor;
 
-public final class ExprContextBuilderFactory {
+public final class ExprContextFactory {
 
     /**
      * For global context we start with the full set of native functions
@@ -29,6 +29,6 @@ public final class ExprContextBuilderFactory {
     public static class Pass { }
     private static final Pass PASS = new Pass();
 
-    private ExprContextBuilderFactory() { }
+    private ExprContextFactory() { }
 
 }

@@ -6,19 +6,22 @@ import com.tereigo.expr.ExprEvaluatorFactory;
 import com.tereigo.expr.ExprEvaluatorWithContext;
 
 import java.nio.ByteBuffer;
+import java.util.Objects;
 
 public final class ExprEvaluatorAccessor {
 
     private ExprEvaluatorAccessor() {
     }
 
-    public static ExprEvaluatorWithContext create(final ExprEvaluatorFactory.Pass ignoredPass,
+    public static ExprEvaluatorWithContext create(final ExprEvaluatorFactory.Pass pass,
                                                   final ByteBuffer source) {
+        Objects.requireNonNull(pass);
         return new ExprEvaluatorImpl(source);
     }
 
-    public static ExprEvaluatorWithContext create(final ExprEvaluatorFactory.Pass ignoredPass,
+    public static ExprEvaluatorWithContext create(final ExprEvaluatorFactory.Pass pass,
                                                   final String source) {
+        Objects.requireNonNull(pass);
         return new ExprEvaluatorImpl(source);
     }
 

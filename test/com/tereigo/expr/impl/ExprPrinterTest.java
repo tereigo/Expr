@@ -1,8 +1,8 @@
 package com.tereigo.expr.impl;
 
 import com.tereigo.expr.ExprContext;
-import com.tereigo.expr.ExprContextFactory;
-import com.tereigo.expr.MutableExprContext;
+import com.tereigo.expr.ExprContextBuilder;
+import com.tereigo.expr.ExprContextBuilderFactory;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -11,7 +11,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 class ExprPrinterTest extends ExprEvaluatorTestBase {
 
     private static ExprContext getEvaluationContext() {
-        final MutableExprContext ctx = ExprContextFactory.createGlobalContext();
+        final ExprContextBuilder ctx = ExprContextBuilderFactory.globalContext();
         ctx.defineFunction("func", (result, arg1, arg2) -> result.accept(3.14));
         ctx.defineLong("$id", () -> 123L);
         ctx.defineLong("$curTime", () -> 123L);

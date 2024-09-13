@@ -1,17 +1,17 @@
 package com.tereigo.expr.impl;
 
-import com.tereigo.expr.ExprContextFactory;
-import com.tereigo.expr.MutableExprContext;
+import com.tereigo.expr.ExprContextBuilder;
+import com.tereigo.expr.ExprContextBuilderFactory;
 
 public final class ExprContextAccessor {
 
     private ExprContextAccessor() { }
 
-    public static MutableExprContext createEmpty(final ExprContextFactory.Pass ignoredPass) {
-        return new ExprContextMutable();
+    public static ExprContextBuilder createEmpty(final ExprContextBuilderFactory.Pass ignoredPass) {
+        return new ExprContextBuilderImpl();
     }
 
-    public static MutableExprContext createNative(final ExprContextFactory.Pass ignoredPass) {
-        return new ExprContextMutable(ExprContextNativeEnricher.get());
+    public static ExprContextBuilder createNative(final ExprContextBuilderFactory.Pass ignoredPass) {
+        return new ExprContextBuilderImpl(ExprContextNativeEnricher.get());
     }
 }

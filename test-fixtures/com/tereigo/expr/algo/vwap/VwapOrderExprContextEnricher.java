@@ -1,7 +1,7 @@
 package com.tereigo.expr.algo.vwap;
 
+import com.tereigo.expr.ExprContextBuilder;
 import com.tereigo.expr.ExprContextEnricher;
-import com.tereigo.expr.MutableExprContext;
 import com.tereigo.expr.domains.order.OrderFieldResolver;
 import com.tereigo.expr.domains.order.OrderFieldResolverImpl;
 import com.tereigo.expr.falcon.msg.VwapOrderInstMsgRo;
@@ -18,7 +18,7 @@ public final class VwapOrderExprContextEnricher implements ExprContextEnricher {
     }
 
     @Override
-    public void enrich(final MutableExprContext ctx) {
+    public void enrich(final ExprContextBuilder ctx) {
         ctx.defineFunction("volumeLimit", result -> result.accept(toVwap(orderResolver).getVolumeLimit()));
     }
 }

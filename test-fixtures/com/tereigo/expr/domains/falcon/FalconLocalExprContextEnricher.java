@@ -1,7 +1,7 @@
 package com.tereigo.expr.domains.falcon;
 
+import com.tereigo.expr.ExprContextBuilder;
 import com.tereigo.expr.ExprContextEnricher;
-import com.tereigo.expr.MutableExprContext;
 
 /*
   Provides access to global functions
@@ -14,7 +14,7 @@ public class FalconLocalExprContextEnricher implements ExprContextEnricher {
     }
 
     @Override
-    public void enrich(final MutableExprContext ctx) {
+    public void enrich(final ExprContextBuilder ctx) {
         ctx.defineLong("engineTimeMs", falcon::getEngineTimeMs);
 
         ctx.defineDouble("random", falcon::getNextRandom);

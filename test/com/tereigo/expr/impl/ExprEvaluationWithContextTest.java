@@ -1,10 +1,10 @@
 package com.tereigo.expr.impl;
 
 import com.tereigo.expr.ExprContext;
-import com.tereigo.expr.ExprContextFactory;
+import com.tereigo.expr.ExprContextBuilder;
+import com.tereigo.expr.ExprContextBuilderFactory;
 import com.tereigo.expr.ExprEvaluator;
 import com.tereigo.expr.ExprEvaluatorFactory;
-import com.tereigo.expr.MutableExprContext;
 import com.tereigo.expr.order.SimpleOrderFieldSupplier;
 import com.tereigo.expr.order.TestOrder;
 import org.junit.jupiter.api.Test;
@@ -21,40 +21,39 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class ExprEvaluationWithContextTest extends ExprEvaluatorTestBase {
 
     private static ExprContext createTestObjExprContext(final String nodeName, final ByteBuffer algoType) {
-        final MutableExprContext ctx = ExprContextFactory.createLocalContext();
-        ctx.defineString("nodeName", () -> nodeName);
-        ctx.defineByteBuffer("algoType", () -> algoType);
-        return ctx.getAsExprContext();
+        return ExprContextBuilderFactory.localContext()
+                .defineString("nodeName", () -> nodeName)
+                .defineByteBuffer("algoType", () -> algoType)
+                .getAsExprContext();
     }
 
     @Test
     void contextTestsWithSuppliers() {
-        final MutableExprContext ctx = ExprContextFactory.createGlobalContext();
-        ctx.defineDouble("$PI", () -> 3.14);
-        ctx.defineLong("$productId", () -> 123L);
-        ctx.defineString("$ric", () -> "VOD.L");
-        ctx.defineString("$nodeAlgoType", () -> "Vwap");
-        ctx.defineBool("$enabled", () -> true);
-        ctx.defineByteBuffer("$tuid", () -> constant("CLIENT1"));
+        final ExprContext ctx = ExprContextBuilderFactory.globalContext()
+                .defineDouble("$PI", () -> 3.14)
+                .defineLong("$productId", () -> 123L)
+                .defineString("$ric", () -> "VOD.L")
+                .defineString("$nodeAlgoType", () -> "Vwap")
+                .defineBool("$enabled", () -> true)
+                .defineByteBuffer("$tuid", () -> constant("CLIENT1"))
+                .getAsExprContext();
 
-        runExpressionWithContextTests(ctx.getAsExprContext());
+        runExpressionWithContextTests(ctx);
     }
 
     @Test
     void contextTestsAfterOptimizationForDebug() {
-        final MutableExprContext mutCtx = ExprContextFactory.createGlobalContext();
-        mutCtx.defineDouble("$PI", () -> 3.14);
-        mutCtx.defineLong("$productId", () -> 123L);
-        mutCtx.defineString("$ric", () -> "VOD.L");
-        mutCtx.defineString("$nodeAlgoType", () -> "Vwap");
-        mutCtx.defineBool("$enabled", () -> true);
-        mutCtx.defineByteBuffer("$tuid", () -> constant("CLIENT1"));
-
         final ExprContext testCtx = createTestObjExprContext("VWAP1", constant("Vwap"));
 
-        mutCtx.defineExprContext("test", () -> testCtx);
-
-        final ExprContext ctx = mutCtx.getAsExprContext();
+        final ExprContext ctx = ExprContextBuilderFactory.globalContext()
+                .defineDouble("$PI", () -> 3.14)
+                .defineLong("$productId", () -> 123L)
+                .defineString("$ric", () -> "VOD.L")
+                .defineString("$nodeAlgoType", () -> "Vwap")
+                .defineBool("$enabled", () -> true)
+                .defineByteBuffer("$tuid", () -> constant("CLIENT1"))
+                .defineExprContext("test", () -> testCtx)
+                .getAsExprContext();
 
         {
             final ExprEvaluator evaluator = ExprEvaluatorFactory.create(ctx, "1.0+$PI");
@@ -74,29 +73,31 @@ class ExprEvaluationWithContextTest extends ExprEvaluatorTestBase {
 
     @Test
     void contextTestsAfterOptimization() {
-        final MutableExprContext ctx = ExprContextFactory.createGlobalContext();
-        ctx.defineDouble("$PI", () -> 3.14);
-        ctx.defineLong("$productId", () -> 123L);
-        ctx.defineString("$ric", () -> "VOD.L");
-        ctx.defineString("$nodeAlgoType", () -> "Vwap");
-        ctx.defineBool("$enabled", () -> true);
-        ctx.defineByteBuffer("$tuid", () -> constant("CLIENT1"));
+        final ExprContext ctx = ExprContextBuilderFactory.globalContext()
+                .defineDouble("$PI", () -> 3.14)
+                .defineLong("$productId", () -> 123L)
+                .defineString("$ric", () -> "VOD.L")
+                .defineString("$nodeAlgoType", () -> "Vwap")
+                .defineBool("$enabled", () -> true)
+                .defineByteBuffer("$tuid", () -> constant("CLIENT1"))
+                .getAsExprContext();
 
-        runOptimizedExpressionWithContextTests(ctx.getAsExprContext());
+        runOptimizedExpressionWithContextTests(ctx);
     }
 
     @Test
     void contextTestsWithSuppliersForOrder() {
         final TestOrder order = new TestOrder("VOD.L", 123L, true, constant("CLIENT1"));
-        final MutableExprContext ctx = ExprContextFactory.createGlobalContext();
-        ctx.defineDouble("$PI", () -> 3.14);
-        ctx.defineString("$nodeAlgoType", () -> "Vwap");
-        ctx.defineLong("$productId", order::productId);
-        ctx.defineString("$ric", order::ric);
-        ctx.defineBool("$enabled", order::enabled);
-        ctx.defineByteBuffer("$tuid", order::tuid);
+        final ExprContext ctx = ExprContextBuilderFactory.globalContext()
+                .defineDouble("$PI", () -> 3.14)
+                .defineString("$nodeAlgoType", () -> "Vwap")
+                .defineLong("$productId", order::productId)
+                .defineString("$ric", order::ric)
+                .defineBool("$enabled", order::enabled)
+                .defineByteBuffer("$tuid", order::tuid)
+                .getAsExprContext();
 
-        runExpressionWithContextTests(ctx.getAsExprContext());
+        runExpressionWithContextTests(ctx);
     }
 
     @Test
@@ -104,7 +105,7 @@ class ExprEvaluationWithContextTest extends ExprEvaluatorTestBase {
         final SimpleOrderFieldSupplier orderSupplier = new SimpleOrderFieldSupplier();
         final TestOrder order1 = new TestOrder("VOD.L", 123L, true, constant("CLIENT1"));
         orderSupplier.setOrder(order1);
-        final MutableExprContext mutCtx = ExprContextFactory.createGlobalContext();
+        final ExprContextBuilder mutCtx = ExprContextBuilderFactory.globalContext();
         mutCtx.defineDouble("$PI", () -> 3.14);
         mutCtx.defineString("$nodeAlgoType", () -> "Vwap");
         mutCtx.defineLong("$productId", orderSupplier::productId);
@@ -147,7 +148,7 @@ class ExprEvaluationWithContextTest extends ExprEvaluatorTestBase {
         final TestOrder order1 = new TestOrder("VOD.L", 123L, true, constant("CLIENT1"));
         orderSupplier.setOrder(order1);
 
-        final MutableExprContext globalCtx = ExprContextFactory.createGlobalContext();
+        final ExprContextBuilder globalCtx = ExprContextBuilderFactory.globalContext();
         globalCtx.defineDouble("$PI", () -> 3.14);
         globalCtx.defineString("$nodeAlgoType", () -> "Vwap");
         globalCtx.defineString("$region", () -> "EMEA");

@@ -1,8 +1,8 @@
 package com.tereigo.expr.impl;
 
 import com.tereigo.expr.ExprContext;
-import com.tereigo.expr.ExprContextFactory;
-import com.tereigo.expr.MutableExprContext;
+import com.tereigo.expr.ExprContextBuilder;
+import com.tereigo.expr.ExprContextBuilderFactory;
 import com.tereigo.expr.utils.ByteBufferUtils;
 import org.junit.jupiter.api.Test;
 
@@ -295,7 +295,7 @@ class ExprEvaluatorTest extends ExprEvaluatorTestBase {
 
     @Test
     void byteBufferTests() {
-        final MutableExprContext mutCtx = ExprContextFactory.createGlobalContext();
+        final ExprContextBuilder mutCtx = ExprContextBuilderFactory.globalContext();
         final RuntimeError runErr;
 
         mutCtx.defineByteBuffer("$tuid", () -> constant("CLIENT1"));
@@ -542,7 +542,7 @@ class ExprEvaluatorTest extends ExprEvaluatorTestBase {
         runErr = assertThrows(RuntimeError.class, () -> evaluate("!(1 + 2)"));
         assertEquals("Expression evaluation error [line 1, pos 1]: Operand must be a boolean in expression '!(1 + 2)'", runErr.getMessage());
 
-        final MutableExprContext mutCtx = ExprContextFactory.createGlobalContext();
+        final ExprContextBuilder mutCtx = ExprContextBuilderFactory.globalContext();
         mutCtx.defineString("$ric", () -> "VOD.L");
         mutCtx.defineLong("$productId", () -> 123L);
         mutCtx.defineByteBuffer("$tuid", () -> constant("CLIENT1"));

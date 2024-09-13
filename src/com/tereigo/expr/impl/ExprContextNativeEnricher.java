@@ -1,7 +1,7 @@
 package com.tereigo.expr.impl;
 
+import com.tereigo.expr.ExprContextBuilder;
 import com.tereigo.expr.ExprContextEnricher;
-import com.tereigo.expr.MutableExprContext;
 import com.tereigo.expr.utils.ByteBufferUtils;
 import com.tereigo.expr.variant.VariantUtils;
 
@@ -24,7 +24,7 @@ final class ExprContextNativeEnricher implements ExprContextEnricher {
     }
 
     @Override
-    public void enrich(final MutableExprContext ctx) {
+    public void enrich(final ExprContextBuilder ctx) {
 
         ctx.defineFunction("round", (result, arg) -> {
             if (VariantUtils.isLong(arg)) {

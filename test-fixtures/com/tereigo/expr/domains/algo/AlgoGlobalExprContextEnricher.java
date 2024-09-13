@@ -1,7 +1,7 @@
 package com.tereigo.expr.domains.algo;
 
+import com.tereigo.expr.ExprContextBuilder;
 import com.tereigo.expr.ExprContextEnricher;
-import com.tereigo.expr.MutableExprContext;
 
 /*
   Provides access to Algo functions
@@ -14,7 +14,7 @@ public class AlgoGlobalExprContextEnricher implements ExprContextEnricher {
     }
 
     @Override
-    public void enrich(final MutableExprContext ctx) {
+    public void enrich(final ExprContextBuilder ctx) {
         ctx.defineFunction("algoNodeType", result -> result.accept(algoDataProvider.getAlgoType()));
     }
 

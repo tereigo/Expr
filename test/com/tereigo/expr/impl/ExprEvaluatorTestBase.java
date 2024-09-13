@@ -1,11 +1,11 @@
 package com.tereigo.expr.impl;
 
 import com.tereigo.expr.ExprContext;
-import com.tereigo.expr.ExprContextFactory;
+import com.tereigo.expr.ExprContextBuilder;
+import com.tereigo.expr.ExprContextBuilderFactory;
 import com.tereigo.expr.ExprEvaluator;
 import com.tereigo.expr.ExprEvaluatorFactory;
 import com.tereigo.expr.ExprEvaluatorWithContext;
-import com.tereigo.expr.MutableExprContext;
 
 import java.nio.ByteBuffer;
 
@@ -15,7 +15,7 @@ class ExprEvaluatorTestBase {
     protected static final double EPS = 0.00001;
 
     protected ExprContext createContext() {
-        final MutableExprContext ctx = ExprContextFactory.createGlobalContext();
+        final ExprContextBuilder ctx = ExprContextBuilderFactory.globalContext();
         ctx.defineDouble("$PI", () -> 3.14);
         ctx.defineLong("$productId", () -> 123L);
         ctx.defineString("$ric", () -> "VOD.L");

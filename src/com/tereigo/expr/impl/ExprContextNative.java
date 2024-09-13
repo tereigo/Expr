@@ -10,7 +10,7 @@ final class ExprContextNative {
     private static final ExprContext INSTANCE;
 
     static {
-        INSTANCE = new ExprContextMutable(ExprContextNativeEnricher.get()).getAsExprContext();
+        INSTANCE = new ExprContextBuilderImpl(ExprContextNativeEnricher.get()).getAsExprContext();
     }
 
     private ExprContextNative() { }

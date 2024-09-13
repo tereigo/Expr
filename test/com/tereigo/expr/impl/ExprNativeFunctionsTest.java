@@ -1,8 +1,8 @@
 package com.tereigo.expr.impl;
 
 import com.tereigo.expr.ExprContext;
-import com.tereigo.expr.ExprContextFactory;
-import com.tereigo.expr.MutableExprContext;
+import com.tereigo.expr.ExprContextBuilder;
+import com.tereigo.expr.ExprContextBuilderFactory;
 import org.junit.jupiter.api.Test;
 
 import static com.tereigo.expr.utils.ByteBufferUtils.constant;
@@ -211,7 +211,7 @@ class ExprNativeFunctionsTest extends ExprEvaluatorTestBase {
         runErr = assertThrows(RuntimeError.class, () -> evaluate("toDouble(true)"));
         assertEquals("Expression evaluation error [line 1, pos 1]: RuntimeException in function 'toDouble': Operand must be a number in expression 'toDouble(true)'", runErr.getMessage());
 
-        final ExprContext ctx = ExprContextFactory.createGlobalContext().getAsExprContext();
+        final ExprContext ctx = ExprContextBuilderFactory.globalContext().getAsExprContext();
 
         assertEquals(1.0, evaluateDouble("min(1, PI)", ctx), EPS);
         assertEquals(1.0, evaluateDouble("min(1, PI + PI)", ctx), EPS);
@@ -298,7 +298,7 @@ class ExprNativeFunctionsTest extends ExprEvaluatorTestBase {
         runErr = assertThrows(RuntimeError.class, () -> evaluate("true.contains(\"A\")"));
         assertEquals("Expression evaluation error [line 1, pos 6]: RuntimeException in function 'contains': Operand must be a STRING or BYTE_BUFFER in expression 'true.contains(\"A\")'", runErr.getMessage());
 
-        final MutableExprContext mutCtx = ExprContextFactory.createGlobalContext();
+        final ExprContextBuilder mutCtx = ExprContextBuilderFactory.globalContext();
         mutCtx.defineString("region", () -> "EMEA");
         mutCtx.defineFunction("algoType", result -> result.accept("Algo1"));
 
@@ -309,7 +309,7 @@ class ExprNativeFunctionsTest extends ExprEvaluatorTestBase {
         assertTrue(evaluateBool("algoType().length() == 5", ctx));
         assertTrue(evaluateBool("region.length() == 4", ctx));
 
-        final MutableExprContext mutCtx2 = ExprContextFactory.createGlobalContext();
+        final ExprContextBuilder mutCtx2 = ExprContextBuilderFactory.globalContext();
         mutCtx2.defineByteBuffer("region", () -> constant("EMEA"));
         mutCtx2.defineFunction("algoType", result -> result.accept(constant("Algo1")));
 
@@ -330,7 +330,7 @@ class ExprNativeFunctionsTest extends ExprEvaluatorTestBase {
 //        runErr = assertThrows(RuntimeError.class, () -> evaluate("algoType().contains(\"A\")", ctx2));
 //        assertEquals("Expression evaluation error [line 1, pos 12]: RuntimeException in function 'contains': Operand must be a STRING in expression 'algoType().contains(\"A\")'", runErr.getMessage());
 
-        final MutableExprContext mutCtx3 = ExprContextFactory.createGlobalContext();
+        final ExprContextBuilder mutCtx3 = ExprContextBuilderFactory.globalContext();
         mutCtx3.defineString("region", () -> "EMEA");
         mutCtx3.defineByteBuffer("country", () -> constant("Italy"));
         mutCtx3.defineFunction("algoType", result -> result.accept(constant("Algo1")));

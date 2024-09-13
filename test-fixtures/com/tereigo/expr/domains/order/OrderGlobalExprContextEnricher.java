@@ -1,7 +1,7 @@
 package com.tereigo.expr.domains.order;
 
+import com.tereigo.expr.ExprContextBuilder;
 import com.tereigo.expr.ExprContextEnricher;
-import com.tereigo.expr.MutableExprContext;
 
 /*
   Provides access to order functions
@@ -14,7 +14,7 @@ public class OrderGlobalExprContextEnricher implements ExprContextEnricher {
     }
 
     @Override
-    public void enrich(MutableExprContext ctx) {
+    public void enrich(final ExprContextBuilder ctx) {
         ctx.defineFunction("orderTuid", result -> result.accept(orderFieldResolver.tuid()));
         ctx.defineFunction("orderRic", result -> result.accept(orderFieldResolver.ric()));
         ctx.defineFunction("orderProductId", result -> result.accept(orderFieldResolver.productId()));

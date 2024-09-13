@@ -1,13 +1,13 @@
 package com.tereigo.expr.domains.falcon;
 
-import com.tereigo.expr.MutableExprContext;
+import com.tereigo.expr.ExprContextBuilder;
 import com.tereigo.expr.falcon.utils.OrderPrice;
 import com.tereigo.expr.falcon.utils.PriceUtils;
 import com.tereigo.expr.variant.VariantUtils;
 
 public final class FalconDomain {
 
-    public static void defineFunctions(final MutableExprContext ctx) {
+    public static void defineFunctions(final ExprContextBuilder ctx) {
         ctx.defineFunction("ltod", (result, arg1) -> {
             if (VariantUtils.isLong(arg1)) {
                 result.accept(PriceUtils.ltod(arg1.getAsLong()));

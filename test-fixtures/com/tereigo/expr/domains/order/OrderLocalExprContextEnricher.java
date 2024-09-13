@@ -1,7 +1,7 @@
 package com.tereigo.expr.domains.order;
 
+import com.tereigo.expr.ExprContextBuilder;
 import com.tereigo.expr.ExprContextEnricher;
-import com.tereigo.expr.MutableExprContext;
 
 public class OrderLocalExprContextEnricher implements ExprContextEnricher {
     private final OrderFieldResolver orderFieldResolver;
@@ -11,7 +11,7 @@ public class OrderLocalExprContextEnricher implements ExprContextEnricher {
     }
 
     @Override
-    public void enrich(MutableExprContext ctx) {
+    public void enrich(final ExprContextBuilder ctx) {
         ctx.defineLong("productId", orderFieldResolver::productId);
         ctx.defineByteBuffer("ric", orderFieldResolver::ric);
         ctx.defineByteBuffer("tuid", orderFieldResolver::tuid);

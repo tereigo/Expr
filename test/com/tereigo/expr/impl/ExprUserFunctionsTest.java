@@ -1,8 +1,8 @@
 package com.tereigo.expr.impl;
 
 import com.tereigo.expr.ExprContext;
-import com.tereigo.expr.ExprContextFactory;
-import com.tereigo.expr.MutableExprContext;
+import com.tereigo.expr.ExprContextBuilder;
+import com.tereigo.expr.ExprContextBuilderFactory;
 import com.tereigo.expr.domains.order.OrderDomain;
 import com.tereigo.expr.domains.order.OrderFieldResolver;
 import com.tereigo.expr.domains.order.OrderFieldResolverImpl;
@@ -26,7 +26,7 @@ class ExprUserFunctionsTest extends ExprEvaluatorTestBase {
     private boolean optimized;
 
     private static ExprContext createContext(final SimpleOrderFieldSupplier orderSupplier) {
-        final MutableExprContext globalCtx = ExprContextFactory.createGlobalContext();
+        final ExprContextBuilder globalCtx = ExprContextBuilderFactory.globalContext();
         globalCtx.defineFunction("nodeAlgoType", result -> result.accept("Vwap"));
         globalCtx.defineFunction("region", result -> result.accept("EMEA"));
         // this one generates garbage!
@@ -92,9 +92,9 @@ class ExprUserFunctionsTest extends ExprEvaluatorTestBase {
 
     private static ExprContext createObjectsContext() {
         final TuidResolver tuidResolver = new TestTuidResolver();
-        final MutableExprContext testCtx = createTestObjExprContext("VWAP1", constant("Vwap"), tuidResolver);
+        final ExprContextBuilder testCtx = createTestObjExprContext("VWAP1", constant("Vwap"), tuidResolver);
 
-        final MutableExprContext ctx = ExprContextFactory.createGlobalContext();
+        final ExprContextBuilder ctx = ExprContextBuilderFactory.globalContext();
         ctx.defineExprContext("test", testCtx);
 
         // adding order context
@@ -117,7 +117,7 @@ class ExprUserFunctionsTest extends ExprEvaluatorTestBase {
 
     private static ExprContext createChainedContext() {
 
-        final MutableExprContext ctx = ExprContextFactory.createGlobalContext();
+        final ExprContextBuilder ctx = ExprContextBuilderFactory.globalContext();
 
         final TuidResolver tuidResolver = new TestTuidResolver();
         final ReferenceDataCache refData = mock(ReferenceDataCache.class);
@@ -128,7 +128,7 @@ class ExprUserFunctionsTest extends ExprEvaluatorTestBase {
 
         OrderDomain.init(refData);
 
-        final MutableExprContext localTestCtx = createTestObjExprContext("VWAP1", constant("Vwap"), tuidResolver);
+        final ExprContextBuilder localTestCtx = createTestObjExprContext("VWAP1", constant("Vwap"), tuidResolver);
         final OrderFieldResolverImpl orderResolver = new OrderFieldResolverImpl();
         final ExprContext orderCtx = createOrderExprContext(orderResolver);
         final SampleOrderInstruction order1 = new SampleOrderInstruction(123L, 1);
@@ -142,8 +142,8 @@ class ExprUserFunctionsTest extends ExprEvaluatorTestBase {
         return ctx.getAsExprContext();
     }
 
-    private static MutableExprContext createTestObjExprContext(final String nodeName, final ByteBuffer algoType, final TuidResolver tuidResolver) {
-        final MutableExprContext ctx = ExprContextFactory.createLocalContext();
+    private static ExprContextBuilder createTestObjExprContext(final String nodeName, final ByteBuffer algoType, final TuidResolver tuidResolver) {
+        final ExprContextBuilder ctx = ExprContextBuilderFactory.localContext();
         ctx.defineString("nodeName", () -> nodeName);
         ctx.defineByteBuffer("algoType", () -> algoType);
 
@@ -154,7 +154,7 @@ class ExprUserFunctionsTest extends ExprEvaluatorTestBase {
     }
 
     private static ExprContext createOrderExprContext(final OrderFieldResolver orderResolver) {
-        final MutableExprContext ctx = ExprContextFactory.createLocalContext();
+        final ExprContextBuilder ctx = ExprContextBuilderFactory.localContext();
         ctx.defineLong("productId", orderResolver::productId);
         ctx.defineByteBuffer("ric", orderResolver::ric);
         ctx.defineByteBuffer("tuid", orderResolver::tuid);
@@ -310,7 +310,7 @@ class ExprUserFunctionsTest extends ExprEvaluatorTestBase {
     @Test
     void userFunctionWithStringTests() {
         optimized = false;
-        final MutableExprContext mutCtx = ExprContextFactory.createGlobalContext();
+        final ExprContextBuilder mutCtx = ExprContextBuilderFactory.globalContext();
         mutCtx.defineString("region", () -> "EMEA");
         mutCtx.defineFunction("algoType", result -> result.accept(constant("Algo1")));
         mutCtx.defineFunction("stringFunc", (result, arg1) -> result.accept(arg1.getAsString()));
@@ -327,7 +327,7 @@ class ExprUserFunctionsTest extends ExprEvaluatorTestBase {
     @Test
     void userFunctionWithStringOptimizedTests() {
         optimized = true;
-        final MutableExprContext mutCtx = ExprContextFactory.createGlobalContext();
+        final ExprContextBuilder mutCtx = ExprContextBuilderFactory.globalContext();
         mutCtx.defineString("region", () -> "EMEA");
         mutCtx.defineFunction("algoType", result -> result.accept(constant("Algo1")));
         mutCtx.defineFunction("stringFunc", (result, arg1) -> result.accept(arg1.getAsString()));

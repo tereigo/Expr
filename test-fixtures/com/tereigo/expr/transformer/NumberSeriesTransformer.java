@@ -1,10 +1,9 @@
 package com.tereigo.expr.transformer;
 
 import com.tereigo.expr.ExprContext;
-import com.tereigo.expr.ExprContextFactory;
+import com.tereigo.expr.ExprContextBuilderFactory;
 import com.tereigo.expr.ExprEvaluatorFactory;
 import com.tereigo.expr.ExprEvaluatorWithContext;
-import com.tereigo.expr.MutableExprContext;
 
 import java.util.Arrays;
 import java.util.Scanner;
@@ -48,12 +47,11 @@ public final class NumberSeriesTransformer {
 
             // create evaluation context and add "x/X" as the external identifiers
             // this context will also include all "native" math functions like sin, sqrt, abs, ...
-            final MutableExprContext mutCtx = ExprContextFactory.createGlobalContext(ctx -> {
-                ctx.defineDouble("x", () -> originalVal);
-                ctx.addAlias("x", "X");
-            });
-            // convert it to the immutable evaluation context
-            final ExprContext ctx = mutCtx.getAsExprContext();
+            final ExprContext ctx = ExprContextBuilderFactory.globalContext(x -> {
+                x.defineDouble("x", () -> originalVal);
+                x.addAlias("x", "X");
+            }).getAsExprContext();
+
             // apply transformation with a given context
             final double transformedValue = evaluator.evaluateDouble(ctx);
 

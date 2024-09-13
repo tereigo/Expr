@@ -7,11 +7,6 @@
                 throw new RuntimeException("Operand must be a number");
             }
 
-3. in ExprInterpreter
-    public Variant visitInOperator(final Expr.InOperator expr) {
-    // TODO: why it is outside of try?
-    final Variant operand = evaluate(expr.operand);
-
 2. Support scientific input for Doubles: 1e6
 
 3. Migrate to Java 11/17/21
@@ -116,6 +111,11 @@
 ///////////////////////////////////////////////////////////////////////////////////////////
 // Done:
 ///////////////////////////////////////////////////////////////////////////////////////////
+
+3. in ExprInterpreter
+    public Variant visitInOperator(final Expr.InOperator expr) {
+    // TODO: why it is outside of try?
+    final Variant operand = evaluate(expr.operand);
 
 7. May be rename "defineLong/defineDouble/defineFunction" to "bindLong/bindFunction"
 

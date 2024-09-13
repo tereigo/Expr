@@ -51,9 +51,9 @@ public final class OptimizedNumberSeriesTransformer {
         // create evaluation context and add "x/X" as the external identifiers
         // this context will also include all "native" math functions like sin, sqrt, abs, ...
         final ExprContext ctx = ExprContextFactory.globalContext()
-                                                         .addDouble("x", valueHolder)
-                                                         .addAlias("x", "X")
-                                                         .getAsExprContext();
+                                                  .addDouble("x", valueHolder)
+                                                  .addAlias("x", "X")
+                                                  .getAsExprContext();
 
         // compile expression string and create an evaluator for it
 

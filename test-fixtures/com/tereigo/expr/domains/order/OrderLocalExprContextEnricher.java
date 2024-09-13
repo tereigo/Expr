@@ -12,8 +12,8 @@ public class OrderLocalExprContextEnricher implements ExprContextEnricher {
 
     @Override
     public void enrich(final ExprContextBuilder ctx) {
-        ctx.defineLong("productId", orderFieldResolver::productId);
-        ctx.defineByteBuffer("ric", orderFieldResolver::ric);
-        ctx.defineByteBuffer("tuid", orderFieldResolver::tuid);
+        ctx.addLong("productId", orderFieldResolver::productId);
+        ctx.addByteBuffer("ric", orderFieldResolver::ric);
+        ctx.addByteBuffer("tuid", orderFieldResolver::tuid);
     }
 }

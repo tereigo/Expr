@@ -15,14 +15,14 @@ public class FalconLocalExprContextEnricher implements ExprContextEnricher {
 
     @Override
     public void enrich(final ExprContextBuilder ctx) {
-        ctx.defineLong("engineTimeMs", falcon::getEngineTimeMs);
+        ctx.addLong("engineTimeMs", falcon::getEngineTimeMs);
 
-        ctx.defineDouble("random", falcon::getNextRandom);
+        ctx.addDouble("random", falcon::getNextRandom);
 
-        ctx.defineFunction("tuidByClientId", (result, clientId) ->
+        ctx.addFunction("tuidByClientId", (result, clientId) ->
                 result.accept(falcon.getTuidByClientId((int) clientId.getAsLong()))
         );
 
-        ctx.defineString("nodeName", falcon::getNodeName);
+        ctx.addString("nodeName", falcon::getNodeName);
     }
 }

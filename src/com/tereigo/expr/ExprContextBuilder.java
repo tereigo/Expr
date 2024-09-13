@@ -16,29 +16,29 @@ import java.util.function.LongSupplier;
 
 public interface ExprContextBuilder extends ExprContextSupplier {
 
-    ExprContextBuilder defineLong(final String name, final LongSupplier supplier);
+    ExprContextBuilder addLong(final String name, final LongSupplier supplier);
 
-    ExprContextBuilder defineDouble(final String name, final DoubleSupplier supplier);
+    ExprContextBuilder addDouble(final String name, final DoubleSupplier supplier);
 
-    ExprContextBuilder defineString(final String name, final StringSupplier supplier);
+    ExprContextBuilder addString(final String name, final StringSupplier supplier);
 
-    ExprContextBuilder defineByteBuffer(final String name, final ByteBufferSupplier supplier);
+    ExprContextBuilder addByteBuffer(final String name, final ByteBufferSupplier supplier);
 
-    ExprContextBuilder defineBool(final String name, final BooleanSupplier supplier);
+    ExprContextBuilder addBool(final String name, final BooleanSupplier supplier);
 
-    ExprContextBuilder defineExprContext(final String name, final ExprContextSupplier supplier);
+    ExprContextBuilder addExprContext(final String name, final ExprContext exprContext);
 
-    ExprContextBuilder defineFunction(final String name, final Function0 func);
+    ExprContextBuilder addFunction(final String name, final Function0 func);
 
-    ExprContextBuilder defineFunction(final String name, final Function1 func);
+    ExprContextBuilder addFunction(final String name, final Function1 func);
 
-    ExprContextBuilder defineFunction(final String name, final Function2 func);
+    ExprContextBuilder addFunction(final String name, final Function2 func);
 
-    ExprContextBuilder defineFunction(final String name, final Function3 func);
+    ExprContextBuilder addFunction(final String name, final Function3 func);
 
-    ExprContextBuilder defineFunction(final String name, final Function4 func);
+    ExprContextBuilder addFunction(final String name, final Function4 func);
 
-    ExprContextBuilder defineFunction(final String name, final Function5 func);
+    ExprContextBuilder addFunction(final String name, final Function5 func);
 
     ExprContextBuilder addAlias(final String name, final String alias);
 

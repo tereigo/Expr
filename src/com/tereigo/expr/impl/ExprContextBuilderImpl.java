@@ -4,7 +4,6 @@ import com.tereigo.expr.ExprContext;
 import com.tereigo.expr.ExprContextBuilder;
 import com.tereigo.expr.ExprContextEnricher;
 import com.tereigo.expr.function.ByteBufferSupplier;
-import com.tereigo.expr.function.ExprContextSupplier;
 import com.tereigo.expr.function.Function0;
 import com.tereigo.expr.function.Function1;
 import com.tereigo.expr.function.Function2;
@@ -31,73 +30,73 @@ final class ExprContextBuilderImpl implements ExprContextBuilder {
     }
 
     @Override
-    public ExprContextBuilder defineLong(final String name, final LongSupplier supplier) {
+    public ExprContextBuilder addLong(final String name, final LongSupplier supplier) {
         // we wrap all value providers into a function from 0 parameters (Function0)
-        return defineFunction(name, result -> result.accept(supplier.getAsLong()));
+        return addFunction(name, result -> result.accept(supplier.getAsLong()));
     }
 
     @Override
-    public ExprContextBuilder defineDouble(final String name, final DoubleSupplier supplier) {
-        return defineFunction(name, result -> result.accept(supplier.getAsDouble()));
+    public ExprContextBuilder addDouble(final String name, final DoubleSupplier supplier) {
+        return addFunction(name, result -> result.accept(supplier.getAsDouble()));
     }
 
     @Override
-    public ExprContextBuilder defineString(final String name, final StringSupplier supplier) {
-        return defineFunction(name, result -> result.accept(supplier.getAsString()));
+    public ExprContextBuilder addString(final String name, final StringSupplier supplier) {
+        return addFunction(name, result -> result.accept(supplier.getAsString()));
     }
 
     @Override
-    public ExprContextBuilder defineByteBuffer(final String name, final ByteBufferSupplier supplier) {
-        return defineFunction(name, result -> result.accept(supplier.getAsByteBuffer()));
+    public ExprContextBuilder addByteBuffer(final String name, final ByteBufferSupplier supplier) {
+        return addFunction(name, result -> result.accept(supplier.getAsByteBuffer()));
     }
 
     @Override
-    public ExprContextBuilder defineBool(final String name, final BooleanSupplier supplier) {
-        return defineFunction(name, result -> result.accept(supplier.getAsBoolean()));
+    public ExprContextBuilder addBool(final String name, final BooleanSupplier supplier) {
+        return addFunction(name, result -> result.accept(supplier.getAsBoolean()));
     }
 
     @Override
-    public ExprContextBuilder defineExprContext(final String name, final ExprContextSupplier supplier) {
-        return defineFunction(name, result -> result.accept(supplier.getAsExprContext()));
+    public ExprContextBuilder addExprContext(final String name, final ExprContext exprContext) {
+        return addFunction(name, result -> result.accept(exprContext));
     }
 
     @Override
-    public ExprContextBuilder defineFunction(final String name, final Function0 func) {
+    public ExprContextBuilder addFunction(final String name, final Function0 func) {
         validateName(name);
         functions.put(name, func);
         return this;
     }
 
     @Override
-    public ExprContextBuilder defineFunction(final String name, final Function1 func) {
+    public ExprContextBuilder addFunction(final String name, final Function1 func) {
         validateName(name);
         functions.put(name, func);
         return this;
     }
 
     @Override
-    public ExprContextBuilder defineFunction(final String name, final Function2 func) {
+    public ExprContextBuilder addFunction(final String name, final Function2 func) {
         validateName(name);
         functions.put(name, func);
         return this;
     }
 
     @Override
-    public ExprContextBuilder defineFunction(final String name, final Function3 func) {
+    public ExprContextBuilder addFunction(final String name, final Function3 func) {
         validateName(name);
         functions.put(name, func);
         return this;
     }
 
     @Override
-    public ExprContextBuilder defineFunction(final String name, final Function4 func) {
+    public ExprContextBuilder addFunction(final String name, final Function4 func) {
         validateName(name);
         functions.put(name, func);
         return this;
     }
 
     @Override
-    public ExprContextBuilder defineFunction(final String name, final Function5 func) {
+    public ExprContextBuilder addFunction(final String name, final Function5 func) {
         validateName(name);
         functions.put(name, func);
         return this;

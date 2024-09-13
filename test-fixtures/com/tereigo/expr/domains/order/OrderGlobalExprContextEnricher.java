@@ -15,8 +15,8 @@ public class OrderGlobalExprContextEnricher implements ExprContextEnricher {
 
     @Override
     public void enrich(final ExprContextBuilder ctx) {
-        ctx.defineFunction("orderTuid", result -> result.accept(orderFieldResolver.tuid()));
-        ctx.defineFunction("orderRic", result -> result.accept(orderFieldResolver.ric()));
-        ctx.defineFunction("orderProductId", result -> result.accept(orderFieldResolver.productId()));
+        ctx.addFunction("orderTuid", result -> result.accept(orderFieldResolver.tuid()));
+        ctx.addFunction("orderRic", result -> result.accept(orderFieldResolver.ric()));
+        ctx.addFunction("orderProductId", result -> result.accept(orderFieldResolver.productId()));
     }
 }

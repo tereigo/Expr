@@ -299,8 +299,8 @@ class ExprNativeFunctionsTest extends ExprEvaluatorTestBase {
         assertEquals("Expression evaluation error [line 1, pos 6]: RuntimeException in function 'contains': Operand must be a STRING or BYTE_BUFFER in expression 'true.contains(\"A\")'", runErr.getMessage());
 
         final ExprContextBuilder mutCtx = ExprContextBuilderFactory.globalContext();
-        mutCtx.defineString("region", () -> "EMEA");
-        mutCtx.defineFunction("algoType", result -> result.accept("Algo1"));
+        mutCtx.addString("region", () -> "EMEA");
+        mutCtx.addFunction("algoType", result -> result.accept("Algo1"));
 
         final ExprContext ctx = mutCtx.getAsExprContext();
 
@@ -310,8 +310,8 @@ class ExprNativeFunctionsTest extends ExprEvaluatorTestBase {
         assertTrue(evaluateBool("region.length() == 4", ctx));
 
         final ExprContextBuilder mutCtx2 = ExprContextBuilderFactory.globalContext();
-        mutCtx2.defineByteBuffer("region", () -> constant("EMEA"));
-        mutCtx2.defineFunction("algoType", result -> result.accept(constant("Algo1")));
+        mutCtx2.addByteBuffer("region", () -> constant("EMEA"));
+        mutCtx2.addFunction("algoType", result -> result.accept(constant("Algo1")));
 
         final ExprContext ctx2 = mutCtx2.getAsExprContext();
 
@@ -331,9 +331,9 @@ class ExprNativeFunctionsTest extends ExprEvaluatorTestBase {
 //        assertEquals("Expression evaluation error [line 1, pos 12]: RuntimeException in function 'contains': Operand must be a STRING in expression 'algoType().contains(\"A\")'", runErr.getMessage());
 
         final ExprContextBuilder mutCtx3 = ExprContextBuilderFactory.globalContext();
-        mutCtx3.defineString("region", () -> "EMEA");
-        mutCtx3.defineByteBuffer("country", () -> constant("Italy"));
-        mutCtx3.defineFunction("algoType", result -> result.accept(constant("Algo1")));
+        mutCtx3.addString("region", () -> "EMEA");
+        mutCtx3.addByteBuffer("country", () -> constant("Italy"));
+        mutCtx3.addFunction("algoType", result -> result.accept(constant("Algo1")));
 
         final ExprContext ctx3 = mutCtx3.getAsExprContext();
 

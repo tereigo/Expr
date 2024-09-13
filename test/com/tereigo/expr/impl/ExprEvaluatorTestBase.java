@@ -16,11 +16,11 @@ class ExprEvaluatorTestBase {
 
     protected ExprContext createContext() {
         final ExprContextBuilder ctx = ExprContextBuilderFactory.globalContext();
-        ctx.defineDouble("$PI", () -> 3.14);
-        ctx.defineLong("$productId", () -> 123L);
-        ctx.defineString("$ric", () -> "VOD.L");
-        ctx.defineBool("$enabled", () -> true);
-        ctx.defineByteBuffer("$tuid", () -> constant("CLIENT1"));
+        ctx.addDouble("$PI", () -> 3.14);
+        ctx.addLong("$productId", () -> 123L);
+        ctx.addString("$ric", () -> "VOD.L");
+        ctx.addBool("$enabled", () -> true);
+        ctx.addByteBuffer("$tuid", () -> constant("CLIENT1"));
         return ctx.getAsExprContext();
     }
 

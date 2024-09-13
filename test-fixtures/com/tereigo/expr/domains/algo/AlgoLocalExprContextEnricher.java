@@ -15,7 +15,7 @@ public class AlgoLocalExprContextEnricher implements ExprContextEnricher {
 
     @Override
     public void enrich(final ExprContextBuilder ctx) {
-        ctx.defineString("nodeType", algo::getAlgoType);
+        ctx.addString("nodeType", algo::getAlgoType);
     }
 
 }

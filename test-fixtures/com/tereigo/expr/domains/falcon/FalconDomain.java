@@ -8,7 +8,7 @@ import com.tereigo.expr.variant.VariantUtils;
 public final class FalconDomain {
 
     public static void defineFunctions(final ExprContextBuilder ctx) {
-        ctx.defineFunction("ltod", (result, arg1) -> {
+        ctx.addFunction("ltod", (result, arg1) -> {
             if (VariantUtils.isLong(arg1)) {
                 result.accept(PriceUtils.ltod(arg1.getAsLong()));
             } else {
@@ -16,7 +16,7 @@ public final class FalconDomain {
             }
         });
 
-        ctx.defineFunction("dtol", (result, arg1) -> {
+        ctx.addFunction("dtol", (result, arg1) -> {
             if (VariantUtils.isDouble(arg1)) {
                 result.accept(PriceUtils.dtol(arg1.getAsDouble()));
             } else if (VariantUtils.isLong(arg1)) {
@@ -26,7 +26,7 @@ public final class FalconDomain {
             }
         });
 
-        ctx.defineFunction("isMarketPrice", (result, arg1) -> {
+        ctx.addFunction("isMarketPrice", (result, arg1) -> {
             if (VariantUtils.isLong(arg1)) {
                 result.accept(OrderPrice.isMarket(arg1.getAsLong()));
             } else {
@@ -34,7 +34,7 @@ public final class FalconDomain {
             }
         });
 
-        ctx.defineFunction("isLimitPrice", (result, arg1) -> {
+        ctx.addFunction("isLimitPrice", (result, arg1) -> {
             if (VariantUtils.isLong(arg1)) {
                 result.accept(OrderPrice.isLimit(arg1.getAsLong()));
             } else {
@@ -42,7 +42,7 @@ public final class FalconDomain {
             }
         });
 
-        ctx.defineFunction("isValidPrice", (result, arg1) -> {
+        ctx.addFunction("isValidPrice", (result, arg1) -> {
             if (VariantUtils.isLong(arg1)) {
                 result.accept(OrderPrice.isValid(arg1.getAsLong()));
             } else {

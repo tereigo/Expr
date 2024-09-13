@@ -27,39 +27,39 @@ class ExprUserFunctionsTest extends ExprEvaluatorTestBase {
 
     private static ExprContext createContext(final SimpleOrderFieldSupplier orderSupplier) {
         final ExprContextBuilder globalCtx = ExprContextBuilderFactory.globalContext();
-        globalCtx.defineFunction("nodeAlgoType", result -> result.accept("Vwap"));
-        globalCtx.defineFunction("region", result -> result.accept("EMEA"));
+        globalCtx.addFunction("nodeAlgoType", result -> result.accept("Vwap"));
+        globalCtx.addFunction("region", result -> result.accept("EMEA"));
         // this one generates garbage!
-        globalCtx.defineFunction("falconEnv", result -> result.accept(constant("PROD")));
-        globalCtx.defineFunction("timeNs", result -> result.accept(System.nanoTime()));
+        globalCtx.addFunction("falconEnv", result -> result.accept(constant("PROD")));
+        globalCtx.addFunction("timeNs", result -> result.accept(System.nanoTime()));
 
-        globalCtx.defineFunction("isEven", (result, arg1) -> {
+        globalCtx.addFunction("isEven", (result, arg1) -> {
             final long l = arg1.getAsLong();
             result.accept(l % 2 == 0);
         });
 
-        globalCtx.defineFunction("func0", result -> result.accept("func0"));
+        globalCtx.addFunction("func0", result -> result.accept("func0"));
 
-        globalCtx.defineFunction("func1", (result, arg1) -> {
+        globalCtx.addFunction("func1", (result, arg1) -> {
             final long l = arg1.getAsLong();
             result.accept(l);
         });
 
-        globalCtx.defineFunction("func2", (result, arg1, arg2) -> {
+        globalCtx.addFunction("func2", (result, arg1, arg2) -> {
             final long l = arg1.getAsLong();
             // we accept both Double and Long as a second parameter
             final double d = arg2.exprType() == ExprType.DOUBLE ? arg2.getAsDouble() : arg2.getAsLong();
             result.accept(l + d);
         });
 
-        globalCtx.defineFunction("func3", (result, arg1, arg2, arg3) -> {
+        globalCtx.addFunction("func3", (result, arg1, arg2, arg3) -> {
             final long l = arg1.getAsLong();
             final double d = arg2.getAsDouble();
             final boolean bool = arg3.getAsBoolean();
             result.accept(l > d && bool);
         });
 
-        globalCtx.defineFunction("func4", (result, arg1, arg2, arg3, arg4) -> {
+        globalCtx.addFunction("func4", (result, arg1, arg2, arg3, arg4) -> {
             final long l = arg1.getAsLong();
             final double d = arg2.getAsDouble();
             final boolean bool = arg3.getAsBoolean();
@@ -73,7 +73,7 @@ class ExprUserFunctionsTest extends ExprEvaluatorTestBase {
             }
         });
 
-        globalCtx.defineFunction("func5", (result, arg1, arg2, arg3, arg4, arg5) -> {
+        globalCtx.addFunction("func5", (result, arg1, arg2, arg3, arg4, arg5) -> {
             final long l = arg1.getAsLong();
             final double d = arg2.getAsDouble();
             final boolean bool = arg3.getAsBoolean();
@@ -82,10 +82,10 @@ class ExprUserFunctionsTest extends ExprEvaluatorTestBase {
             result.accept(l > d && bool && !s.isEmpty() && ByteBufferUtils.startsWith(bb, "CLIENT"));
         });
 
-        globalCtx.defineLong("$productId", orderSupplier::productId);
-        globalCtx.defineString("$ric", orderSupplier::ric);
-        globalCtx.defineBool("$enabled", orderSupplier::enabled);
-        globalCtx.defineByteBuffer("$tuid", orderSupplier::tuid);
+        globalCtx.addLong("$productId", orderSupplier::productId);
+        globalCtx.addString("$ric", orderSupplier::ric);
+        globalCtx.addBool("$enabled", orderSupplier::enabled);
+        globalCtx.addByteBuffer("$tuid", orderSupplier::tuid);
 
         return globalCtx.getAsExprContext();
     }
@@ -95,7 +95,7 @@ class ExprUserFunctionsTest extends ExprEvaluatorTestBase {
         final ExprContextBuilder testCtx = createTestObjExprContext("VWAP1", constant("Vwap"), tuidResolver);
 
         final ExprContextBuilder ctx = ExprContextBuilderFactory.globalContext();
-        ctx.defineExprContext("test", testCtx);
+        ctx.addExprContext("test", testCtx.getAsExprContext());
 
         // adding order context
         final ReferenceDataCache refData = mock(ReferenceDataCache.class);
@@ -108,7 +108,7 @@ class ExprUserFunctionsTest extends ExprEvaluatorTestBase {
 
         final OrderFieldResolverImpl orderResolver = new OrderFieldResolverImpl();
         final ExprContext orderCtx = createOrderExprContext(orderResolver);
-        ctx.defineExprContext("order", () -> orderCtx);
+        ctx.addExprContext("order", orderCtx);
 
         final SampleOrderInstruction order1 = new SampleOrderInstruction(123L, 1);
         orderResolver.setOrder(order1);
@@ -135,19 +135,19 @@ class ExprUserFunctionsTest extends ExprEvaluatorTestBase {
         orderResolver.setOrder(order1);
 
         // add "order" context inside "test" context
-        localTestCtx.defineExprContext("order", () -> orderCtx);
+        localTestCtx.addExprContext("order", orderCtx);
         // add "test" context at the top level
-        ctx.defineExprContext("test", localTestCtx);
+        ctx.addExprContext("test", localTestCtx.getAsExprContext());
 
         return ctx.getAsExprContext();
     }
 
     private static ExprContextBuilder createTestObjExprContext(final String nodeName, final ByteBuffer algoType, final TuidResolver tuidResolver) {
         final ExprContextBuilder ctx = ExprContextBuilderFactory.localContext();
-        ctx.defineString("nodeName", () -> nodeName);
-        ctx.defineByteBuffer("algoType", () -> algoType);
+        ctx.addString("nodeName", () -> nodeName);
+        ctx.addByteBuffer("algoType", () -> algoType);
 
-        ctx.defineFunction("tuidByClientId", (result, clientId) ->
+        ctx.addFunction("tuidByClientId", (result, clientId) ->
                 result.accept(tuidResolver.getTuidByClientId((int) clientId.getAsLong()))
         );
         return ctx;
@@ -155,9 +155,9 @@ class ExprUserFunctionsTest extends ExprEvaluatorTestBase {
 
     private static ExprContext createOrderExprContext(final OrderFieldResolver orderResolver) {
         final ExprContextBuilder ctx = ExprContextBuilderFactory.localContext();
-        ctx.defineLong("productId", orderResolver::productId);
-        ctx.defineByteBuffer("ric", orderResolver::ric);
-        ctx.defineByteBuffer("tuid", orderResolver::tuid);
+        ctx.addLong("productId", orderResolver::productId);
+        ctx.addByteBuffer("ric", orderResolver::ric);
+        ctx.addByteBuffer("tuid", orderResolver::tuid);
         return ctx.getAsExprContext();
     }
 
@@ -311,10 +311,10 @@ class ExprUserFunctionsTest extends ExprEvaluatorTestBase {
     void userFunctionWithStringTests() {
         optimized = false;
         final ExprContextBuilder mutCtx = ExprContextBuilderFactory.globalContext();
-        mutCtx.defineString("region", () -> "EMEA");
-        mutCtx.defineFunction("algoType", result -> result.accept(constant("Algo1")));
-        mutCtx.defineFunction("stringFunc", (result, arg1) -> result.accept(arg1.getAsString()));
-        mutCtx.defineFunction("byteBufferFunc", (result, arg1) -> result.accept(arg1.getAsByteBuffer()));
+        mutCtx.addString("region", () -> "EMEA");
+        mutCtx.addFunction("algoType", result -> result.accept(constant("Algo1")));
+        mutCtx.addFunction("stringFunc", (result, arg1) -> result.accept(arg1.getAsString()));
+        mutCtx.addFunction("byteBufferFunc", (result, arg1) -> result.accept(arg1.getAsByteBuffer()));
 
         final ExprContext ctx = mutCtx.getAsExprContext();
 
@@ -328,10 +328,10 @@ class ExprUserFunctionsTest extends ExprEvaluatorTestBase {
     void userFunctionWithStringOptimizedTests() {
         optimized = true;
         final ExprContextBuilder mutCtx = ExprContextBuilderFactory.globalContext();
-        mutCtx.defineString("region", () -> "EMEA");
-        mutCtx.defineFunction("algoType", result -> result.accept(constant("Algo1")));
-        mutCtx.defineFunction("stringFunc", (result, arg1) -> result.accept(arg1.getAsString()));
-        mutCtx.defineFunction("byteBufferFunc", (result, arg1) -> result.accept(arg1.getAsByteBuffer()));
+        mutCtx.addString("region", () -> "EMEA");
+        mutCtx.addFunction("algoType", result -> result.accept(constant("Algo1")));
+        mutCtx.addFunction("stringFunc", (result, arg1) -> result.accept(arg1.getAsString()));
+        mutCtx.addFunction("byteBufferFunc", (result, arg1) -> result.accept(arg1.getAsByteBuffer()));
 
         final ExprContext ctx = mutCtx.getAsExprContext();
 

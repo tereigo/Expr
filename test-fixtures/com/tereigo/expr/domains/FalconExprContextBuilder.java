@@ -38,7 +38,7 @@ public class FalconExprContextBuilder {
     public FalconExprContextBuilder falcon(final FalconDataProvider falcon) {
         ctx.enrich(new FalconGlobalExprContextEnricher(falcon));
         final ExprContextBuilder localFalconCtx = ExprContextBuilderFactory.localContext(new FalconLocalExprContextEnricher(falcon));
-        ctx.defineExprContext("falcon", localFalconCtx);
+        ctx.addExprContext("falcon", localFalconCtx.getAsExprContext());
         FalconDomain.defineFunctions(ctx);
         return this;
     }
@@ -46,14 +46,14 @@ public class FalconExprContextBuilder {
     public FalconExprContextBuilder algo(final AlgoDataProvider algo) {
         ctx.enrich(new AlgoGlobalExprContextEnricher(algo));
         final ExprContextBuilder localAlgoCtx = ExprContextBuilderFactory.localContext(new AlgoLocalExprContextEnricher(algo));
-        ctx.defineExprContext("algo", localAlgoCtx);
+        ctx.addExprContext("algo", localAlgoCtx.getAsExprContext());
         return this;
     }
 
     public FalconExprContextBuilder order(final OrderFieldResolver orderFieldResolver) {
         ctx.enrich(new OrderGlobalExprContextEnricher(orderFieldResolver));
         final ExprContextBuilder localOrderCtx = ExprContextBuilderFactory.localContext(new OrderLocalExprContextEnricher(orderFieldResolver));
-        ctx.defineExprContext("order", localOrderCtx);
+        ctx.addExprContext("order", localOrderCtx.getAsExprContext());
         return this;
     }
 

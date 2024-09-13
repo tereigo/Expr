@@ -298,8 +298,8 @@ class ExprEvaluatorTest extends ExprEvaluatorTestBase {
         final ExprContextBuilder mutCtx = ExprContextBuilderFactory.globalContext();
         final RuntimeError runErr;
 
-        mutCtx.defineByteBuffer("$tuid", () -> constant("CLIENT1"));
-        mutCtx.defineByteBuffer("$tuid2", () -> constant("CLIENT2"));
+        mutCtx.addByteBuffer("$tuid", () -> constant("CLIENT1"));
+        mutCtx.addByteBuffer("$tuid2", () -> constant("CLIENT2"));
 
         final ExprContext ctx = mutCtx.getAsExprContext();
 
@@ -543,26 +543,26 @@ class ExprEvaluatorTest extends ExprEvaluatorTestBase {
         assertEquals("Expression evaluation error [line 1, pos 1]: Operand must be a boolean in expression '!(1 + 2)'", runErr.getMessage());
 
         final ExprContextBuilder mutCtx = ExprContextBuilderFactory.globalContext();
-        mutCtx.defineString("$ric", () -> "VOD.L");
-        mutCtx.defineLong("$productId", () -> 123L);
-        mutCtx.defineByteBuffer("$tuid", () -> constant("CLIENT1"));
-        mutCtx.defineFunction("isEven", (result, arg1) -> {
+        mutCtx.addString("$ric", () -> "VOD.L");
+        mutCtx.addLong("$productId", () -> 123L);
+        mutCtx.addByteBuffer("$tuid", () -> constant("CLIENT1"));
+        mutCtx.addFunction("isEven", (result, arg1) -> {
             final long l = arg1.getAsLong();
             result.accept(l % 2 == 0);
         });
 
-        mutCtx.defineFunction("func1", (result, arg1) -> {
+        mutCtx.addFunction("func1", (result, arg1) -> {
             final long l = arg1.getAsLong();
             result.accept(l);
         });
 
-        mutCtx.defineFunction("func2", (result, arg1, arg2) -> {
+        mutCtx.addFunction("func2", (result, arg1, arg2) -> {
             final long l = arg1.getAsLong();
             final double d = arg2.getAsDouble();
             result.accept(l + d);
         });
 
-        mutCtx.defineFunction("func5", (result, arg1, arg2, arg3, arg4, arg5) -> {
+        mutCtx.addFunction("func5", (result, arg1, arg2, arg3, arg4, arg5) -> {
             final long l = arg1.getAsLong();
             final double d = arg2.getAsDouble();
             final boolean bool = arg3.getAsBoolean();

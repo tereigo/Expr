@@ -12,9 +12,9 @@ class ExprPrinterTest extends ExprEvaluatorTestBase {
 
     private static ExprContext getEvaluationContext() {
         final ExprContextBuilder ctx = ExprContextBuilderFactory.globalContext();
-        ctx.defineFunction("func", (result, arg1, arg2) -> result.accept(3.14));
-        ctx.defineLong("$id", () -> 123L);
-        ctx.defineLong("$curTime", () -> 123L);
+        ctx.addFunction("func", (result, arg1, arg2) -> result.accept(3.14));
+        ctx.addLong("$id", () -> 123L);
+        ctx.addLong("$curTime", () -> 123L);
         return ctx.getAsExprContext();
     }
 

@@ -15,7 +15,7 @@ public class AlgoGlobalExprContextEnricher implements ExprContextEnricher {
 
     @Override
     public void enrich(final ExprContextBuilder ctx) {
-        ctx.defineFunction("algoNodeType", result -> result.accept(algoDataProvider.getAlgoType()));
+        ctx.addFunction("algoNodeType", result -> result.accept(algoDataProvider.getAlgoType()));
     }
 
 }

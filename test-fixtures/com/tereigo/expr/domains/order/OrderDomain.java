@@ -12,8 +12,8 @@ public final class OrderDomain {
 
     public static void defineShortcuts(final ExprContextBuilder ctx,
                                        final OrderFieldResolver orderFieldResolver) {
-        ctx.defineLong("productId", orderFieldResolver::productId);
-        ctx.defineByteBuffer("ric", orderFieldResolver::ric);
-        ctx.defineByteBuffer("tuid", orderFieldResolver::tuid);
+        ctx.addLong("productId", orderFieldResolver::productId);
+        ctx.addByteBuffer("ric", orderFieldResolver::ric);
+        ctx.addByteBuffer("tuid", orderFieldResolver::tuid);
     }
 }

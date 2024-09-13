@@ -1,11 +1,11 @@
  TODO:
-
-2. May be convert MutableExprContext to Builder pattern:
-        final ExprContextSupplier ctxSupplier = ExprContextBuilder.globalContext()
-                                                                  .defineDouble("$PI", () -> 3.14)
-                                                                  .defineLong("$productId", () -> 123L)
-                                                                  .defineString("$ric", () -> "VOD.L")
-                                                                  .build();
+1. we can remove type checks and Exceptions in NativeEnricher because it's done in VariantImpl anyway
+      ctx.addFunction("toDouble", (result, arg) -> {
+            if (VariantUtils.isNumber(arg)) {
+                result.accept(arg.getAsNumber());
+            } else {
+                throw new RuntimeException("Operand must be a number");
+            }
 
 3. in ExprInterpreter
     public Variant visitInOperator(final Expr.InOperator expr) {
@@ -66,8 +66,6 @@
    It feels like it would be nice. For example:
    "order.executionStyle == NIL" - meaning it was not provided
 
-7. May be rename "defineLong/defineDouble/defineFunction" to "bindLong/bindFunction"
-
 10. Type conversion functions and rounding: toNanos, nanoToSec
 
 12. May be add function aliases: len / length / size
@@ -116,6 +114,16 @@
 ///////////////////////////////////////////////////////////////////////////////////////////
 // Done:
 ///////////////////////////////////////////////////////////////////////////////////////////
+
+7. May be rename "defineLong/defineDouble/defineFunction" to "bindLong/bindFunction"
+
+2. May be convert MutableExprContext to Builder pattern:
+        final ExprContextSupplier ctxSupplier = ExprContextBuilder.globalContext()
+                                                                  .defineDouble("$PI", () -> 3.14)
+                                                                  .defineLong("$productId", () -> 123L)
+                                                                  .defineString("$ric", () -> "VOD.L")
+                                                                  .build();
+
 
 3. Make ExprContext truly immutable for Optimized evaluations
 

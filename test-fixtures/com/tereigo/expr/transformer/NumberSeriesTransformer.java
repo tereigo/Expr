@@ -48,7 +48,7 @@ public final class NumberSeriesTransformer {
             // create evaluation context and add "x/X" as the external identifiers
             // this context will also include all "native" math functions like sin, sqrt, abs, ...
             final ExprContext ctx = ExprContextBuilderFactory.globalContext(x -> {
-                x.defineDouble("x", () -> originalVal);
+                x.addDouble("x", () -> originalVal);
                 x.addAlias("x", "X");
             }).getAsExprContext();
 

@@ -19,6 +19,6 @@ public final class VwapOrderExprContextEnricher implements ExprContextEnricher {
 
     @Override
     public void enrich(final ExprContextBuilder ctx) {
-        ctx.defineFunction("volumeLimit", result -> result.accept(toVwap(orderResolver).getVolumeLimit()));
+        ctx.addFunction("volumeLimit", result -> result.accept(toVwap(orderResolver).getVolumeLimit()));
     }
 }

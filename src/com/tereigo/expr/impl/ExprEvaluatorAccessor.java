@@ -10,8 +10,7 @@ import java.util.Objects;
 
 public final class ExprEvaluatorAccessor {
 
-    private ExprEvaluatorAccessor() {
-    }
+    private ExprEvaluatorAccessor() { }
 
     public static ExprEvaluatorWithContext create(final ExprEvaluatorFactory.Pass pass,
                                                   final ByteBuffer source) {

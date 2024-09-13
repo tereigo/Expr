@@ -1,15 +1,9 @@
- TODO:
-1. we can remove type checks and Exceptions in NativeEnricher because it's done in VariantImpl anyway
-      ctx.addFunction("toDouble", (result, arg) -> {
-            if (VariantUtils.isNumber(arg)) {
-                result.accept(arg.getAsNumber());
-            } else {
-                throw new RuntimeException("Operand must be a number");
-            }
-
+TODO:
 2. Support scientific input for Doubles: 1e6
 
-3. Migrate to Java 11/17/21
+3. convert project to Maven/Gradle
+
+4. Migrate to Java 11/17/21
 
 1. Introduce an ability to add user-specific constants
    (may be via functions, may be via tokens)?
@@ -33,6 +27,12 @@
       how we add support for the new type for various existing functions? contains, isEmpty, startsWith, equals, ...
       how we add it to "VariantUtils.isString()"
 
+5. do we need to add TIME and DATE types?
+   in which units?
+   potential domains: date, time, today (time.now, today.date, time.hour, time.min, date.today + 1)
+   time syntax: 12:34:56, 12:34
+   date syntax: 2024-01-30
+
 7. Add string operators:
  startsWithIgnoreCase
  endsWith
@@ -48,8 +48,7 @@
  matches
  concatenate
  substring
- toLowerCaseInPlace
- toUpperCaseInPlace
+
 
 
 3. Add tests for VariantImpl equals / hashCode
@@ -111,6 +110,14 @@
 ///////////////////////////////////////////////////////////////////////////////////////////
 // Done:
 ///////////////////////////////////////////////////////////////////////////////////////////
+
+1. we can remove type checks and Exceptions in NativeEnricher because it's done in VariantImpl anyway
+      ctx.addFunction("toDouble", (result, arg) -> {
+            if (VariantUtils.isNumber(arg)) {
+                result.accept(arg.getAsNumber());
+            } else {
+                throw new RuntimeException("Operand must be a number");
+            }
 
 3. in ExprInterpreter
     public Variant visitInOperator(final Expr.InOperator expr) {

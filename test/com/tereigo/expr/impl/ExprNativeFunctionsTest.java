@@ -207,9 +207,9 @@ class ExprNativeFunctionsTest extends ExprEvaluatorTestBase {
         assertEquals(-1.9, evaluateDouble("toDouble(-1.9)"), EPS);
         assertEquals(-2.1, evaluateDouble("toDouble(-2.1)"), EPS);
         runErr = assertThrows(RuntimeError.class, () -> evaluate("toDouble('A')"));
-        assertEquals("Expression evaluation error [line 1, pos 1]: RuntimeException in function 'toDouble': Operand must be a number in expression 'toDouble('A')'", runErr.getMessage());
+        assertEquals("Expression evaluation error [line 1, pos 1]: RuntimeException in function 'toDouble': Variant type mismatch: STRING, expected: LONG or DOUBLE in expression 'toDouble('A')'", runErr.getMessage());
         runErr = assertThrows(RuntimeError.class, () -> evaluate("toDouble(true)"));
-        assertEquals("Expression evaluation error [line 1, pos 1]: RuntimeException in function 'toDouble': Operand must be a number in expression 'toDouble(true)'", runErr.getMessage());
+        assertEquals("Expression evaluation error [line 1, pos 1]: RuntimeException in function 'toDouble': Variant type mismatch: BOOL, expected: LONG or DOUBLE in expression 'toDouble(true)'", runErr.getMessage());
 
         final ExprContext ctx = ExprContextFactory.globalContext().getAsExprContext();
 

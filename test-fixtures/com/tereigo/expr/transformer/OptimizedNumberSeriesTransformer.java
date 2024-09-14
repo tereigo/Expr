@@ -68,7 +68,7 @@ public final class OptimizedNumberSeriesTransformer {
             // set the new number to process in the value holder where it will be sourced from during evaluation
             valueHolder.setValue(originalVal);
             // apply transformation (the context in use is the one which was provided when ExprEvaluator was created)
-            final double transformedVal = evaluator.evaluateDouble();
+            final double transformedVal = evaluator.evaluateNumber();
 
             System.out.println("Value: " + originalVal + " -> " + transformedVal);
         }

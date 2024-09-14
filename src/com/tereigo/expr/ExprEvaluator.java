@@ -12,6 +12,8 @@ public interface ExprEvaluator {
 
     double evaluateDouble();
 
+    double evaluateNumber();
+
     String evaluateString();
 
     ByteBuffer evaluateByteBuffer();

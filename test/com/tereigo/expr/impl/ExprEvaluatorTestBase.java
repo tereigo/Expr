@@ -69,6 +69,21 @@ class ExprEvaluatorTestBase {
         return evaluator.evaluateDouble();
     }
 
+    protected double evaluateNumber(final String text) {
+        final ExprEvaluatorWithContext evaluator = ExprEvaluatorFactory.create(text);
+        return evaluator.evaluateNumber();
+    }
+
+    protected double evaluateNumber(final String text, final ExprContext ctx) {
+        final ExprEvaluatorWithContext evaluator = ExprEvaluatorFactory.create(text);
+        return evaluator.evaluateNumber(ctx);
+    }
+
+    protected double evaluateNumberOptimized(final ExprContext ctx, final String text) {
+        final ExprEvaluator evaluator = ExprEvaluatorFactory.create(ctx, text);
+        return evaluator.evaluateNumber();
+    }
+
     protected boolean evaluateBool(final String text) {
         final ExprEvaluatorWithContext evaluator = ExprEvaluatorFactory.create(text);
         return evaluator.evaluateBool();

@@ -42,6 +42,12 @@ final class ExprEvaluatorOptimized extends ExprEvaluatorBase implements ExprEval
     }
 
     @Override
+    public double evaluateNumber() {
+        final Variant result = evaluate(ctx);
+        return result.getAsNumber();
+    }
+
+    @Override
     public String evaluateString() {
         final Variant result = evaluate(ctx);
         return result.getAsString();

@@ -58,7 +58,7 @@ import static com.tereigo.expr.impl.TokenType.WITHIN;
     8. Support adding custom user defined objects/domains: "env.country == 'Russia' and env.type == 'PROD' and today.hour > 12 and algo.activeOrder.qty > 1000"
     9. Support both traditional and functional syntax: "pctOf(5, 100) == 5.pctOf(100) and round(PI) == 3 and PI.round == 3"
     10. AST graph optimization by resolving all identifiers during expression parsing
-    11. Multi-line expression
+    11. Multi-line expressions
     12. Hierarchical AST graph output
 
     Another good step-by-step guide of building a parser: https://ruslanspivak.com/lsbasi-part1/
@@ -83,6 +83,7 @@ import static com.tereigo.expr.impl.TokenType.WITHIN;
 
     Lexems:
     BOOLEAN: true|false|True|False|TRUE|FALSE
+    STRING: any characters within double (") or single (') quotes
 
     You can find plenty of the expression examples in the tests
 */

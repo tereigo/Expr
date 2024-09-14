@@ -18,4 +18,8 @@ public interface ExprContext {
      */
     Object getFunction(final String name);
 
+    /*
+     * This function is used only for AST optimization
+     */
+    Object getConstant(final String name);
 }

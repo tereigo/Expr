@@ -12,6 +12,8 @@ public interface ExprEvaluatorWithContext extends ExprEvaluator {
 
     double evaluateDouble(final ExprContext ctx);
 
+    double evaluateNumber(final ExprContext ctx);
+
     String evaluateString(final ExprContext ctx);
 
     ByteBuffer evaluateByteBuffer(final ExprContext ctx);

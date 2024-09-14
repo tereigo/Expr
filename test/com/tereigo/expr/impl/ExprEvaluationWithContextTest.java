@@ -42,6 +42,20 @@ class ExprEvaluationWithContextTest extends ExprEvaluatorTestBase {
     }
 
     @Test
+    void contextTestsWithConstants() {
+        final ExprContext ctx = ExprContextFactory.globalContext()
+                .addDouble("$PI", 3.14)
+                .addLong("$productId", 123L)
+                .addString("$ric", "VOD.L")
+                .addString("$nodeAlgoType", "Vwap")
+                .addBool("$enabled", () -> true)
+                .addByteBuffer("$tuid", () -> constant("CLIENT1"))
+                .getAsExprContext();
+
+        runExpressionWithContextTests(ctx);
+    }
+
+    @Test
     void contextTestsAfterOptimizationForDebug() {
         final ExprContext testCtx = createTestObjExprContext("VWAP1", constant("Vwap"));
 
@@ -78,6 +92,20 @@ class ExprEvaluationWithContextTest extends ExprEvaluatorTestBase {
                 .addLong("$productId", () -> 123L)
                 .addString("$ric", () -> "VOD.L")
                 .addString("$nodeAlgoType", () -> "Vwap")
+                .addBool("$enabled", () -> true)
+                .addByteBuffer("$tuid", () -> constant("CLIENT1"))
+                .getAsExprContext();
+
+        runOptimizedExpressionWithContextTests(ctx);
+    }
+
+    @Test
+    void contextTestsWithConstantsAfterOptimization() {
+        final ExprContext ctx = ExprContextFactory.globalContext()
+                .addDouble("$PI", 3.14)
+                .addLong("$productId", 123L)
+                .addString("$ric", "VOD.L")
+                .addString("$nodeAlgoType", "Vwap")
                 .addBool("$enabled", () -> true)
                 .addByteBuffer("$tuid", () -> constant("CLIENT1"))
                 .getAsExprContext();
@@ -245,6 +273,14 @@ class ExprEvaluationWithContextTest extends ExprEvaluatorTestBase {
         assertEquals(-3.14, evaluateDouble("-$PI", ctx), EPS);
         assertEquals(-3.14, evaluateDouble("(-$PI)", ctx), EPS);
         assertEquals(-3.14, evaluateDouble("-($PI)", ctx), EPS);
+
+        assertEquals(4.14, evaluateNumber("1.0+$PI", ctx), EPS);
+        assertEquals(6.28, evaluateNumber(" $PI  + $PI  ", ctx), EPS);
+        assertEquals(0.0, evaluateNumber("($PI  + PI) * 0.0", ctx), EPS);
+        assertEquals(-3.14, evaluateNumber("-$PI", ctx), EPS);
+        assertEquals(-3.14, evaluateNumber("(-$PI)", ctx), EPS);
+        assertEquals(-3.14, evaluateNumber("-($PI)", ctx), EPS);
+
         assertFalse(evaluateBool("not($enabled)", ctx));
         assertTrue(evaluateBool("$PI == $PI", ctx));
         assertTrue(evaluateBool("$productId == 123 and $ric == \"VOD.L\"", ctx));
@@ -277,6 +313,14 @@ class ExprEvaluationWithContextTest extends ExprEvaluatorTestBase {
         assertEquals(-3.14, evaluateDoubleOptimized(ctx, "-$PI"), EPS);
         assertEquals(-3.14, evaluateDoubleOptimized(ctx, "(-$PI)"), EPS);
         assertEquals(-3.14, evaluateDoubleOptimized(ctx, "-($PI)"), EPS);
+
+        assertEquals(4.14, evaluateNumberOptimized(ctx, "1.0+$PI"), EPS);
+        assertEquals(6.28, evaluateNumberOptimized(ctx, " $PI  + $PI  "), EPS);
+        assertEquals(0.0, evaluateNumberOptimized(ctx, "($PI  + PI) * 0.0"), EPS);
+        assertEquals(-3.14, evaluateNumberOptimized(ctx, "-$PI"), EPS);
+        assertEquals(-3.14, evaluateNumberOptimized(ctx, "(-$PI)"), EPS);
+        assertEquals(-3.14, evaluateNumberOptimized(ctx, "-($PI)"), EPS);
+
         assertFalse(evaluateBoolOptimized(ctx, "not($enabled)"));
         assertTrue(evaluateBoolOptimized(ctx, "$PI == $PI"));
         assertTrue(evaluateBoolOptimized(ctx, "$productId == 123 and $ric == \"VOD.L\""));

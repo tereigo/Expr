@@ -1,20 +1,15 @@
 TODO:
-2. Support scientific input for Doubles: 1e6
+2. Support scientific input for Doubles: 1e-6, 1.15E6
 
 3. convert project to Maven/Gradle
 
 4. Migrate to Java 11/17/21
 
-1. Introduce an ability to add user-specific constants
-   (may be via functions, may be via tokens)?
-   Ideally via tokens to compile them into Literals straightaway
-   Optimization partially solves the problem since it resolves the functions
-   but it still makes the function call to retrieve the variable
-   May be we need a special API to add Constant Literals to the context
-   In that case during optimization we can resolve them to the direct Literals
-      defineConstant("myPi", 3.1416)
-
 2. Add power operator: "pow(2, 5) == 32 and 2 ** 5 == 32"
+
+0. in ExprEvaluatorImpl
+   // TODO: may be we need to put try - catch here instead of evaluate()
+      // because result.getAsDouble() can also throw of type mismatch
 
 3. See if it's doable to introduce an ability to add user-specific operators
    For example: Bit logic manipulations
@@ -58,7 +53,7 @@ TODO:
 5. May be add "matrix" namespace with a list of functions to work with matrices and a special object type: MATRIX
    Can it be stored in a GC-free way however?
 
-9. Do we NIL ?
+9. Do we NIL/null/None ?
    It feels like it would be nice. For example:
    "order.executionStyle == NIL" - meaning it was not provided
 
@@ -73,7 +68,7 @@ TODO:
     (Input) String -> (Scanner phase) -> (output) Tokens -> (Parser phase) -> (output) Expression/AST -> (Interpreter phase) -> Result
     And objects from the previous phase should not exist in the next one
 
-4. add git hash tag / gitVersion / gitDate functions
+4. add git hash tag / gitVersion / gitDate functions: git.hash, git.version, git.tag, git.date, git.shortHash, git.fullHash
 
 1. May be add 'java' domains: 'today', 'system', 'git' to provide access to some generic Java/system functions
    'today.date', 'today.timeMs', 'region.timeZone' / 'location.timeZone'
@@ -110,6 +105,15 @@ TODO:
 ///////////////////////////////////////////////////////////////////////////////////////////
 // Done:
 ///////////////////////////////////////////////////////////////////////////////////////////
+
+1. Introduce an ability to add user-specific constants
+   (may be via functions, may be via tokens)?
+   Ideally via tokens to compile them into Literals straightaway
+   Optimization partially solves the problem since it resolves the functions
+   but it still makes the function call to retrieve the variable
+   May be we need a special API to add Constant Literals to the context
+   In that case during optimization we can resolve them to the direct Literals
+      defineConstant("myPi", 3.1416)
 
 1. we can remove type checks and Exceptions in NativeEnricher because it's done in VariantImpl anyway
       ctx.addFunction("toDouble", (result, arg) -> {

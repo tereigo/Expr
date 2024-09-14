@@ -12,9 +12,12 @@ final class ExprContextImpl implements ExprContext {
 
     // Map of "name" -> Function0/1/2/3/4/5 objects
     private final Map<String, Object> functions = new HashMap<>();
+    private final Map<String, Expr.Literal> constants = new HashMap<>();
 
-    ExprContextImpl(final Map<String, Object> functions) {
+    ExprContextImpl(final Map<String, Object> functions,
+                    final Map<String, Expr.Literal> constants) {
         this.functions.putAll(functions);
+        this.constants.putAll(constants);
     }
 
     @Override
@@ -33,7 +36,12 @@ final class ExprContextImpl implements ExprContext {
     }
 
     @Override
+    public Object getConstant(final String name) {
+        return constants.get(name);
+    }
+
+    @Override
     public String toString() {
-        return "functions: " + functions.keySet();
+        return "functions: " + functions.keySet() + ", constants: " + constants.keySet();
     }
 }

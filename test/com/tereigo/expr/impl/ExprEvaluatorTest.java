@@ -163,6 +163,18 @@ class ExprEvaluatorTest extends ExprEvaluatorTestBase {
         assertEquals(25.0, evaluateDouble("(3 + 2) * 5.0"), EPS);
         assertEquals(0.0, evaluateDouble("(3 + 2) * 0.0"), EPS);
         assertEquals(-1.0, evaluateDouble("-2.0 + 1"), EPS);
+
+        // TODO: may be we need to put try - catch here instead of evaluate()
+        // because result.getAsDouble() can also throw of type mismatch
+        RuntimeException runEx; // thjs is supposed to be RuntimeError!
+        runEx = assertThrows(RuntimeException.class, () -> evaluateDouble("1 + 1"));
+        assertEquals("Variant type mismatch: LONG, expected: DOUBLE", runEx.getMessage());
+        runEx = assertThrows(RuntimeException.class, () -> evaluateDouble("round(1.0)"));
+        assertEquals("Variant type mismatch: LONG, expected: DOUBLE", runEx.getMessage());
+
+        assertEquals(0.0, evaluateNumber("(3 + 2) * 0.0"), EPS);
+        assertEquals(2.0, evaluateNumber("1 + 1"), EPS);
+        assertEquals(1.0, evaluateNumber("round(1.0)"), EPS);
     }
 
     @Test

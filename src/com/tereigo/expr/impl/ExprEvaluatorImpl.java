@@ -47,6 +47,8 @@ final class ExprEvaluatorImpl extends ExprEvaluatorBase implements ExprEvaluator
 
     @Override
     public double evaluateDouble() {
+        // TODO: may be we need to put try - catch here instead of evaluate()
+        // because result.getAsDouble() can also throw of type mismatch
         final Variant result = evaluate(ExprContextNative.get());
         return result.getAsDouble();
     }
@@ -55,6 +57,18 @@ final class ExprEvaluatorImpl extends ExprEvaluatorBase implements ExprEvaluator
     public double evaluateDouble(final ExprContext ctx) {
         final Variant result = evaluate(ctx);
         return result.getAsDouble();
+    }
+
+    @Override
+    public double evaluateNumber() {
+        final Variant result = evaluate(ExprContextNative.get());
+        return result.getAsNumber();
+    }
+
+    @Override
+    public double evaluateNumber(final ExprContext ctx) {
+        final Variant result = evaluate(ctx);
+        return result.getAsNumber();
     }
 
     @Override

@@ -53,7 +53,7 @@ public final class NumberSeriesTransformer {
             }).getAsExprContext();
 
             // apply transformation with a given context
-            final double transformedValue = evaluator.evaluateDouble(ctx);
+            final double transformedValue = evaluator.evaluateNumber(ctx);
 
             System.out.println("Value: " + originalVal + " -> " + transformedValue);
         }

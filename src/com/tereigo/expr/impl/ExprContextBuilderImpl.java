@@ -22,6 +22,7 @@ final class ExprContextBuilderImpl implements ExprContextBuilder {
 
     // Map of "name" -> Function0/1/2/3/4/5 objects
     private final Map<String, Object> functions = new HashMap<>();
+    private final Map<String, Expr.Literal> constants = new HashMap<>();
 
     ExprContextBuilderImpl(final ExprContextEnricher... enrichers) {
         for (final ExprContextEnricher enricher : enrichers) {
@@ -128,9 +129,32 @@ final class ExprContextBuilderImpl implements ExprContextBuilder {
     }
 
     @Override
+    public ExprContextBuilder addLong(final String name, final long value) {
+        validateConstantName(name);
+        constants.put(name, new Expr.Literal(value));
+        // add as a function as well in case we will evaluate the expression without optimization
+        // in which case we should be able to retrieve this constant by name and set its value
+        return addFunction(name, result -> result.accept(value));
+    }
+
+    @Override
+    public ExprContextBuilder addDouble(final String name, final double value) {
+        validateConstantName(name);
+        constants.put(name, new Expr.Literal(value));
+        return addFunction(name, result -> result.accept(value));
+    }
+
+    @Override
+    public ExprContextBuilder addString(final String name, final String value) {
+        validateConstantName(name);
+        constants.put(name, new Expr.Literal(value));
+        return addFunction(name, result -> result.accept(value));
+    }
+
+    @Override
     public ExprContext getAsExprContext() {
         // create an immutable copy of all functions
-        return new ExprContextImpl(functions);
+        return new ExprContextImpl(functions, constants);
     }
 
     @Override
@@ -141,6 +165,12 @@ final class ExprContextBuilderImpl implements ExprContextBuilder {
     private void validateName(final String name) {
         if (functions.containsKey(name)) {
             throw new RuntimeException("Function '" + name + "' is already defined");
+        }
+    }
+
+    private void validateConstantName(final String name) {
+        if (constants.containsKey(name)) {
+            throw new RuntimeException("Constant '" + name + "' is already defined");
         }
     }
 }

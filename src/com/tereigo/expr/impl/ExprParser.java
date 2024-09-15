@@ -5,7 +5,9 @@ import com.tereigo.expr.variant.VariantUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static com.tereigo.expr.impl.TokenType.AND;
 import static com.tereigo.expr.impl.TokenType.BETWEEN;
@@ -91,10 +93,12 @@ import static com.tereigo.expr.impl.TokenType.WITHIN;
 final class ExprParser {
 
     private final List<Token> tokens;
+    private final Map<String, Expr.Literal> constants = new HashMap<>();
     private int current = 0;
 
-    ExprParser(final List<Token> tokens) {
+    ExprParser(final List<Token> tokens, final Map<String, Expr.Literal> constants) {
         this.tokens = tokens;
+        this.constants.putAll(constants);
     }
 
     private static boolean isTypesCompatible(final ExprType type, final Variant val) {
@@ -416,7 +420,8 @@ final class ExprParser {
         }
 
         if (match(IDENTIFIER)) {
-            return new Expr.Identifier(previous());
+            final Expr.Literal constant = constants.get(previous().lexeme);
+            return (constant != null) ? constant : new Expr.Identifier(previous());
         }
 
         if (match(LEFT_PAREN)) {

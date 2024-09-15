@@ -8,6 +8,7 @@ import com.tereigo.expr.ExprEvaluatorFactory;
 import com.tereigo.expr.ExprEvaluatorWithContext;
 
 import java.nio.ByteBuffer;
+import java.util.Map;
 
 import static com.tereigo.expr.utils.ByteBufferUtils.constant;
 
@@ -29,8 +30,18 @@ class ExprEvaluatorTestBase {
         evaluator.evaluateAsObject();
     }
 
+    protected void evaluate(final String text, final Map<String, ?> constants) {
+        final ExprEvaluatorWithContext evaluator = ExprEvaluatorFactory.create(text, constants);
+        evaluator.evaluateAsObject();
+    }
+
     protected void evaluate(final String text, final ExprContext ctx) {
         final ExprEvaluatorWithContext evaluator = ExprEvaluatorFactory.create(text);
+        evaluator.evaluateAsObject(ctx);
+    }
+
+    protected void evaluate(final String text, final Map<String, ?> constants, final ExprContext ctx) {
+        final ExprEvaluatorWithContext evaluator = ExprEvaluatorFactory.create(text, constants);
         evaluator.evaluateAsObject(ctx);
     }
 
@@ -39,8 +50,18 @@ class ExprEvaluatorTestBase {
         evaluator.evaluateAsObject();
     }
 
+    protected void evaluateOptimized(final ExprContext ctx, final String text, final Map<String, ?> constants) {
+        final ExprEvaluator evaluator = ExprEvaluatorFactory.create(ctx, text, constants);
+        evaluator.evaluateAsObject();
+    }
+
     protected long evaluateLong(final String text) {
         final ExprEvaluatorWithContext evaluator = ExprEvaluatorFactory.create(text);
+        return evaluator.evaluateLong();
+    }
+
+    protected long evaluateLong(final String text, final Map<String, ?> constants) {
+        final ExprEvaluatorWithContext evaluator = ExprEvaluatorFactory.create(text, constants);
         return evaluator.evaluateLong();
     }
 
@@ -49,8 +70,18 @@ class ExprEvaluatorTestBase {
         return evaluator.evaluateLong(ctx);
     }
 
+    protected long evaluateLong(final String text, final Map<String, ?> constants, final ExprContext ctx) {
+        final ExprEvaluatorWithContext evaluator = ExprEvaluatorFactory.create(text, constants);
+        return evaluator.evaluateLong(ctx);
+    }
+
     protected long evaluateLongOptimized(final ExprContext ctx, final String text) {
         final ExprEvaluator evaluator = ExprEvaluatorFactory.create(ctx, text);
+        return evaluator.evaluateLong();
+    }
+
+    protected long evaluateLongOptimized(final ExprContext ctx, final String text, final Map<String, ?> constants) {
+        final ExprEvaluator evaluator = ExprEvaluatorFactory.create(ctx, text, constants);
         return evaluator.evaluateLong();
     }
 
@@ -59,8 +90,18 @@ class ExprEvaluatorTestBase {
         return evaluator.evaluateDouble();
     }
 
+    protected double evaluateDouble(final String text, final Map<String, ?> constants) {
+        final ExprEvaluatorWithContext evaluator = ExprEvaluatorFactory.create(text, constants);
+        return evaluator.evaluateDouble();
+    }
+
     protected double evaluateDouble(final String text, final ExprContext ctx) {
         final ExprEvaluatorWithContext evaluator = ExprEvaluatorFactory.create(text);
+        return evaluator.evaluateDouble(ctx);
+    }
+
+    protected double evaluateDouble(final String text, final Map<String, ?> constants, final ExprContext ctx) {
+        final ExprEvaluatorWithContext evaluator = ExprEvaluatorFactory.create(text, constants);
         return evaluator.evaluateDouble(ctx);
     }
 
@@ -69,8 +110,18 @@ class ExprEvaluatorTestBase {
         return evaluator.evaluateDouble();
     }
 
+    protected double evaluateDoubleOptimized(final ExprContext ctx, final String text, final Map<String, ?> constants) {
+        final ExprEvaluator evaluator = ExprEvaluatorFactory.create(ctx, text, constants);
+        return evaluator.evaluateDouble();
+    }
+
     protected double evaluateNumber(final String text) {
         final ExprEvaluatorWithContext evaluator = ExprEvaluatorFactory.create(text);
+        return evaluator.evaluateNumber();
+    }
+
+    protected double evaluateNumber(final String text, final Map<String, ?> constants) {
+        final ExprEvaluatorWithContext evaluator = ExprEvaluatorFactory.create(text, constants);
         return evaluator.evaluateNumber();
     }
 
@@ -79,8 +130,18 @@ class ExprEvaluatorTestBase {
         return evaluator.evaluateNumber(ctx);
     }
 
+    protected double evaluateNumber(final String text, final Map<String, ?> constants, final ExprContext ctx) {
+        final ExprEvaluatorWithContext evaluator = ExprEvaluatorFactory.create(text, constants);
+        return evaluator.evaluateNumber(ctx);
+    }
+
     protected double evaluateNumberOptimized(final ExprContext ctx, final String text) {
         final ExprEvaluator evaluator = ExprEvaluatorFactory.create(ctx, text);
+        return evaluator.evaluateNumber();
+    }
+
+    protected double evaluateNumberOptimized(final ExprContext ctx, final String text, final Map<String, ?> constants) {
+        final ExprEvaluator evaluator = ExprEvaluatorFactory.create(ctx, text, constants);
         return evaluator.evaluateNumber();
     }
 
@@ -89,8 +150,18 @@ class ExprEvaluatorTestBase {
         return evaluator.evaluateBool();
     }
 
+    protected boolean evaluateBool(final String text, final Map<String, ?> constants) {
+        final ExprEvaluatorWithContext evaluator = ExprEvaluatorFactory.create(text, constants);
+        return evaluator.evaluateBool();
+    }
+
     protected boolean evaluateBool(final String text, final ExprContext ctx) {
         final ExprEvaluatorWithContext evaluator = ExprEvaluatorFactory.create(text);
+        return evaluator.evaluateBool(ctx);
+    }
+
+    protected boolean evaluateBool(final String text, final Map<String, ?> constants, final ExprContext ctx) {
+        final ExprEvaluatorWithContext evaluator = ExprEvaluatorFactory.create(text, constants);
         return evaluator.evaluateBool(ctx);
     }
 
@@ -99,8 +170,18 @@ class ExprEvaluatorTestBase {
         return evaluator.evaluateBool();
     }
 
+    protected boolean evaluateBoolOptimized(final ExprContext ctx, final String text, final Map<String, ?> constants) {
+        final ExprEvaluator evaluator = ExprEvaluatorFactory.create(ctx, text, constants);
+        return evaluator.evaluateBool();
+    }
+
     protected String evaluateString(final String text) {
         final ExprEvaluatorWithContext evaluator = ExprEvaluatorFactory.create(text);
+        return evaluator.evaluateString();
+    }
+
+    protected String evaluateString(final String text, final Map<String, ?> constants) {
+        final ExprEvaluatorWithContext evaluator = ExprEvaluatorFactory.create(text, constants);
         return evaluator.evaluateString();
     }
 
@@ -109,8 +190,18 @@ class ExprEvaluatorTestBase {
         return evaluator.evaluateString(ctx);
     }
 
+    protected String evaluateString(final String text, final Map<String, ?> constants, final ExprContext ctx) {
+        final ExprEvaluatorWithContext evaluator = ExprEvaluatorFactory.create(text, constants);
+        return evaluator.evaluateString(ctx);
+    }
+
     protected String evaluateStringOptimized(final ExprContext ctx, final String text) {
         final ExprEvaluator evaluator = ExprEvaluatorFactory.create(ctx, text);
+        return evaluator.evaluateString();
+    }
+
+    protected String evaluateStringOptimized(final ExprContext ctx, final String text, final Map<String, ?> constants) {
+        final ExprEvaluator evaluator = ExprEvaluatorFactory.create(ctx, text, constants);
         return evaluator.evaluateString();
     }
 
@@ -119,8 +210,18 @@ class ExprEvaluatorTestBase {
         return evaluator.evaluateByteBuffer(ctx);
     }
 
+    protected ByteBuffer evaluateByteBuffer(final String text, final Map<String, ?> constants, final ExprContext ctx) {
+        final ExprEvaluatorWithContext evaluator = ExprEvaluatorFactory.create(text, constants);
+        return evaluator.evaluateByteBuffer(ctx);
+    }
+
     protected ByteBuffer evaluateByteBufferOptimized(final ExprContext ctx, final String text) {
         final ExprEvaluator evaluator = ExprEvaluatorFactory.create(ctx, text);
+        return evaluator.evaluateByteBuffer();
+    }
+
+    protected ByteBuffer evaluateByteBufferOptimized(final ExprContext ctx, final String text, final Map<String, ?> constants) {
+        final ExprEvaluator evaluator = ExprEvaluatorFactory.create(ctx, text, constants);
         return evaluator.evaluateByteBuffer();
     }
 

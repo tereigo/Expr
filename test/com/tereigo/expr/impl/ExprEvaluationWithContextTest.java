@@ -1,5 +1,6 @@
 package com.tereigo.expr.impl;
 
+import com.tereigo.expr.ExprConstantsFactory;
 import com.tereigo.expr.ExprContext;
 import com.tereigo.expr.ExprContextBuilder;
 import com.tereigo.expr.ExprContextFactory;
@@ -10,6 +11,7 @@ import com.tereigo.expr.order.TestOrder;
 import org.junit.jupiter.api.Test;
 
 import java.nio.ByteBuffer;
+import java.util.Map;
 
 import static com.tereigo.expr.utils.ByteBufferUtils.constant;
 import static com.tereigo.expr.utils.ByteBufferUtils.parseString;
@@ -53,6 +55,54 @@ class ExprEvaluationWithContextTest extends ExprEvaluatorTestBase {
                 .getAsExprContext();
 
         runExpressionWithContextTests(ctx);
+    }
+
+    @Test
+    void contextTestsWithConstantsInParser() {
+        final ExprContext ctx = ExprContextFactory.globalContext()
+                .addBool("$enabled", () -> true)
+                .addByteBuffer("$tuid", () -> constant("CLIENT1"))
+                .getAsExprContext();
+
+        final Map<String, ?> constants = ExprConstantsFactory.create()
+                .addDouble("$PI", 3.14)
+                .addLong("$productId", 123L)
+                .addString("$ric", "VOD.L")
+                .addString("$nodeAlgoType", "Vwap")
+                .build();
+
+        assertEquals(4.14, evaluateDouble("1.0+$PI", constants, ctx), EPS);
+        assertEquals(6.28, evaluateDouble(" $PI  + $PI  ", constants, ctx), EPS);
+        assertTrue(evaluateBool("$productId == 123 and $ric == 'VOD.L'", constants, ctx));
+        assertTrue(evaluateBool("$productId == 567 or $enabled", constants, ctx));
+        assertFalse(evaluateBool("$productId == 567 and $enabled", constants, ctx));
+        assertFalse(evaluateBool("$nodeAlgoType == $ric", constants, ctx));
+        assertEquals(124, evaluateLong("$productId + 1", constants, ctx));
+        assertTrue(evaluateBool("$tuid == 'CLIENT1'", constants, ctx));
+    }
+
+    @Test
+    void optimizedContextTestsWithConstantsInParser() {
+        final ExprContext ctx = ExprContextFactory.globalContext()
+                .addBool("$enabled", () -> true)
+                .addByteBuffer("$tuid", () -> constant("CLIENT1"))
+                .getAsExprContext();
+
+        final Map<String, ?> constants = ExprConstantsFactory.create()
+                .addDouble("$PI", 3.14)
+                .addLong("$productId", 123L)
+                .addString("$ric", "VOD.L")
+                .addString("$nodeAlgoType", "Vwap")
+                .build();
+
+        assertEquals(4.14, evaluateDoubleOptimized(ctx, "1.0+$PI", constants), EPS);
+        assertEquals(6.28, evaluateDoubleOptimized(ctx, " $PI  + $PI  ", constants), EPS);
+        assertTrue(evaluateBoolOptimized(ctx,"$productId == 123 and $ric == 'VOD.L'", constants));
+        assertTrue(evaluateBoolOptimized(ctx,"$productId == 567 or $enabled", constants));
+        assertFalse(evaluateBoolOptimized(ctx,"$productId == 567 and $enabled", constants));
+        assertFalse(evaluateBoolOptimized(ctx,"$nodeAlgoType == $ric", constants));
+        assertEquals(124, evaluateLongOptimized(ctx,"$productId + 1", constants));
+        assertTrue(evaluateBoolOptimized(ctx, "$tuid == 'CLIENT1'", constants));
     }
 
     @Test

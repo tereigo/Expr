@@ -6,6 +6,7 @@ import com.tereigo.expr.annotations.GeneratesGarbage;
 import com.tereigo.expr.variant.Variant;
 
 import java.nio.ByteBuffer;
+import java.util.Map;
 
 final class ExprEvaluatorImpl extends ExprEvaluatorBase implements ExprEvaluatorWithContext {
 
@@ -13,8 +14,16 @@ final class ExprEvaluatorImpl extends ExprEvaluatorBase implements ExprEvaluator
         this(ExprCompiler.compile(source));
     }
 
+    ExprEvaluatorImpl(final ByteBuffer source, final Map<String, Expr.Literal> constants) {
+        this(ExprCompiler.compile(source, constants));
+    }
+
     ExprEvaluatorImpl(final String source) {
         this(ExprCompiler.compile(source));
+    }
+
+    ExprEvaluatorImpl(final String source, final Map<String, Expr.Literal> constants) {
+        this(ExprCompiler.compile(source, constants));
     }
 
     ExprEvaluatorImpl(final ASTRoot root) {

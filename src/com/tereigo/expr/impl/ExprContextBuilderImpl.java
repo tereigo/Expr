@@ -159,7 +159,7 @@ final class ExprContextBuilderImpl implements ExprContextBuilder {
 
     @Override
     public String toString() {
-        return "functions: " + functions.keySet();
+        return "functions: " + functions.keySet() + ", constants: " + constants.keySet();
     }
 
     private void validateName(final String name) {

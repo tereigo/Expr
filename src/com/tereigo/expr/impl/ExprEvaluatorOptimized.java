@@ -6,16 +6,26 @@ import com.tereigo.expr.annotations.GeneratesGarbage;
 import com.tereigo.expr.variant.Variant;
 
 import java.nio.ByteBuffer;
+import java.util.Collections;
+import java.util.Map;
 
 final class ExprEvaluatorOptimized extends ExprEvaluatorBase implements ExprEvaluator {
     private final ExprContext ctx;
 
     ExprEvaluatorOptimized(final ExprContext ctx, final String source) {
-        this(ExprOptimizer.optimize(ExprCompiler.compile(source), ctx), ctx);
+        this(ExprOptimizer.optimize(ExprCompiler.compile(source, Collections.EMPTY_MAP), ctx), ctx);
+    }
+
+    ExprEvaluatorOptimized(final ExprContext ctx, final String source, final Map<String, Expr.Literal> constants) {
+        this(ExprOptimizer.optimize(ExprCompiler.compile(source, constants), ctx), ctx);
     }
 
     ExprEvaluatorOptimized(final ExprContext ctx, final ByteBuffer source) {
-        this(ExprOptimizer.optimize(ExprCompiler.compile(source), ctx), ctx);
+        this(ExprOptimizer.optimize(ExprCompiler.compile(source, Collections.EMPTY_MAP), ctx), ctx);
+    }
+
+    ExprEvaluatorOptimized(final ExprContext ctx, final ByteBuffer source, final Map<String, Expr.Literal> constants) {
+        this(ExprOptimizer.optimize(ExprCompiler.compile(source, constants), ctx), ctx);
     }
 
     private ExprEvaluatorOptimized(final ASTRoot root, final ExprContext ctx) {

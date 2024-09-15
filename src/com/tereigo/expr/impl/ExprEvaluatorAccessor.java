@@ -6,6 +6,7 @@ import com.tereigo.expr.ExprEvaluatorFactory;
 import com.tereigo.expr.ExprEvaluatorWithContext;
 
 import java.nio.ByteBuffer;
+import java.util.Map;
 import java.util.Objects;
 
 public final class ExprEvaluatorAccessor {
@@ -13,15 +14,17 @@ public final class ExprEvaluatorAccessor {
     private ExprEvaluatorAccessor() { }
 
     public static ExprEvaluatorWithContext create(final ExprEvaluatorFactory.Pass pass,
-                                                  final ByteBuffer source) {
+                                                  final ByteBuffer source,
+                                                  final Map<String, ?> constants) {
         Objects.requireNonNull(pass);
-        return new ExprEvaluatorImpl(source);
+        return new ExprEvaluatorImpl(source, (Map<String, Expr.Literal>)constants);
     }
 
     public static ExprEvaluatorWithContext create(final ExprEvaluatorFactory.Pass pass,
-                                                  final String source) {
+                                                  final String source,
+                                                  final Map<String, ?> constants) {
         Objects.requireNonNull(pass);
-        return new ExprEvaluatorImpl(source);
+        return new ExprEvaluatorImpl(source, (Map<String, Expr.Literal>)constants);
     }
 
     /**
@@ -32,15 +35,19 @@ public final class ExprEvaluatorAccessor {
      * @param ctx    - Static immutable evaluation context. This context will be used for the subsequent evaluation
      * @param source - Expression
      */
-    public static ExprEvaluator create(final ExprEvaluatorFactory.Pass ignoredPass,
+    public static ExprEvaluator create(final ExprEvaluatorFactory.Pass pass,
                                        final ExprContext ctx,
-                                       final String source) {
-        return new ExprEvaluatorOptimized(ctx, source);
+                                       final String source,
+                                       final Map<String, ?> constants) {
+        Objects.requireNonNull(pass);
+        return new ExprEvaluatorOptimized(ctx, source, (Map<String, Expr.Literal>)constants);
     }
 
-    public static ExprEvaluator create(final ExprEvaluatorFactory.Pass ignoredPass,
+    public static ExprEvaluator create(final ExprEvaluatorFactory.Pass pass,
                                        final ExprContext ctx,
-                                       final ByteBuffer source) {
-        return new ExprEvaluatorOptimized(ctx, source);
+                                       final ByteBuffer source,
+                                       final Map<String, ?> constants) {
+        Objects.requireNonNull(pass);
+        return new ExprEvaluatorOptimized(ctx, source, (Map<String, Expr.Literal>)constants);
     }
 }

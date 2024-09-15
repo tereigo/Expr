@@ -3,6 +3,8 @@ package com.tereigo.expr;
 import com.tereigo.expr.impl.ExprEvaluatorAccessor;
 
 import java.nio.ByteBuffer;
+import java.util.Collections;
+import java.util.Map;
 
 /*
    This is the main entry point for the clients
@@ -26,11 +28,19 @@ public final class ExprEvaluatorFactory {
      * or the context will be supplied during evaluation (evaluator.evaluate(exprContext))
      */
     public static ExprEvaluatorWithContext create(final ByteBuffer source) {
-        return ExprEvaluatorAccessor.create(PASS, source);
+        return ExprEvaluatorAccessor.create(PASS, source, Collections.EMPTY_MAP);
     }
 
     public static ExprEvaluatorWithContext create(final String source) {
-        return ExprEvaluatorAccessor.create(PASS, source);
+        return ExprEvaluatorAccessor.create(PASS, source, Collections.EMPTY_MAP);
+    }
+
+    public static ExprEvaluatorWithContext create(final ByteBuffer source, final Map<String, ?> constants) {
+        return ExprEvaluatorAccessor.create(PASS, source, constants);
+    }
+
+    public static ExprEvaluatorWithContext create(final String source, final Map<String, ?> constants) {
+        return ExprEvaluatorAccessor.create(PASS, source, constants);
     }
 
     /**
@@ -42,11 +52,19 @@ public final class ExprEvaluatorFactory {
      * @param source - Expression
      */
     public static ExprEvaluator create(final ExprContext ctx, final String source) {
-        return ExprEvaluatorAccessor.create(PASS, ctx, source);
+        return ExprEvaluatorAccessor.create(PASS, ctx, source, Collections.EMPTY_MAP);
+    }
+
+    public static ExprEvaluator create(final ExprContext ctx, final String source, final Map<String, ?> constants) {
+        return ExprEvaluatorAccessor.create(PASS, ctx, source, constants);
     }
 
     public static ExprEvaluator create(final ExprContext ctx, final ByteBuffer source) {
-        return ExprEvaluatorAccessor.create(PASS, ctx, source);
+        return ExprEvaluatorAccessor.create(PASS, ctx, source, Collections.EMPTY_MAP);
+    }
+
+    public static ExprEvaluator create(final ExprContext ctx, final ByteBuffer source, final Map<String, ?> constants) {
+        return ExprEvaluatorAccessor.create(PASS, ctx, source, constants);
     }
 
     private static final Pass PASS = new Pass();

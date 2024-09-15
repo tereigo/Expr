@@ -7,10 +7,6 @@ TODO:
 
 2. Add power operator: "pow(2, 5) == 32 and 2 ** 5 == 32"
 
-0. in ExprEvaluatorImpl
-   // TODO: may be we need to put try - catch here instead of evaluate()
-      // because result.getAsDouble() can also throw of type mismatch
-
 3. See if it's doable to introduce an ability to add user-specific operators
    For example: Bit logic manipulations
 
@@ -105,6 +101,10 @@ TODO:
 ///////////////////////////////////////////////////////////////////////////////////////////
 // Done:
 ///////////////////////////////////////////////////////////////////////////////////////////
+
+0. in ExprEvaluatorImpl
+   // TODO: may be we need to put try - catch here instead of evaluate()
+      // because result.getAsDouble() can also throw of type mismatch
 
 1. Introduce an ability to add user-specific constants
    (may be via functions, may be via tokens)?

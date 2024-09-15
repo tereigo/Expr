@@ -26,43 +26,71 @@ final class ExprEvaluatorOptimized extends ExprEvaluatorBase implements ExprEval
     @Override
     public boolean evaluateBool() {
         final Variant result = evaluate(ctx);
-        return result.getAsBoolean();
+        try {
+            return result.getAsBoolean();
+        } catch (final RuntimeException ex) {
+            throw new RuntimeException("Result of an unexpected type: " + ExceptionUtils.getExceptionMsg(ex));
+        }
     }
 
     @Override
     public long evaluateLong() {
         final Variant result = evaluate(ctx);
-        return result.getAsLong();
+        try {
+            return result.getAsLong();
+        } catch (final RuntimeException ex) {
+            throw new RuntimeException("Result of an unexpected type: " + ExceptionUtils.getExceptionMsg(ex));
+        }
     }
 
     @Override
     public double evaluateDouble() {
         final Variant result = evaluate(ctx);
-        return result.getAsDouble();
+        try {
+            return result.getAsDouble();
+        } catch (final RuntimeException ex) {
+            throw new RuntimeException("Result of an unexpected type: " + ExceptionUtils.getExceptionMsg(ex));
+        }
     }
 
     @Override
     public double evaluateNumber() {
         final Variant result = evaluate(ctx);
-        return result.getAsNumber();
+        try {
+            return result.getAsNumber();
+        } catch (final RuntimeException ex) {
+            throw new RuntimeException("Result of an unexpected type: " + ExceptionUtils.getExceptionMsg(ex));
+        }
     }
 
     @Override
     public String evaluateString() {
         final Variant result = evaluate(ctx);
-        return result.getAsString();
+        try {
+            return result.getAsString();
+        } catch (final RuntimeException ex) {
+            throw new RuntimeException("Result of an unexpected type: " + ExceptionUtils.getExceptionMsg(ex));
+        }
     }
 
     @Override
     public ByteBuffer evaluateByteBuffer() {
         final Variant result = evaluate(ctx);
-        return result.getAsByteBuffer();
+        try {
+            return result.getAsByteBuffer();
+        } catch (final RuntimeException ex) {
+            throw new RuntimeException("Result of an unexpected type: " + ExceptionUtils.getExceptionMsg(ex));
+        }
     }
 
     @GeneratesGarbage
     @Override
     public Object evaluateAsObject() {
         final Variant result = evaluate(ctx);
-        return result.getAsObject();
+        try {
+            return result.getAsObject();
+        } catch (final RuntimeException ex) {
+            throw new RuntimeException("Result of an unexpected type: " + ExceptionUtils.getExceptionMsg(ex));
+        }
     }
 }

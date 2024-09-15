@@ -21,6 +21,10 @@ import java.nio.ByteBuffer;
  */
 public final class ExprEvaluatorFactory {
 
+    /**
+     * This interface is to create ExprEvaluator which either used only native functions (evaluator.evaluate())
+     * or the context will be supplied during evaluation (evaluator.evaluate(exprContext))
+     */
     public static ExprEvaluatorWithContext create(final ByteBuffer source) {
         return ExprEvaluatorAccessor.create(PASS, source);
     }
@@ -30,8 +34,8 @@ public final class ExprEvaluatorFactory {
     }
 
     /**
-     * Optimized evaluation for the cases where the context is known upfront it and stays immutable for the evaluation
-     * It optimized the compiled AST tree before evaluation by resolving all function and object calls and storing them as the direct functions
+     * Optimized evaluation for the cases where the context is known upfront and it stays immutable for the evaluation
+     * It optimizes the compiled AST tree before evaluation by resolving all function and object calls and storing them as the direct functions
      * It means it doesn't have to do function/object lookups via hash map during the evaluation
      *
      * @param ctx    - Static immutable evaluation context. This context will be used for the subsequent evaluation

@@ -14,7 +14,7 @@ abstract class ExprEvaluatorBase {
         this.interpreter = new ExprInterpreter(root.expr());
     }
 
-    protected Variant evaluate(final ExprContext ctx) {
+    protected Variant evaluate(final ExprContext ctx) throws RuntimeException {
         try {
             return interpreter.evaluate(ctx);
         } catch (final RuntimeError err) {

@@ -24,88 +24,142 @@ final class ExprEvaluatorImpl extends ExprEvaluatorBase implements ExprEvaluator
     @Override
     public boolean evaluateBool() {
         final Variant result = evaluate(ExprContextNative.get());
-        return result.getAsBoolean();
+        try {
+            return result.getAsBoolean();
+        } catch (final RuntimeException ex) {
+            throw new RuntimeException("Result of an unexpected type: " + ExceptionUtils.getExceptionMsg(ex));
+        }
     }
 
     @Override
     public boolean evaluateBool(final ExprContext ctx) {
         final Variant result = evaluate(ctx);
-        return result.getAsBoolean();
+        try {
+            return result.getAsBoolean();
+        } catch (final RuntimeException ex) {
+            throw new RuntimeException("Result of an unexpected type: " + ExceptionUtils.getExceptionMsg(ex));
+        }
     }
 
     @Override
     public long evaluateLong() {
         final Variant result = evaluate(ExprContextNative.get());
-        return result.getAsLong();
+        try {
+            return result.getAsLong();
+        } catch (final RuntimeException ex) {
+            throw new RuntimeException("Result of an unexpected type: " + ExceptionUtils.getExceptionMsg(ex));
+        }
     }
 
     @Override
     public long evaluateLong(final ExprContext ctx) {
         final Variant result = evaluate(ctx);
-        return result.getAsLong();
+        try {
+            return result.getAsLong();
+        } catch (final RuntimeException ex) {
+            throw new RuntimeException("Result of an unexpected type: " + ExceptionUtils.getExceptionMsg(ex));
+        }
     }
 
     @Override
     public double evaluateDouble() {
-        // TODO: may be we need to put try - catch here instead of evaluate()
-        // because result.getAsDouble() can also throw of type mismatch
         final Variant result = evaluate(ExprContextNative.get());
-        return result.getAsDouble();
+        try {
+            return result.getAsDouble();
+        } catch (final RuntimeException ex) {
+            throw new RuntimeException("Result of an unexpected type: " + ExceptionUtils.getExceptionMsg(ex));
+        }
     }
 
     @Override
     public double evaluateDouble(final ExprContext ctx) {
         final Variant result = evaluate(ctx);
-        return result.getAsDouble();
+        try {
+            return result.getAsDouble();
+        } catch (final RuntimeException ex) {
+            throw new RuntimeException("Result of an unexpected type: " + ExceptionUtils.getExceptionMsg(ex));
+        }
     }
 
     @Override
     public double evaluateNumber() {
         final Variant result = evaluate(ExprContextNative.get());
-        return result.getAsNumber();
+        try {
+            return result.getAsNumber();
+        } catch (final RuntimeException ex) {
+            throw new RuntimeException("Result of an unexpected type: " + ExceptionUtils.getExceptionMsg(ex));
+        }
     }
 
     @Override
     public double evaluateNumber(final ExprContext ctx) {
         final Variant result = evaluate(ctx);
-        return result.getAsNumber();
+        try {
+            return result.getAsNumber();
+        } catch (final RuntimeException ex) {
+            throw new RuntimeException("Result of an unexpected type: " + ExceptionUtils.getExceptionMsg(ex));
+        }
     }
 
     @Override
     public String evaluateString() {
         final Variant result = evaluate(ExprContextNative.get());
-        return result.getAsString();
+        try {
+            return result.getAsString();
+        } catch (final RuntimeException ex) {
+            throw new RuntimeException("Result of an unexpected type: " + ExceptionUtils.getExceptionMsg(ex));
+        }
     }
 
     @Override
     public String evaluateString(final ExprContext ctx) {
         final Variant result = evaluate(ctx);
-        return result.getAsString();
+        try {
+            return result.getAsString();
+        } catch (final RuntimeException ex) {
+            throw new RuntimeException("Result of an unexpected type: " + ExceptionUtils.getExceptionMsg(ex));
+        }
     }
 
     @Override
     public ByteBuffer evaluateByteBuffer() {
         final Variant result = evaluate(ExprContextNative.get());
-        return result.getAsByteBuffer();
+        try {
+            return result.getAsByteBuffer();
+        } catch (final RuntimeException ex) {
+            throw new RuntimeException("Result of an unexpected type: " + ExceptionUtils.getExceptionMsg(ex));
+        }
     }
 
     @Override
     public ByteBuffer evaluateByteBuffer(final ExprContext ctx) {
         final Variant result = evaluate(ctx);
-        return result.getAsByteBuffer();
+        try {
+            return result.getAsByteBuffer();
+        } catch (final RuntimeException ex) {
+            throw new RuntimeException("Result of an unexpected type: " + ExceptionUtils.getExceptionMsg(ex));
+        }
     }
 
     @GeneratesGarbage
     @Override
     public Object evaluateAsObject() {
         final Variant result = evaluate(ExprContextNative.get());
-        return result.getAsObject();
+        try {
+            return result.getAsObject();
+        } catch (final RuntimeException ex) {
+            throw new RuntimeException("Result of an unexpected type: " + ExceptionUtils.getExceptionMsg(ex));
+        }
     }
 
     @GeneratesGarbage
     @Override
     public Object evaluateAsObject(final ExprContext ctx) {
         final Variant result = evaluate(ctx);
-        return result.getAsObject();
+        try {
+            return result.getAsObject();
+        } catch (final RuntimeException ex) {
+            throw new RuntimeException("Result of an unexpected type: " + ExceptionUtils.getExceptionMsg(ex));
+        }
     }
 }

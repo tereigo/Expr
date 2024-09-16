@@ -44,20 +44,6 @@ class ExprEvaluationWithContextTest extends ExprEvaluatorTestBase {
     }
 
     @Test
-    void contextTestsWithConstants() {
-        final ExprContext ctx = ExprContextFactory.globalContext()
-                .addDouble("$PI", 3.14)
-                .addLong("$productId", 123L)
-                .addString("$ric", "VOD.L")
-                .addString("$nodeAlgoType", "Vwap")
-                .addBool("$enabled", () -> true)
-                .addByteBuffer("$tuid", () -> constant("CLIENT1"))
-                .getAsExprContext();
-
-        runExpressionWithContextTests(ctx);
-    }
-
-    @Test
     void contextTestsWithConstantsInParser() {
         final ExprContext ctx = ExprContextFactory.globalContext()
                 .addBool("$enabled", () -> true)
@@ -142,20 +128,6 @@ class ExprEvaluationWithContextTest extends ExprEvaluatorTestBase {
                 .addLong("$productId", () -> 123L)
                 .addString("$ric", () -> "VOD.L")
                 .addString("$nodeAlgoType", () -> "Vwap")
-                .addBool("$enabled", () -> true)
-                .addByteBuffer("$tuid", () -> constant("CLIENT1"))
-                .getAsExprContext();
-
-        runOptimizedExpressionWithContextTests(ctx);
-    }
-
-    @Test
-    void contextTestsWithConstantsAfterOptimization() {
-        final ExprContext ctx = ExprContextFactory.globalContext()
-                .addDouble("$PI", 3.14)
-                .addLong("$productId", 123L)
-                .addString("$ric", "VOD.L")
-                .addString("$nodeAlgoType", "Vwap")
                 .addBool("$enabled", () -> true)
                 .addByteBuffer("$tuid", () -> constant("CLIENT1"))
                 .getAsExprContext();

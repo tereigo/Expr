@@ -75,12 +75,6 @@ final class AstOptimizer implements Expr.Visitor<Expr> {
 
     @Override
     public Expr visitIdentifierExpr(final Expr.Identifier expr) {
-        // check if it's a constant first
-        final Object constant = ctx.getConstant(expr.operator.lexeme);
-        if (constant instanceof Expr.Literal) {
-            return (Expr.Literal)constant;
-        }
-
         final Object funcObj = ctx.getFunction(expr.operator.lexeme);
         if (funcObj instanceof Function0) {
             return new Expr.ResolvedIdentifier(expr.operator, (Function0) funcObj);

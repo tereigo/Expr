@@ -44,10 +44,4 @@ public interface ExprContextBuilder extends ExprContextSupplier {
 
     ExprContextBuilder enrich(final ExprContextEnricher... enrichers);
 
-    // Constants
-    ExprContextBuilder addLong(final String name, final long value);
-
-    ExprContextBuilder addDouble(final String name, final double value);
-
-    ExprContextBuilder addString(final String name, final String value);
 }

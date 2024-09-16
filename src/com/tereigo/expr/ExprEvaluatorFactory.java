@@ -21,6 +21,7 @@ import java.util.Map;
         ExprEvaluator evaluator = ExprEvaluatorFactory.create(ctx, "$ric == 'VOD.L' and $productId == 123 or 5 != 2");
         evaluator.evaluateBool();
  */
+@SuppressWarnings("unchecked")
 public final class ExprEvaluatorFactory {
 
     /**

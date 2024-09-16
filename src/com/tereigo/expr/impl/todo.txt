@@ -1,4 +1,6 @@
 TODO:
+0. May be remove constants from ExprContext and ExprContextBuilder?
+
 2. Support scientific input for Doubles: 1e-6, 1.15E6
 
 3. convert project to Maven/Gradle

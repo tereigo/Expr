@@ -9,6 +9,7 @@ import java.nio.ByteBuffer;
 import java.util.Map;
 import java.util.Objects;
 
+@SuppressWarnings("unchecked")
 public final class ExprEvaluatorAccessor {
 
     private ExprEvaluatorAccessor() { }

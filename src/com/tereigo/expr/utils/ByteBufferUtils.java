@@ -17,8 +17,7 @@ public final class ByteBufferUtils {
     private static final Comparator<ByteBuffer> BB_CASE_SENSITIVE_COMPARATOR = ByteBufferUtils::compare;
     private static final Comparator<ByteBuffer> BB_CASE_INSENSITIVE_COMPARATOR = ByteBufferUtils::compareCaseInsensitive;
 
-    private ByteBufferUtils() {
-    }
+    private ByteBufferUtils() { }
 
     @GeneratesGarbage
     public static ByteBuffer constant(final String from) {
@@ -133,15 +132,19 @@ public final class ByteBufferUtils {
         return (b >= 65 && b <= 90) ? (byte) (b + 32) : b;
     }
 
+    ///////////////////////////////////////////////////////////////////////////////////////////////////
+    // startsWith / startsWithCaseInsensitive
+    ///////////////////////////////////////////////////////////////////////////////////////////////////
+
     public static boolean startsWith(final ByteBuffer source, final ByteBuffer key) {
         return startsWith(source, key, BYTE_CASE_SENSITIVE_COMPARATOR);
     }
 
-    public static boolean startsWithCaseInsensitive(final ByteBuffer source, final ByteBuffer key) {
+    public static boolean startsWithIgnoreCase(final ByteBuffer source, final ByteBuffer key) {
         return startsWith(source, key, BYTE_CASE_INSENSITIVE_COMPARATOR);
     }
 
-    public static boolean startsWith(final ByteBuffer source, final ByteBuffer key, final ByteComparator comparator) {
+    private static boolean startsWith(final ByteBuffer source, final ByteBuffer key, final ByteComparator comparator) {
         final int keySize = key.remaining();
         if (keySize > source.remaining()) {
             return false;
@@ -158,11 +161,11 @@ public final class ByteBufferUtils {
         return startsWith(source, key, BYTE_CASE_SENSITIVE_COMPARATOR);
     }
 
-    public static boolean startsWithCaseInsensitive(final ByteBuffer source, final CharSequence key) {
+    public static boolean startsWithIgnoreCase(final ByteBuffer source, final CharSequence key) {
         return startsWith(source, key, BYTE_CASE_INSENSITIVE_COMPARATOR);
     }
 
-    public static boolean startsWith(final ByteBuffer source, final CharSequence key, final ByteComparator comparator) {
+    private static boolean startsWith(final ByteBuffer source, final CharSequence key, final ByteComparator comparator) {
         final int keySize = key.length();
         if (keySize > source.remaining()) {
             return false;
@@ -179,11 +182,11 @@ public final class ByteBufferUtils {
         return startsWith(source, key, BYTE_CASE_SENSITIVE_COMPARATOR);
     }
 
-    public static boolean startsWithCaseInsensitive(final CharSequence source, final ByteBuffer key) {
+    public static boolean startsWithIgnoreCase(final CharSequence source, final ByteBuffer key) {
         return startsWith(source, key, BYTE_CASE_INSENSITIVE_COMPARATOR);
     }
 
-    public static boolean startsWith(final CharSequence source, final ByteBuffer key, final ByteComparator comparator) {
+    private static boolean startsWith(final CharSequence source, final ByteBuffer key, final ByteComparator comparator) {
         final int keySize = key.remaining();
         if (keySize > source.length()) {
             return false;
@@ -195,6 +198,107 @@ public final class ByteBufferUtils {
         }
         return true;
     }
+
+    public static boolean startsWithIgnoreCase(final CharSequence source, final CharSequence key) {
+        final int keySize = key.length();
+        if (keySize > source.length()) {
+            return false;
+        }
+        for (int i = 0; i < keySize; i++) {
+            if (Character.toLowerCase(source.charAt(i)) != Character.toLowerCase(key.charAt(i))) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////////
+    // endsWith / endsWithCaseInsensitive
+    ///////////////////////////////////////////////////////////////////////////////////////////////////
+
+    public static boolean endsWith(final ByteBuffer source, final ByteBuffer key) {
+        return endsWith(source, key, BYTE_CASE_SENSITIVE_COMPARATOR);
+    }
+
+    public static boolean endsWithIgnoreCase(final ByteBuffer source, final ByteBuffer key) {
+        return endsWith(source, key, BYTE_CASE_INSENSITIVE_COMPARATOR);
+    }
+
+    private static boolean endsWith(final ByteBuffer source, final ByteBuffer key, final ByteComparator comparator) {
+        final int keySize = key.remaining();
+        final int srcSize = source.remaining();
+        if (keySize > srcSize) {
+            return false;
+        }
+        for (int i = keySize - 1, j = srcSize - 1; i >= 0; i--, j--) {
+            if (comparator.compare(source.get(j), key.get(i)) != 0) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public static boolean endsWith(final ByteBuffer source, final CharSequence key) {
+        return endsWith(source, key, BYTE_CASE_SENSITIVE_COMPARATOR);
+    }
+
+    public static boolean endsWithIgnoreCase(final ByteBuffer source, final CharSequence key) {
+        return endsWith(source, key, BYTE_CASE_INSENSITIVE_COMPARATOR);
+    }
+
+    private static boolean endsWith(final ByteBuffer source, final CharSequence key, final ByteComparator comparator) {
+        final int keySize = key.length();
+        final int srcSize = source.remaining();
+        if (keySize > srcSize) {
+            return false;
+        }
+        for (int i = keySize - 1, j = srcSize - 1; i >= 0; i--, j--) {
+            if (comparator.compare(source.get(j), (byte) (key.charAt(i) & 0xFF)) != 0) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public static boolean endsWith(final CharSequence source, final ByteBuffer key) {
+        return endsWith(source, key, BYTE_CASE_SENSITIVE_COMPARATOR);
+    }
+
+    public static boolean endsWithIgnoreCase(final CharSequence source, final ByteBuffer key) {
+        return endsWith(source, key, BYTE_CASE_INSENSITIVE_COMPARATOR);
+    }
+
+    private static boolean endsWith(final CharSequence source, final ByteBuffer key, final ByteComparator comparator) {
+        final int keySize = key.remaining();
+        final int srcSize = source.length();
+        if (keySize > srcSize) {
+            return false;
+        }
+        for (int i = keySize - 1, j = srcSize - 1; i >= 0; i--, j--) {
+            if (comparator.compare((byte) (source.charAt(j) & 0xFF), key.get(i)) != 0) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public static boolean endsWithIgnoreCase(final CharSequence source, final CharSequence key) {
+        final int keySize = key.length();
+        final int srcSize = source.length();
+        if (keySize > srcSize) {
+            return false;
+        }
+        for (int i = keySize - 1, j = srcSize - 1; i >= 0; i--, j--) {
+            if (Character.toLowerCase(source.charAt(j)) != Character.toLowerCase(key.charAt(i))) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////////
+    // equals / equalsIgnoreCase
+    ///////////////////////////////////////////////////////////////////////////////////////////////////
 
     public static boolean equals(final ByteBuffer buffer, final ByteBuffer other) {
         return equals(buffer, other, BYTE_CASE_SENSITIVE_COMPARATOR);
@@ -216,7 +320,7 @@ public final class ByteBufferUtils {
         return equals(buffer, str, BYTE_CASE_INSENSITIVE_COMPARATOR);
     }
 
-    public static boolean equals(final ByteBuffer buffer, final ByteBuffer other, final ByteComparator comparator) {
+    private static boolean equals(final ByteBuffer buffer, final ByteBuffer other, final ByteComparator comparator) {
         if (buffer == other) {
             return true;
         }
@@ -228,7 +332,7 @@ public final class ByteBufferUtils {
         }
     }
 
-    public static boolean equals(final ByteBuffer buffer, final CharSequence str, final ByteComparator comparator) {
+    private static boolean equals(final ByteBuffer buffer, final CharSequence str, final ByteComparator comparator) {
         if (buffer == null && str == null) {
             return true;
         }
@@ -273,6 +377,10 @@ public final class ByteBufferUtils {
         }
     }
 
+    ///////////////////////////////////////////////////////////////////////////////////////////////////
+    // compare / compareCaseInsensitive
+    ///////////////////////////////////////////////////////////////////////////////////////////////////
+
     public static int compare(final ByteBuffer buffer, final ByteBuffer other) {
         return compare(buffer, other, BYTE_CASE_SENSITIVE_COMPARATOR);
     }
@@ -314,6 +422,10 @@ public final class ByteBufferUtils {
         toString(buffer, sb);
         return sb.toString();
     }
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////////
+    // contains / indexOf
+    ///////////////////////////////////////////////////////////////////////////////////////////////////
 
     public static boolean contains(final ByteBuffer str, final String pattern) {
         return indexOf(str, pattern) > -1;

@@ -222,7 +222,7 @@ final class ExprContextNativeEnricher implements ExprContextEnricher {
             }
         });
 
-        // TODO: add containsIgnoreCase, startsWith, startsWithIgnoreCase, endsWith, endsWithIgnoreCase, indexOfIgnoreCase
+        // TODO: add containsIgnoreCase, indexOfIgnoreCase
 
         ctx.addFunction("contains", (result, arg1, arg2) -> {
             // alternative syntax. I'm not sure it's better
@@ -261,21 +261,47 @@ final class ExprContextNativeEnricher implements ExprContextEnricher {
             }
         });
 
-        // TODO: finish it
-//    ctx.addFunction("endsWith", (result, arg1, arg2) -> {
-//      if (VariantUtils.isString(arg1) && VariantUtils.isString(arg2)) {
-//        result.accept(arg1.getAsString().endsWith(arg2.getAsString()));
-//      } else if (VariantUtils.isString(arg1) && VariantUtils.isByteBuffer(arg2)) {
-//        // TODO: reimplement - generates garbage
-//        result.accept(arg1.getAsString().endsWith(ByteBufferUtils.parseString(arg2.getAsByteBuffer())));
-//      } else if (VariantUtils.isByteBuffer(arg1) && VariantUtils.isString(arg2)) {
-//        result.accept(ByteBufferUtils.endWith(arg1.getAsByteBuffer(), arg2.getAsString()));
-//      } else if (VariantUtils.isByteBuffer(arg1) && VariantUtils.isByteBuffer(arg2)) {
-//        result.accept(ByteBufferUtils.endWith(arg1.getAsByteBuffer(), arg2.getAsByteBuffer()));
-//      } else {
-//        throw new RuntimeException("Operand must be a STRING or BYTE_BUFFER");
-//      }
-//    });
+        ctx.addFunction("startsWithIgnoreCase", (result, arg1, arg2) -> {
+            if (VariantUtils.isString(arg1) && VariantUtils.isString(arg2)) {
+                result.accept(ByteBufferUtils.startsWithIgnoreCase(arg1.getAsString(), arg2.getAsString()));
+            } else if (VariantUtils.isString(arg1) && VariantUtils.isByteBuffer(arg2)) {
+                result.accept(ByteBufferUtils.startsWithIgnoreCase(arg1.getAsString(), arg2.getAsByteBuffer()));
+            } else if (VariantUtils.isByteBuffer(arg1) && VariantUtils.isString(arg2)) {
+                result.accept(ByteBufferUtils.startsWithIgnoreCase(arg1.getAsByteBuffer(), arg2.getAsString()));
+            } else if (VariantUtils.isByteBuffer(arg1) && VariantUtils.isByteBuffer(arg2)) {
+                result.accept(ByteBufferUtils.startsWithIgnoreCase(arg1.getAsByteBuffer(), arg2.getAsByteBuffer()));
+            } else {
+                throw new RuntimeException("Operand must be a STRING or BYTE_BUFFER");
+            }
+        });
+
+        ctx.addFunction("endsWith", (result, arg1, arg2) -> {
+            if (VariantUtils.isString(arg1) && VariantUtils.isString(arg2)) {
+                result.accept(arg1.getAsString().endsWith(arg2.getAsString()));
+            } else if (VariantUtils.isString(arg1) && VariantUtils.isByteBuffer(arg2)) {
+                result.accept(ByteBufferUtils.endsWith(arg1.getAsString(), arg2.getAsByteBuffer()));
+            } else if (VariantUtils.isByteBuffer(arg1) && VariantUtils.isString(arg2)) {
+                result.accept(ByteBufferUtils.endsWith(arg1.getAsByteBuffer(), arg2.getAsString()));
+            } else if (VariantUtils.isByteBuffer(arg1) && VariantUtils.isByteBuffer(arg2)) {
+                result.accept(ByteBufferUtils.endsWith(arg1.getAsByteBuffer(), arg2.getAsByteBuffer()));
+            } else {
+                throw new RuntimeException("Operand must be a STRING or BYTE_BUFFER");
+            }
+        });
+
+        ctx.addFunction("endsWithIgnoreCase", (result, arg1, arg2) -> {
+            if (VariantUtils.isString(arg1) && VariantUtils.isString(arg2)) {
+                result.accept(ByteBufferUtils.endsWithIgnoreCase(arg1.getAsString(), arg2.getAsString()));
+            } else if (VariantUtils.isString(arg1) && VariantUtils.isByteBuffer(arg2)) {
+                result.accept(ByteBufferUtils.endsWithIgnoreCase(arg1.getAsString(), arg2.getAsByteBuffer()));
+            } else if (VariantUtils.isByteBuffer(arg1) && VariantUtils.isString(arg2)) {
+                result.accept(ByteBufferUtils.endsWithIgnoreCase(arg1.getAsByteBuffer(), arg2.getAsString()));
+            } else if (VariantUtils.isByteBuffer(arg1) && VariantUtils.isByteBuffer(arg2)) {
+                result.accept(ByteBufferUtils.endsWithIgnoreCase(arg1.getAsByteBuffer(), arg2.getAsByteBuffer()));
+            } else {
+                throw new RuntimeException("Operand must be a STRING or BYTE_BUFFER");
+            }
+        });
 
         ctx.addFunction("indexOf", (result, arg1, arg2) -> {
             // alternative syntax. I'm not sure it's better

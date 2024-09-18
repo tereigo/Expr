@@ -6,6 +6,7 @@ TODO:
 4. Migrate to Java 11/17/21
 
 2. Add power operator: "pow(2, 5) == 32 and 2 ** 5 == 32"
+   Needed?
 
 3. See if it's doable to introduce an ability to add user-specific operators
    For example: Bit logic manipulations
@@ -25,20 +26,12 @@ TODO:
    date syntax: 2024-01-30
 
 7. Add string operators:
- startsWithIgnoreCase
- endsWith
- endsWithIgnoreCase
- equalsIgnoreCase
- charAt
- indexOf
  indexOfIgnoreCase
- contains
  containsIgnoreCase
 
 // may be add BBUtils but don't hook up to expressions since they modify the data
+ charAt   - for that we'll need Variant to support a new Char type!
  matches
- concatenate
- substring
 
 
 
@@ -101,6 +94,14 @@ TODO:
 ///////////////////////////////////////////////////////////////////////////////////////////
 // Done:
 ///////////////////////////////////////////////////////////////////////////////////////////
+0.
+ startsWithIgnoreCase
+ endsWith
+ endsWithIgnoreCase
+ equalsIgnoreCase
+ indexOf
+ contains
+
 0. May be remove constants from ExprContext and ExprContextBuilder?
 
 0. in ExprEvaluatorImpl

@@ -6,9 +6,12 @@ import org.junit.jupiter.params.provider.CsvSource;
 
 import static com.tereigo.expr.utils.ByteBufferUtils.constant;
 import static com.tereigo.expr.utils.ByteBufferUtils.contains;
+import static com.tereigo.expr.utils.ByteBufferUtils.endsWith;
+import static com.tereigo.expr.utils.ByteBufferUtils.endsWithIgnoreCase;
 import static com.tereigo.expr.utils.ByteBufferUtils.indexOf;
 import static com.tereigo.expr.utils.ByteBufferUtils.isEmpty;
 import static com.tereigo.expr.utils.ByteBufferUtils.startsWith;
+import static com.tereigo.expr.utils.ByteBufferUtils.startsWithIgnoreCase;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -67,7 +70,7 @@ class ByteBufferUtilsTest {
             "If you also want to run the benchmarks from within your IDE instead of through Gradle, you can do either of the following, you can do either of the following, true",
             "If you also want to run the benchmarks from within your IDE instead of through Gradle, you can do either of the following, If you also want to run the benchmarks from within your IDE instead of through Gradle, you can do either of the following, true",
     })
-    void containsTests(String str, String pattern, boolean expected) {
+    void containsTests(final String str, final String pattern, final boolean expected) {
         assertEquals(expected, str.contains(pattern));
         assertEquals(expected, contains(constant(str), pattern));
         assertEquals(expected, contains(str, constant(pattern)));
@@ -117,11 +120,61 @@ class ByteBufferUtilsTest {
             "If you also want to run the benchmarks from within your IDE instead of through Gradle, you can do either of the following, you can do either of the following, false",
             "If you also want to run the benchmarks from within your IDE instead of through Gradle, you can do either of the following, If you also want to run the benchmarks from within your IDE instead of through Gradle, you can do either of the following, true"
     })
-    void startsWithTests(String str, String pattern, boolean expected) {
+    void startsWithTests(final String str, final String pattern, final boolean expected) {
         assertEquals(expected, str.startsWith(pattern));
         assertEquals(expected, startsWith(constant(str), pattern));
         assertEquals(expected, startsWith(str, constant(pattern)));
         assertEquals(expected, startsWith(constant(str), constant(pattern)));
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+            "'', '', true",
+            "'', A, false",
+            "'', ABC, false",
+            "A, '', true",
+            "ABC, '', true",
+            "ABC, A, true",
+            "ABC, B, false",
+            "ABC, C, false",
+            "ABC, BC, false",
+            "ABC, ABC, true",
+            "ABC, D, false",
+            "ABC, CD, false",
+            "ABC, ABCD, false",
+
+            "aaaaabbb, a, true",
+            "aaaaabbb, aa, true",
+            "aaaaabbb, aaa, true",
+            "aaaaabbb, aaaa, true",
+            "aaaaabbb, aaaaa, true",
+            "aaaaabbb, aaaaaa, false",
+            "aaaaabbb, aaaaab, true",
+            "aaaaabbb, aaaaabb, true",
+            "aaaaabbb, aabbb, false",
+            "aaaaabbb, aaaabbb, false",
+            "aaaaabbb, aaaabbbbb, false",
+            "aaaaabbb, aaaaabbb, true",
+
+            "To be or not to be that is a question, To be, true",
+            "To be or not to be that is a question, o be that, false",
+            "To be or not to be that is a question, To be or not to be that is, true",
+            "To be or not to be that is a question, To be or not to be that was, false",
+            "To be or not to be that is a question, question, false",
+            "To be or not to be that is a question, question!, false",
+            "To be or not to be that is a question, questiom, false",
+            "If you also want to run the benchmarks from within your IDE instead of through Gradle, you can do either of the following, Gradle, false",
+            "If you also want to run the benchmarks from within your IDE instead of through Gradle, you can do either of the following, gradle, false",
+            "If you also want to run the benchmarks from within your IDE instead of through Gradle, you can do either of the following, the following, false",
+            "If you also want to run the benchmarks from within your IDE instead of through Gradle, you can do either of the following, following, false",
+            "If you also want to run the benchmarks from within your IDE instead of through Gradle, you can do either of the following, you can do either of the following, false",
+            "If you also want to run the benchmarks from within your IDE instead of through Gradle, you can do either of the following, If you also want to run the benchmarks from within your IDE instead of through Gradle, you can do either of the following, true"
+    })
+    void startsWithTestsIgnoreCase(final String str, final String pattern, final boolean expected) {
+        assertEquals(expected, startsWithIgnoreCase(str, pattern));
+        assertEquals(expected, startsWithIgnoreCase(constant(str), pattern));
+        assertEquals(expected, startsWithIgnoreCase(str, constant(pattern)));
+        assertEquals(expected, startsWithIgnoreCase(constant(str), constant(pattern)));
     }
 
     @ParameterizedTest
@@ -140,10 +193,82 @@ class ByteBufferUtilsTest {
             "ABC, CD, -1",
             "ABC, ABCD, -1"
     })
-    void indexOfTests(String str, String pattern, int expected) {
+    void indexOfTests(final String str, final String pattern, final int expected) {
         assertEquals(expected, str.indexOf(pattern));
         assertEquals(expected, indexOf(constant(str), pattern));
         assertEquals(expected, indexOf(str, constant(pattern)));
         assertEquals(expected, indexOf(constant(str), constant(pattern)));
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+            "'', '', true",
+            "'', A, false",
+            "'', ABC, false",
+            "A, '', true",
+            "a, '', true",
+            "ABC, '', true",
+            "ABC, A, false",
+            "ABC, a, false",
+            "aBC, A, false",
+            "aBC, a, false",
+            "ABC, B, false",
+            "ABC, C, true",
+            "ABC, c, false",
+            "ABc, c, true",
+            "ABc, C, false",
+            "ABC, BC, true",
+            "ABC, bc, false",
+            "Abc, BC, false",
+            "Abc, bc, true",
+            "ABC, ABC, true",
+            "ABC, abc, false",
+            "abc, ABC, false",
+            "abc, abc, true",
+            "ABC, D, false",
+            "ABC, CD, false",
+            "ABC, ABCD, false",
+    })
+    void endsWithTests(final String str, final String pattern, final boolean expected) {
+        assertEquals(expected, str.endsWith(pattern));
+        assertEquals(expected, endsWith(constant(str), pattern));
+        assertEquals(expected, endsWith(str, constant(pattern)));
+        assertEquals(expected, endsWith(constant(str), constant(pattern)));
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+            "'', '', true",
+            "'', A, false",
+            "'', ABC, false",
+            "A, '', true",
+            "a, '', true",
+            "ABC, '', true",
+            "ABC, A, false",
+            "ABC, a, false",
+            "aBC, A, false",
+            "aBC, a, false",
+            "ABC, B, false",
+            "ABC, C, true",
+            "ABC, c, true",
+            "ABc, c, true",
+            "ABc, C, true",
+            "ABC, BC, true",
+            "ABC, bc, true",
+            "Abc, BC, true",
+            "Abc, bc, true",
+            "ABC, ABC, true",
+            "ABC, abc, true",
+            "abc, ABC, true",
+            "abc, abc, true",
+            "ABC, D, false",
+            "ABC, CD, false",
+            "ABC, ABCD, false",
+    })
+    void endsWithIgnoreCageTests(final String str, final String pattern, final boolean expected) {
+        assertEquals(expected, endsWithIgnoreCase(str, pattern));
+        assertEquals(expected, endsWithIgnoreCase(constant(str), pattern));
+        assertEquals(expected, endsWithIgnoreCase(str, constant(pattern)));
+        assertEquals(expected, endsWithIgnoreCase(constant(str), constant(pattern)));
     }
 }

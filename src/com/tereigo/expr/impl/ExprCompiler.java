@@ -32,7 +32,9 @@ final class ExprCompiler {
             final List<Token> tokens = scanner.tokens();
             final ExprParser parser = new ExprParser(tokens, constants);
             final Expr expression = parser.parse();
-            return new ASTRoot(strSource, expression);
+            final ASTRoot root = new ASTRoot(strSource, expression);
+//            final FlatAST flatAST = new AstFlatter().flatten(root);
+            return root;
         } catch (final ParseError err) {
             // Let's enhance the error with the relevant context info
             throw new ParseError("Expression parsing error " + err.getMessage() + " in expression '" + strSource + "'");

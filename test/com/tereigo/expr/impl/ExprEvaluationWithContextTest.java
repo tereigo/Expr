@@ -68,6 +68,16 @@ class ExprEvaluationWithContextTest extends ExprEvaluatorTestBase {
     }
 
     @Test
+    void contextTestsFlattenAST() {
+        final ExprContext ctx = ExprContextFactory.globalContext()
+                .addString("osVersion", () -> "1.2.3")
+                .addString("countryCode", () -> "us")
+                .getAsExprContext();
+
+        assertTrue(evaluateBool("osVersion == '1.2.3' and countryCode in ['us', 'gb']", ctx));
+    }
+
+    @Test
     void optimizedContextTestsWithConstantsInParser() {
         final ExprContext ctx = ExprContextFactory.globalContext()
                 .addBool("$enabled", () -> true)

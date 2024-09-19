@@ -5,6 +5,9 @@ TODO:
 
 4. Migrate to Java 11/17/21
 
+5. Another possible optimization is to analyze in/within/between contents in the brackets and if they are all literals then don't "evaluate" them
+   so that the contents of [] becomes 1 collection of immutable objects
+
 2. Add power operator: "pow(2, 5) == 32 and 2 ** 5 == 32"
    Needed?
 
@@ -38,6 +41,9 @@ TODO:
 3. Add tests for VariantImpl equals / hashCode
 
 4. Support Arrays, Maps, Lists ?
+   array? it can also be a map of int?: features[0] == 1
+   map: features['abc'] == 2
+
 
 5. May be add "matrix" namespace with a list of functions to work with matrices and a special object type: MATRIX
    Can it be stored in a GC-free way however?

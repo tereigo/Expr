@@ -33,9 +33,10 @@ public class VwapOrderExprContextBenchmarkTest {
     @Benchmark
     @BenchmarkMode(Mode.Throughput)
     @OutputTimeUnit(TimeUnit.MILLISECONDS)
-    @Fork(value = 3)
+//    @Fork(value = 1)
 //    @Warmup(iterations = 3, timeUnit = TimeUnit.MILLISECONDS, time = 5000)
 //    @Measurement(iterations = 3, timeUnit = TimeUnit.MILLISECONDS, time = 5000)
+    @Fork(value = 3)
     @Warmup(iterations = 5, timeUnit = TimeUnit.MILLISECONDS, time = 10000)
     @Measurement(iterations = 5, timeUnit = TimeUnit.MILLISECONDS, time = 10000)
     public void benchmarkSimpleExpression(final BenchmarkState state) {
@@ -101,7 +102,7 @@ public class VwapOrderExprContextBenchmarkTest {
             // 7152 +- 427
 //            evaluator = ExprEvaluatorFactory.create("vwap.volumeLimit == 0.1 and ric in ['BT.L', 'VOD.L', 'TSCO.L']");
             // 1553
-            // flat: 1220 (worse!)
+            // flat: 1310 (worse!)
             evaluator = ExprEvaluatorFactory.create("(vwap.volumeLimit == 0.1) and (vwap.ric == 'VOD.L') and (order.ric == 'VOD.L') and (ric == 'VOD.L') and (vwap.tuid == 'CLIENT1') and (order.tuid == 'CLIENT1') and (tuid == 'CLIENT1') and (ric in ['BT.L', 'VOD.L', 'TSCO.L'])");
         }
     }

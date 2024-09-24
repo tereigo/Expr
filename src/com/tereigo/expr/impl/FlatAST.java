@@ -37,9 +37,9 @@ public class FlatAST {
         return nodes;
     }
 
-    public FlatExpr getNode(final short pos) {
-        return nodes[pos];
-    }
+//    public FlatExpr getNode(final short pos) {
+//        return nodes[pos];
+//    }
 
     public MutableVariant getResult(final short pos) {
         return results[pos];

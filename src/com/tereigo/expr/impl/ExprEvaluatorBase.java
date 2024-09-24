@@ -8,9 +8,12 @@ import static com.tereigo.expr.impl.ExceptionUtils.getExceptionMsg;
 abstract class ExprEvaluatorBase {
     private final String source;
     private final ExprInterpreter interpreter;
+//    private final ExprFlatInterpreter interpreter;
 
     ExprEvaluatorBase(final ASTRoot root) {
         this.source = root.source();
+//        final FlatAST flatAST = new AstFlatter().flatten(root);
+//        this.interpreter = new ExprFlatInterpreter(flatAST);
         this.interpreter = new ExprInterpreter(root.expr());
     }
 

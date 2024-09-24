@@ -102,6 +102,7 @@ public class VwapOrderExprContextOptimizedBenchmarkTest {
             // 1553
 //            evaluator = ExprEvaluatorFactory.create("(vwap.volumeLimit == 0.1) and (vwap.ric == 'VOD.L') and (order.ric == 'VOD.L') and (ric == 'VOD.L') and (vwap.tuid == 'CLIENT1') and (order.tuid == 'CLIENT1') and (tuid == 'CLIENT1') and (ric in ['BT.L', 'VOD.L', 'TSCO.L'])");
             // 2100 optimized
+            // flat:  1532  (worse!)
             evaluator = ExprEvaluatorFactory.create(ctx, "(vwap.volumeLimit == 0.1) and (vwap.ric == 'VOD.L') and (order.ric == 'VOD.L') and (ric == 'VOD.L') and (vwap.tuid == 'CLIENT1') and (order.tuid == 'CLIENT1') and (tuid == 'CLIENT1') and (ric in ['BT.L', 'VOD.L', 'TSCO.L'])");
         }
     }

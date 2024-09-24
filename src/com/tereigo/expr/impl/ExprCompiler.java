@@ -33,7 +33,6 @@ final class ExprCompiler {
             final ExprParser parser = new ExprParser(tokens, constants);
             final Expr expression = parser.parse();
             final ASTRoot root = new ASTRoot(strSource, expression);
-//            final FlatAST flatAST = new AstFlatter().flatten(root);
             return root;
         } catch (final ParseError err) {
             // Let's enhance the error with the relevant context info

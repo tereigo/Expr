@@ -1,207 +1,280 @@
 package com.tereigo.expr.impl;
 
-import java.util.ArrayList;
-import java.util.List;
+import com.tereigo.expr.variant.MutableVariant;
+import com.tereigo.expr.variant.VariantFactory;
 
-final class AstFlatter implements Expr.Visitor<Expr> {
-    private List<Expr> nodes = new ArrayList<>();
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Queue;
+
+/**
+ * Experimental: we use flat array-like structure for nodes (see FlatAST)
+ */
+final class AstFlatter implements Expr.Visitor<FlatExpr> {
+    private List<FlatExpr> nodes = new ArrayList<>();
+    private List<Token> tokens = new ArrayList<>();
     private List<Integer> numChildren = new ArrayList<>();
     private List<Integer> startChild = new ArrayList<>();
+    private List<MutableVariant> results = new ArrayList<>();
+    private final Queue<Expr> queue = new LinkedList<>();
 
     FlatAST flatten(final ASTRoot root) {
 
         nodes.clear();
+        tokens.clear();
         numChildren.clear();
         startChild.clear();
+        results.clear();
+        queue.clear();
 
-        addNode(root.expr());
-        root.expr().accept(this);
+        queue.offer(root.expr());
+        while (!queue.isEmpty()) {
+            final Expr node = queue.poll();
+            evaluate(node);
+        }
 
-        return new FlatAST(nodes, numChildren, startChild);
+        return new FlatAST(nodes, numChildren, startChild, results);
     }
 
-    private Expr evaluate(final Expr expr) {
+    private FlatExpr evaluate(final Expr expr) {
         return expr.accept(this);
     }
 
     @Override
-    public Expr visitBinaryExpr(final Expr.Binary expr) {
-        final int parentIndex = findNode(expr);
-        numChildren.set(parentIndex, 2);
-        startChild.set(parentIndex, nodes.size());
-        addNode(expr.left);
-        addNode(expr.right);
+    public FlatExpr visitBinaryExpr(final Expr.Binary expr) {
+        final short nodeIndex = (short)nodes.size();
+        final FlatExpr newNode = new FlatExpr.Binary(expr.operator, nodeIndex);
+        nodes.add(newNode);
+        tokens.add(expr.operator);
+        numChildren.add(2);
+        startChild.add(nodes.size() + queue.size());
+        results.add(VariantFactory.createEmpty());
 
-        evaluate(expr.left);
-        evaluate(expr.right);
-        return expr;
+        queue.add(expr.left);
+        queue.add(expr.right);
+
+        return newNode;
     }
 
     @Override
-    public Expr visitInOperator(final Expr.InOperator expr) {
-        final int parentIndex = findNode(expr);
-        numChildren.set(parentIndex, expr.values.size() + 1);
-        startChild.set(parentIndex, nodes.size());
-        addNode(expr.operand);
-        for (int i = 0; i < expr.values.size(); i++) {
-            addNode(expr.values.get(i));
-        }
+    public FlatExpr visitInOperator(final Expr.InOperator expr) {
+        final short nodeIndex = (short)nodes.size();
+        final FlatExpr newNode = new FlatExpr.InOperator(expr.operator, nodeIndex);
+        nodes.add(newNode);
+        tokens.add(expr.operator);
+        numChildren.add(expr.values.size() + 1);
+        startChild.add(nodes.size() + queue.size());
+        results.add(VariantFactory.createEmpty());
 
-        evaluate(expr.operand);
-        evaluateArgs(expr.values);
-        return expr;
+        queue.add(expr.operand);
+        enqueueArgs(expr.values);
+        return newNode;
     }
 
     @Override
-    public Expr visitWithinOperator(final Expr.WithinOperator expr) {
-        final int parentIndex = findNode(expr);
-        numChildren.set(parentIndex, 3);
-        startChild.set(parentIndex, nodes.size());
-        addNode(expr.operand);
-        addNode(expr.min);
-        addNode(expr.max);
+    public FlatExpr visitWithinOperator(final Expr.WithinOperator expr) {
+        final short nodeIndex = (short)nodes.size();
+        final FlatExpr newNode = new FlatExpr.WithinOperator(expr.operator, nodeIndex);
+        nodes.add(newNode);
+        tokens.add(expr.operator);
+        numChildren.add(3);
+        startChild.add(nodes.size() + queue.size());
+        results.add(VariantFactory.createEmpty());
 
-        evaluate(expr.operand);
-        evaluate(expr.min);
-        evaluate(expr.max);
-        return expr;
+        queue.add(expr.operand);
+        queue.add(expr.min);
+        queue.add(expr.max);
+
+        return newNode;
     }
 
     @Override
-    public Expr visitBetweenOperator(final Expr.BetweenOperator expr) {
-        final int parentIndex = findNode(expr);
-        numChildren.set(parentIndex, 3);
-        startChild.set(parentIndex, nodes.size());
-        addNode(expr.operand);
-        addNode(expr.min);
-        addNode(expr.max);
+    public FlatExpr visitBetweenOperator(final Expr.BetweenOperator expr) {
+        final short nodeIndex = (short)nodes.size();
+        final FlatExpr newNode = new FlatExpr.BetweenOperator(expr.operator, nodeIndex);
+        nodes.add(newNode);
+        tokens.add(expr.operator);
+        numChildren.add(3);
+        startChild.add(nodes.size() + queue.size());
+        results.add(VariantFactory.createEmpty());
 
-        evaluate(expr.operand);
-        evaluate(expr.min);
-        evaluate(expr.max);
-        return expr;
+        queue.add(expr.operand);
+        queue.add(expr.min);
+        queue.add(expr.max);
+        return newNode;
     }
 
     @Override
-    public Expr visitGroupingExpr(final Expr.Grouping expr) {
-        return expr;
+    public FlatExpr visitGroupingExpr(final Expr.Grouping expr) {
+        final short nodeIndex = (short)nodes.size();
+        final FlatExpr newNode = new FlatExpr.Grouping(nodeIndex);
+        nodes.add(newNode);
+        tokens.add(null);
+        numChildren.add(1);
+        startChild.add(nodes.size() + queue.size());
+        results.add(VariantFactory.createEmpty());
+
+        queue.add(expr.expression);
+
+        return newNode;
     }
 
     @Override
-    public Expr visitLiteralExpr(final Expr.Literal expr) {
-        return expr;
-    }
-
-    @Override
-    public Expr visitLogicalExpr(final Expr.Logical expr) {
-        final int parentIndex = findNode(expr);
-        numChildren.set(parentIndex, 2);
-        startChild.set(parentIndex, nodes.size());
-        addNode(expr.left);
-        addNode(expr.right);
-
-        evaluate(expr.left);
-        evaluate(expr.right);
-        return expr;
-    }
-
-    @Override
-    public Expr visitTernaryExpr(final Expr.Ternary expr) {
-        final int parentIndex = findNode(expr);
-        numChildren.set(parentIndex, 3);
-        startChild.set(parentIndex, nodes.size());
-        addNode(expr.condition);
-        addNode(expr.trueExpr);
-        addNode(expr.falseExpr);
-
-        evaluate(expr.condition);
-        evaluate(expr.trueExpr);
-        evaluate(expr.falseExpr);
-        return expr;
-    }
-
-    @Override
-    public Expr visitUnaryExpr(final Expr.Unary expr) {
-        final int parentIndex = findNode(expr);
-        numChildren.set(parentIndex, 1);
-        startChild.set(parentIndex, nodes.size());
-        addNode(expr.expression);
-
-        evaluate(expr.expression);
-        return expr;
-    }
-
-    @Override
-    public Expr visitIdentifierExpr(final Expr.Identifier expr) {
-        return expr;
-    }
-
-    @Override
-    public Expr visitResolvedIdentifierExpr(final Expr.ResolvedIdentifier expr) {
-        // in theory this should never be called
-        return expr;
-    }
-
-    @Override
-    public Expr visitCallExpr(final Expr.Call expr) {
-        if (expr.args.size() > 0) {
-            final int parentIndex = findNode(expr);
-            numChildren.set(parentIndex, expr.args.size());
-            startChild.set(parentIndex, nodes.size());
-            for (int i = 0; i < expr.args.size(); i++) {
-                addNode(expr.args.get(i));
-            }
-
-            evaluateArgs(expr.args);
-        }
-        return expr;
-    }
-
-    @Override
-    public Expr visitResolvedCallExpr(final Expr.ResolvedCall expr) {
-        // in theory this should never be called
-        return expr;
-    }
-
-    @Override
-    public Expr visitObjectCallExpr(final Expr.ObjectCall expr) {
-        final int parentIndex = findNode(expr);
-        numChildren.set(parentIndex, expr.args.size() + 1);
-        startChild.set(parentIndex, nodes.size());
-        addNode(expr.object);
-        for (int i = 0; i < expr.args.size(); i++) {
-            addNode(expr.args.get(i));
-        }
-
-        evaluate(expr.object);
-        evaluateArgs(expr.args);
-        return expr;
-    }
-
-    @Override
-    public Expr visitResolvedObjectCallExpr(final Expr.ResolvedObjectCall expr) {
-        // in theory this should never be called
-        return expr;
-    }
-
-    private void addNode(final Expr expr) {
-        nodes.add(expr);
+    public FlatExpr visitLiteralExpr(final Expr.Literal expr) {
+        final short nodeIndex = (short)nodes.size();
+        final FlatExpr newNode = new FlatExpr.Literal(nodeIndex);
+        nodes.add(newNode);
+        tokens.add(null);
         numChildren.add(0);
         startChild.add(-1);
+        results.add(VariantFactory.clone(expr.result));
+
+        return newNode;
     }
 
-    private int findNode(final Expr expr) {
-        for (int j = 0; j < nodes.size(); j++) {
-            if (nodes.get(j) == expr) {
-                return j;
-            }
+    @Override
+    public FlatExpr visitLogicalExpr(final Expr.Logical expr) {
+        final short nodeIndex = (short)nodes.size();
+        final FlatExpr newNode = new FlatExpr.Logical(expr.operator, nodeIndex);
+        nodes.add(newNode);
+        tokens.add(expr.operator);
+        numChildren.add(2);
+        startChild.add(nodes.size() + queue.size());
+        results.add(VariantFactory.createEmpty());
+
+        queue.add(expr.left);
+        queue.add(expr.right);
+
+        return newNode;
+    }
+
+    @Override
+    public FlatExpr visitTernaryExpr(final Expr.Ternary expr) {
+        final short nodeIndex = (short)nodes.size();
+        final FlatExpr newNode = new FlatExpr.Ternary(expr.operator, nodeIndex);
+        nodes.add(newNode);
+        tokens.add(expr.operator);
+        numChildren.add(3);
+        startChild.add(nodes.size() + queue.size());
+        results.add(VariantFactory.createEmpty());
+
+        queue.add(expr.condition);
+        queue.add(expr.trueExpr);
+        queue.add(expr.falseExpr);
+
+        return newNode;
+    }
+
+    @Override
+    public FlatExpr visitUnaryExpr(final Expr.Unary expr) {
+        final short nodeIndex = (short)nodes.size();
+        final FlatExpr newNode = new FlatExpr.Unary(expr.operator, nodeIndex);
+        nodes.add(newNode);
+        tokens.add(expr.operator);
+        numChildren.add(1);
+        startChild.add(nodes.size() + queue.size());
+        results.add(VariantFactory.createEmpty());
+
+        queue.add(expr.expression);
+
+        return newNode;
+    }
+
+    @Override
+    public FlatExpr visitIdentifierExpr(final Expr.Identifier expr) {
+        final short nodeIndex = (short)nodes.size();
+        final FlatExpr newNode = new FlatExpr.Identifier(expr.operator, nodeIndex);
+        nodes.add(newNode);
+        tokens.add(expr.operator);
+        numChildren.add(0);
+        startChild.add(-1);
+        results.add(VariantFactory.createEmpty());
+
+        return newNode;
+    }
+
+    @Override
+    public FlatExpr visitResolvedIdentifierExpr(final Expr.ResolvedIdentifier expr) {
+        final short nodeIndex = (short)nodes.size();
+        final FlatExpr newNode = new FlatExpr.ResolvedIdentifier(expr.operator, expr.function, nodeIndex);
+        nodes.add(newNode);
+        tokens.add(expr.operator);
+        numChildren.add(0);
+        startChild.add(-1);
+        results.add(VariantFactory.createEmpty());
+
+        return newNode;
+    }
+
+    @Override
+    public FlatExpr visitCallExpr(final Expr.Call expr) {
+        final short nodeIndex = (short)nodes.size();
+        final FlatExpr newNode = new FlatExpr.Call(expr.operator, nodeIndex);
+        nodes.add(newNode);
+        tokens.add(expr.operator);
+        numChildren.add(expr.args.size());
+        if (expr.args.size() > 0) {
+            startChild.add(nodes.size() + queue.size());
+            enqueueArgs(expr.args);
+        } else {
+            startChild.add(-1);
         }
-        return -1;
+        results.add(VariantFactory.createEmpty());
+        return newNode;
     }
 
-    private void evaluateArgs(final List<Expr> args) {
+    @Override
+    public FlatExpr visitResolvedCallExpr(final Expr.ResolvedCall expr) {
+        final short nodeIndex = (short)nodes.size();
+        final FlatExpr newNode = new FlatExpr.ResolvedCall(expr.operator, expr.function, nodeIndex);
+        nodes.add(newNode);
+        tokens.add(expr.operator);
+        numChildren.add(expr.args.size());
+        if (expr.args.size() > 0) {
+            startChild.add(nodes.size() + queue.size());
+            enqueueArgs(expr.args);
+        } else {
+            startChild.add(-1);
+        }
+        results.add(VariantFactory.createEmpty());
+        return newNode;
+    }
+
+    @Override
+    public FlatExpr visitObjectCallExpr(final Expr.ObjectCall expr) {
+        final short nodeIndex = (short)nodes.size();
+        final FlatExpr newNode = new FlatExpr.ObjectCall(expr.operator, nodeIndex);
+        nodes.add(newNode);
+        tokens.add(expr.operator);
+        numChildren.add(expr.args.size() + 1);
+        startChild.add(nodes.size() + queue.size());
+
+        queue.add(expr.object);
+        enqueueArgs(expr.args);
+        results.add(VariantFactory.createEmpty());
+        return newNode;
+    }
+
+    @Override
+    public FlatExpr visitResolvedObjectCallExpr(final Expr.ResolvedObjectCall expr) {
+        final short nodeIndex = (short)nodes.size();
+        final FlatExpr newNode = new FlatExpr.ResolvedObjectCall(expr.operator, expr.function, nodeIndex);
+        nodes.add(newNode);
+        tokens.add(expr.operator);
+        numChildren.add(expr.args.size() + 1);
+        startChild.add(nodes.size() + queue.size());
+        results.add(VariantFactory.createEmpty());
+
+        queue.add(expr.object);
+        enqueueArgs(expr.args);
+
+        return newNode;
+    }
+
+    private void enqueueArgs(final List<Expr> args) {
         for (int i = 0; i < args.size(); i++) {
-            evaluate(args.get(i));
+            queue.add(args.get(i));
         }
     }
 }

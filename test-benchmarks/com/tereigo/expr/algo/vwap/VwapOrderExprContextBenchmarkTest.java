@@ -101,6 +101,7 @@ public class VwapOrderExprContextBenchmarkTest {
             // 7152 +- 427
 //            evaluator = ExprEvaluatorFactory.create("vwap.volumeLimit == 0.1 and ric in ['BT.L', 'VOD.L', 'TSCO.L']");
             // 1553
+            // flat: 1220 (worse!)
             evaluator = ExprEvaluatorFactory.create("(vwap.volumeLimit == 0.1) and (vwap.ric == 'VOD.L') and (order.ric == 'VOD.L') and (ric == 'VOD.L') and (vwap.tuid == 'CLIENT1') and (order.tuid == 'CLIENT1') and (tuid == 'CLIENT1') and (ric in ['BT.L', 'VOD.L', 'TSCO.L'])");
         }
     }

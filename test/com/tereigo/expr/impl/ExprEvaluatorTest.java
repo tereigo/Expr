@@ -68,6 +68,7 @@ class ExprEvaluatorTest extends ExprEvaluatorTestBase {
 
     @Test
     void simpleDoubleTest() {
+        assertEquals(1.0, evaluateDouble("1.0"), EPS);
         assertEquals(-2.0, evaluateDouble("-2.0"), EPS);
         assertEquals(3.0, evaluateDouble("(1.0+2.0)"), EPS);
     }

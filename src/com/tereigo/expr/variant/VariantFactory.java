@@ -11,6 +11,10 @@ public final class VariantFactory {
         return new VariantImpl();
     }
 
+    public static VariantImpl clone(final Variant var) {
+        return new VariantImpl(var);
+    }
+
     public static VariantImpl createDouble(final double value) {
         return new VariantImpl(value);
     }

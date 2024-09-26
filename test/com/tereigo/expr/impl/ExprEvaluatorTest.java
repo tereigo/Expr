@@ -67,10 +67,90 @@ class ExprEvaluatorTest extends ExprEvaluatorTestBase {
     }
 
     @Test
+    void longTestWithContext() {
+        final ExprContext ctx = ExprContextFactory.globalContext()
+                .addLong("qty", () -> 5)
+                .getAsExprContext();
+        assertEquals(3, evaluateLong("qty - 2", ctx));
+        assertEquals(7, evaluateLong("qty + 2", ctx));
+        assertEquals(3, evaluateLong("qty + -2", ctx));
+        assertEquals(3, evaluateLong("qty +-2", ctx));
+        assertEquals(-3, evaluateLong("-qty + 2", ctx));
+        assertEquals(-7, evaluateLong("-qty - 2", ctx));
+        assertEquals(-7, evaluateLong("-qty + -2", ctx));
+        assertEquals(7, evaluateLong("2 + qty", ctx));
+        assertEquals(-3, evaluateLong("2 + -qty", ctx));
+        assertEquals(-3, evaluateLong("2 +-qty", ctx));
+        assertEquals(-3, evaluateLong("2 + (-qty)", ctx));
+    }
+
+    @Test
+    void longOptimizedTestWithContext() {
+        final ExprContext ctx = ExprContextFactory.globalContext()
+                .addLong("qty", () -> 5)
+                .getAsExprContext();
+        assertEquals(3, evaluateLongOptimized(ctx, "qty - 2"));
+        assertEquals(7, evaluateLongOptimized(ctx, "qty + 2"));
+        assertEquals(3, evaluateLongOptimized(ctx, "qty + -2"));
+        assertEquals(3, evaluateLongOptimized(ctx, "qty +-2"));
+        assertEquals(-3, evaluateLongOptimized(ctx, "-qty + 2"));
+        assertEquals(-7, evaluateLongOptimized(ctx, "-qty - 2"));
+        assertEquals(-7, evaluateLongOptimized(ctx, "-qty + -2"));
+        assertEquals(7, evaluateLongOptimized(ctx, "2 + qty"));
+        assertEquals(-3, evaluateLongOptimized(ctx, "2 + -qty"));
+        assertEquals(-3, evaluateLongOptimized(ctx, "2 +-qty"));
+        assertEquals(-3, evaluateLongOptimized(ctx, "2 + (-qty)"));
+    }
+
+    @Test
     void simpleDoubleTest() {
-        assertEquals(1.0, evaluateDouble("1.0"), EPS);
         assertEquals(-2.0, evaluateDouble("-2.0"), EPS);
+        assertEquals(1.0, evaluateDouble("1.0"), EPS);
         assertEquals(3.0, evaluateDouble("(1.0+2.0)"), EPS);
+    }
+
+    @Test
+    void doubleTestWithContext() {
+        final ExprContext ctx = ExprContextFactory.globalContext()
+                .addDouble("qty", () -> 5.0)
+                .getAsExprContext();
+        assertEquals(3.0, evaluateDouble("qty - 2.0", ctx), EPS);
+        assertEquals(7.0, evaluateDouble("qty + 2.0", ctx), EPS);
+        assertEquals(3.0, evaluateDouble("qty + -2.0", ctx), EPS);
+        assertEquals(3.0, evaluateDouble("qty +-2.0", ctx), EPS);
+        assertEquals(-3.0, evaluateDouble("-qty + 2.0", ctx), EPS);
+        assertEquals(-7.0, evaluateDouble("-qty - 2.0", ctx), EPS);
+        assertEquals(-7.0, evaluateDouble("-qty + -2.0", ctx), EPS);
+        assertEquals(7.0, evaluateDouble("2.0 + qty", ctx), EPS);
+        assertEquals(-3.0, evaluateDouble("2.0 + -qty", ctx), EPS);
+        assertEquals(-3.0, evaluateDouble("2.0 +-qty", ctx), EPS);
+        assertEquals(-3.0, evaluateDouble("2.0 + (-qty)", ctx), EPS);
+    }
+
+    @Test
+    void doubleOptimizedTestWithContext() {
+        final ExprContext ctx = ExprContextFactory.globalContext()
+                .addDouble("qty", () -> 5.0)
+                .getAsExprContext();
+        assertEquals(3.0, evaluateDoubleOptimized(ctx, "qty - 2.0"), EPS);
+        assertEquals(7.0, evaluateDoubleOptimized(ctx, "qty + 2.0"), EPS);
+        assertEquals(3.0, evaluateDoubleOptimized(ctx, "qty + -2.0"), EPS);
+        assertEquals(3.0, evaluateDoubleOptimized(ctx, "qty +-2.0"), EPS);
+        assertEquals(-3.0, evaluateDoubleOptimized(ctx, "-qty + 2.0"), EPS);
+        assertEquals(-7.0, evaluateDoubleOptimized(ctx, "-qty - 2.0"), EPS);
+        assertEquals(-7.0, evaluateDoubleOptimized(ctx, "-qty + -2.0"), EPS);
+        assertEquals(7.0, evaluateDoubleOptimized(ctx, "2.0 + qty"), EPS);
+        assertEquals(-3.0, evaluateDoubleOptimized(ctx, "2.0 + -qty"), EPS);
+        assertEquals(-3.0, evaluateDoubleOptimized(ctx, "2.0 +-qty"), EPS);
+        assertEquals(-3.0, evaluateDoubleOptimized(ctx, "2.0 + (-qty)"), EPS);
+    }
+
+    @Test
+    void simpleDoubleOptimizedTest() {
+        final ExprContext ctx = ExprContextFactory.globalContext().getAsExprContext();
+        assertEquals(-2.0, evaluateDoubleOptimized(ctx, "-2.0"), EPS);
+        assertEquals(1.0, evaluateDoubleOptimized(ctx, "1.0"), EPS);
+        assertEquals(3.0, evaluateDoubleOptimized(ctx, "(1.0+2.0)"), EPS);
     }
 
     @Test
@@ -642,6 +722,9 @@ class ExprEvaluatorTest extends ExprEvaluatorTestBase {
 
         err = assertThrows(ParseError.class, () -> evaluate("\"ABC\"()", ctx));
         assertEquals("Expression parsing error [line 1, pos 1]: Function name should be an identifier in expression '\"ABC\"()'", err.getMessage());
+
+        err = assertThrows(ParseError.class, () -> evaluate("-'123'", ctx));
+        assertEquals("Expression parsing error [line 1, pos 2]: Unary minus is applicable to numbers only in expression '-'123''", err.getMessage());
 
         // error: 0 parameters instead of 1
         runErr = assertThrows(RuntimeError.class, () -> evaluate("isEven()", ctx));

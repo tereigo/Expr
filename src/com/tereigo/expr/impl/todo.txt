@@ -1,10 +1,6 @@
 TODO:
 2. Support scientific input for Doubles: 1e-6, 1.15E6
 
-1. Investigate if "-1.0" is compiled into 1 node (Literal(1.0)) or in 2: Unary(-) + Literal(1.0)
-   If 2 then we can optimize it into 1
-   But "-qty" can't be optimized!
-
 3. convert project to Maven/Gradle
 
 4. Migrate to Java 11/17/21
@@ -104,6 +100,10 @@ TODO:
 ///////////////////////////////////////////////////////////////////////////////////////////
 // Done:
 ///////////////////////////////////////////////////////////////////////////////////////////
+1. Investigate if "-1.0" is compiled into 1 node (Literal(1.0)) or in 2: Unary(-) + Literal(1.0)
+   If 2 then we can optimize it into 1
+   But "-qty" can't be optimized!
+
 0.
  startsWithIgnoreCase
  endsWith

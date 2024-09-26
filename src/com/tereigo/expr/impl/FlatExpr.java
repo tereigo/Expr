@@ -43,26 +43,23 @@ abstract class FlatExpr {
 
     static abstract class BaseExpr extends FlatExpr {
         final Token operator;
-//        final short pos;
         final byte numChildren;
         final short startChild;
         final MutableVariant result;
 
-        BaseExpr(final Token operator, final short pos) {
-            this(operator, pos, (byte)0, (short)-1);
+        BaseExpr(final Token operator) {
+            this(operator, (byte)0, (short)-1);
         }
 
-        BaseExpr(final Token operator, final short pos, final Variant result) {
+        BaseExpr(final Token operator, final Variant result) {
             this.operator = operator;
-  //          this.pos = pos;
             this.numChildren = (byte)0;
             this.startChild = (short)-1;
             this.result = VariantFactory.clone(result);
         }
 
-        BaseExpr(final Token operator, final short pos, final int numChildren, final int startChild) {
+        BaseExpr(final Token operator, final int numChildren, final int startChild) {
             this.operator = operator;
-    //        this.pos = pos;
             this.numChildren = (byte)numChildren;
             this.startChild = (short)startChild;
             this.result = VariantFactory.createEmpty();
@@ -71,8 +68,8 @@ abstract class FlatExpr {
 
     static class Binary extends BaseExpr {
 
-        Binary(final Token operator, final short pos, final int startChild) {
-            super(operator, pos, 2, startChild);
+        Binary(final Token operator, final int startChild) {
+            super(operator, 2, startChild);
         }
 
         @Override
@@ -83,8 +80,8 @@ abstract class FlatExpr {
 
     static class InOperator extends BaseExpr {
 
-        InOperator(final Token operator, final short pos, final int numChildren, final int startChild) {
-            super(operator, pos, numChildren, startChild);
+        InOperator(final Token operator, final int numChildren, final int startChild) {
+            super(operator, numChildren, startChild);
         }
 
         @Override
@@ -95,14 +92,14 @@ abstract class FlatExpr {
 
     abstract static class RangeOperator extends BaseExpr {
 
-        RangeOperator(final Token operator, final short pos, final int numChildren, final int startChild) {
-            super(operator, pos, numChildren, startChild);
+        RangeOperator(final Token operator, final int numChildren, final int startChild) {
+            super(operator, numChildren, startChild);
         }
     }
 
     static class WithinOperator extends RangeOperator {
-        WithinOperator(final Token operator, final short pos, final int startChild) {
-            super(operator, pos, 3, startChild);
+        WithinOperator(final Token operator, final int startChild) {
+            super(operator, 3, startChild);
         }
 
         @Override
@@ -112,8 +109,8 @@ abstract class FlatExpr {
     }
 
     static class BetweenOperator extends RangeOperator {
-        BetweenOperator(final Token operator, final short pos, final int startChild) {
-            super(operator, pos, 3, startChild);
+        BetweenOperator(final Token operator, final int startChild) {
+            super(operator, 3, startChild);
         }
 
         @Override
@@ -124,8 +121,8 @@ abstract class FlatExpr {
 
     static class Grouping extends BaseExpr {
 
-        Grouping(final short pos, final int startChild) {
-            super(null, pos, 1, startChild);
+        Grouping(final int startChild) {
+            super(null, 1, startChild);
         }
 
         @Override
@@ -136,8 +133,8 @@ abstract class FlatExpr {
 
     static class Literal extends BaseExpr {
 
-        Literal(final short pos, final Variant result) {
-            super(null, pos, result);
+        Literal(final Variant result) {
+            super(null, result);
         }
 
         @Override
@@ -147,8 +144,8 @@ abstract class FlatExpr {
     }
 
     static class Logical extends BaseExpr {
-        Logical(final Token operator, final short pos, final int startChild) {
-            super(operator, pos, 2, startChild);
+        Logical(final Token operator, final int startChild) {
+            super(operator, 2, startChild);
         }
 
         @Override
@@ -158,8 +155,8 @@ abstract class FlatExpr {
     }
 
     static class Ternary extends BaseExpr {
-        Ternary(final Token operator, final short pos, final int startChild) {
-            super(operator, pos, 3, startChild);
+        Ternary(final Token operator, final int startChild) {
+            super(operator, 3, startChild);
         }
 
         @Override
@@ -170,8 +167,8 @@ abstract class FlatExpr {
 
     static class Unary extends BaseExpr {
 
-        Unary(final Token operator, final short pos, final int startChild) {
-            super(operator, pos, 1, startChild);
+        Unary(final Token operator, final int startChild) {
+            super(operator, 1, startChild);
         }
 
         @Override
@@ -181,8 +178,8 @@ abstract class FlatExpr {
     }
 
     static class Identifier extends BaseExpr {
-        Identifier(final Token name, final short pos) {
-            super(name, pos);
+        Identifier(final Token name) {
+            super(name);
         }
 
         @Override
@@ -194,8 +191,8 @@ abstract class FlatExpr {
     static class ResolvedIdentifier extends BaseExpr {
         final Function0 function;
 
-        ResolvedIdentifier(final Token name, final short pos, final Function0 function) {
-            super(name, pos);
+        ResolvedIdentifier(final Token name, final Function0 function) {
+            super(name);
             this.function = function;
         }
 
@@ -207,8 +204,8 @@ abstract class FlatExpr {
 
     static class Call extends BaseExpr {
 
-        Call(final Token name, final short pos, final int numChildren, final int startChild) {
-            super(name, pos, numChildren, startChild);
+        Call(final Token name, final int numChildren, final int startChild) {
+            super(name, numChildren, startChild);
         }
 
         @Override
@@ -220,8 +217,8 @@ abstract class FlatExpr {
     static class ResolvedCall extends BaseExpr {
         final Object function;
 
-        ResolvedCall(final Token name, final short pos, final int numChildren, final int startChild, final Object function) {
-            super(name, pos, numChildren, startChild);
+        ResolvedCall(final Token name, final int numChildren, final int startChild, final Object function) {
+            super(name, numChildren, startChild);
             this.function = function;
         }
 
@@ -233,8 +230,8 @@ abstract class FlatExpr {
 
     static class ObjectCall extends Call {
 
-        ObjectCall(final Token name, final short pos, final int numChildren, final int startChild) {
-            super(name, pos, numChildren, startChild);
+        ObjectCall(final Token name, final int numChildren, final int startChild) {
+            super(name, numChildren, startChild);
         }
 
         @Override
@@ -245,8 +242,8 @@ abstract class FlatExpr {
 
     static class ResolvedObjectCall extends ResolvedCall {
 
-        ResolvedObjectCall(final Token name, final short pos, final int numChildren, final int startChild, final Object function) {
-            super(name, pos, numChildren, startChild, function);
+        ResolvedObjectCall(final Token name, final int numChildren, final int startChild, final Object function) {
+            super(name, numChildren, startChild, function);
         }
 
         @Override

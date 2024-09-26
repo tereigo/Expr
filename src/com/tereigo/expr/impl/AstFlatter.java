@@ -1,7 +1,5 @@
 package com.tereigo.expr.impl;
 
-import com.tereigo.expr.variant.MutableVariant;
-
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -12,19 +10,11 @@ import java.util.Queue;
  */
 final class AstFlatter implements Expr.Visitor<FlatExpr> {
     private List<FlatExpr.BaseExpr> nodes = new ArrayList<>();
-    private List<Token> tokens = new ArrayList<>();
-    private List<Integer> numChildren = new ArrayList<>();
-    private List<Integer> startChild = new ArrayList<>();
-    private List<MutableVariant> results = new ArrayList<>();
     private final Queue<Expr> queue = new LinkedList<>();
 
     FlatAST flatten(final ASTRoot root) {
 
         nodes.clear();
-        tokens.clear();
-        numChildren.clear();
-        startChild.clear();
-        results.clear();
         queue.clear();
 
         queue.offer(root.expr());
@@ -33,7 +23,7 @@ final class AstFlatter implements Expr.Visitor<FlatExpr> {
             evaluate(node);
         }
 
-        return new FlatAST(nodes, numChildren, startChild, results);
+        return new FlatAST(nodes);
     }
 
     private FlatExpr evaluate(final Expr expr) {
@@ -42,8 +32,7 @@ final class AstFlatter implements Expr.Visitor<FlatExpr> {
 
     @Override
     public FlatExpr visitBinaryExpr(final Expr.Binary expr) {
-        final short nodeIndex = (short)nodes.size();
-        final FlatExpr.Binary newNode = new FlatExpr.Binary(expr.operator, nodeIndex, nodes.size() + queue.size() + 1);
+        final FlatExpr.Binary newNode = new FlatExpr.Binary(expr.operator, nodes.size() + queue.size() + 1);
         nodes.add(newNode);
 
         queue.add(expr.left);
@@ -54,8 +43,7 @@ final class AstFlatter implements Expr.Visitor<FlatExpr> {
 
     @Override
     public FlatExpr visitInOperator(final Expr.InOperator expr) {
-        final short nodeIndex = (short)nodes.size();
-        final FlatExpr.InOperator newNode = new FlatExpr.InOperator(expr.operator, nodeIndex, expr.values.size() + 1, nodes.size() + queue.size() + 1);
+        final FlatExpr.InOperator newNode = new FlatExpr.InOperator(expr.operator, expr.values.size() + 1, nodes.size() + queue.size() + 1);
         nodes.add(newNode);
 
         queue.add(expr.operand);
@@ -66,8 +54,7 @@ final class AstFlatter implements Expr.Visitor<FlatExpr> {
 
     @Override
     public FlatExpr visitWithinOperator(final Expr.WithinOperator expr) {
-        final short nodeIndex = (short)nodes.size();
-        final FlatExpr.WithinOperator newNode = new FlatExpr.WithinOperator(expr.operator, nodeIndex, nodes.size() + queue.size() + 1);
+        final FlatExpr.WithinOperator newNode = new FlatExpr.WithinOperator(expr.operator, nodes.size() + queue.size() + 1);
         nodes.add(newNode);
 
         queue.add(expr.operand);
@@ -79,8 +66,7 @@ final class AstFlatter implements Expr.Visitor<FlatExpr> {
 
     @Override
     public FlatExpr visitBetweenOperator(final Expr.BetweenOperator expr) {
-        final short nodeIndex = (short)nodes.size();
-        final FlatExpr.BetweenOperator newNode = new FlatExpr.BetweenOperator(expr.operator, nodeIndex, nodes.size() + queue.size() + 1);
+        final FlatExpr.BetweenOperator newNode = new FlatExpr.BetweenOperator(expr.operator, nodes.size() + queue.size() + 1);
         nodes.add(newNode);
 
         queue.add(expr.operand);
@@ -92,8 +78,7 @@ final class AstFlatter implements Expr.Visitor<FlatExpr> {
 
     @Override
     public FlatExpr visitGroupingExpr(final Expr.Grouping expr) {
-        final short nodeIndex = (short)nodes.size();
-        final FlatExpr.Grouping newNode = new FlatExpr.Grouping(nodeIndex, nodes.size() + queue.size() + 1);
+        final FlatExpr.Grouping newNode = new FlatExpr.Grouping(nodes.size() + queue.size() + 1);
         nodes.add(newNode);
 
         queue.add(expr.expression);
@@ -103,8 +88,7 @@ final class AstFlatter implements Expr.Visitor<FlatExpr> {
 
     @Override
     public FlatExpr visitLiteralExpr(final Expr.Literal expr) {
-        final short nodeIndex = (short)nodes.size();
-        final FlatExpr.Literal newNode = new FlatExpr.Literal(nodeIndex, expr.result);
+        final FlatExpr.Literal newNode = new FlatExpr.Literal(expr.result);
         nodes.add(newNode);
 
         return newNode;
@@ -112,8 +96,7 @@ final class AstFlatter implements Expr.Visitor<FlatExpr> {
 
     @Override
     public FlatExpr visitLogicalExpr(final Expr.Logical expr) {
-        final short nodeIndex = (short)nodes.size();
-        final FlatExpr.Logical newNode = new FlatExpr.Logical(expr.operator, nodeIndex, nodes.size() + queue.size() + 1);
+        final FlatExpr.Logical newNode = new FlatExpr.Logical(expr.operator, nodes.size() + queue.size() + 1);
         nodes.add(newNode);
 
         queue.add(expr.left);
@@ -124,8 +107,7 @@ final class AstFlatter implements Expr.Visitor<FlatExpr> {
 
     @Override
     public FlatExpr visitTernaryExpr(final Expr.Ternary expr) {
-        final short nodeIndex = (short)nodes.size();
-        final FlatExpr.Ternary newNode = new FlatExpr.Ternary(expr.operator, nodeIndex, nodes.size() + queue.size() + 1);
+        final FlatExpr.Ternary newNode = new FlatExpr.Ternary(expr.operator, nodes.size() + queue.size() + 1);
         nodes.add(newNode);
 
         queue.add(expr.condition);
@@ -137,8 +119,7 @@ final class AstFlatter implements Expr.Visitor<FlatExpr> {
 
     @Override
     public FlatExpr visitUnaryExpr(final Expr.Unary expr) {
-        final short nodeIndex = (short)nodes.size();
-        final FlatExpr.Unary newNode = new FlatExpr.Unary(expr.operator, nodeIndex, nodes.size() + queue.size() + 1);
+        final FlatExpr.Unary newNode = new FlatExpr.Unary(expr.operator, nodes.size() + queue.size() + 1);
         nodes.add(newNode);
 
         queue.add(expr.expression);
@@ -148,8 +129,7 @@ final class AstFlatter implements Expr.Visitor<FlatExpr> {
 
     @Override
     public FlatExpr visitIdentifierExpr(final Expr.Identifier expr) {
-        final short nodeIndex = (short)nodes.size();
-        final FlatExpr.Identifier newNode = new FlatExpr.Identifier(expr.operator, nodeIndex);
+        final FlatExpr.Identifier newNode = new FlatExpr.Identifier(expr.operator);
         nodes.add(newNode);
 
         return newNode;
@@ -157,8 +137,7 @@ final class AstFlatter implements Expr.Visitor<FlatExpr> {
 
     @Override
     public FlatExpr visitResolvedIdentifierExpr(final Expr.ResolvedIdentifier expr) {
-        final short nodeIndex = (short)nodes.size();
-        final FlatExpr.ResolvedIdentifier newNode = new FlatExpr.ResolvedIdentifier(expr.operator, nodeIndex, expr.function);
+        final FlatExpr.ResolvedIdentifier newNode = new FlatExpr.ResolvedIdentifier(expr.operator, expr.function);
         nodes.add(newNode);
 
         return newNode;
@@ -166,9 +145,8 @@ final class AstFlatter implements Expr.Visitor<FlatExpr> {
 
     @Override
     public FlatExpr visitCallExpr(final Expr.Call expr) {
-        final short nodeIndex = (short)nodes.size();
         final int startChild = expr.args.size() > 0 ? nodes.size() + queue.size() + 1 : -1;
-        final FlatExpr.Call newNode = new FlatExpr.Call(expr.operator, nodeIndex, expr.args.size(), startChild);
+        final FlatExpr.Call newNode = new FlatExpr.Call(expr.operator, expr.args.size(), startChild);
         nodes.add(newNode);
 
         enqueueArgs(expr.args);
@@ -178,9 +156,8 @@ final class AstFlatter implements Expr.Visitor<FlatExpr> {
 
     @Override
     public FlatExpr visitResolvedCallExpr(final Expr.ResolvedCall expr) {
-        final short nodeIndex = (short)nodes.size();
         final int startChild = expr.args.size() > 0 ? nodes.size() + queue.size() + 1 : -1;
-        final FlatExpr.ResolvedCall newNode = new FlatExpr.ResolvedCall(expr.operator, nodeIndex, expr.args.size(), startChild, expr.function);
+        final FlatExpr.ResolvedCall newNode = new FlatExpr.ResolvedCall(expr.operator, expr.args.size(), startChild, expr.function);
         nodes.add(newNode);
 
         enqueueArgs(expr.args);
@@ -190,8 +167,7 @@ final class AstFlatter implements Expr.Visitor<FlatExpr> {
 
     @Override
     public FlatExpr visitObjectCallExpr(final Expr.ObjectCall expr) {
-        final short nodeIndex = (short)nodes.size();
-        final FlatExpr.ObjectCall newNode = new FlatExpr.ObjectCall(expr.operator, nodeIndex, expr.args.size() + 1, nodes.size() + queue.size() + 1);
+        final FlatExpr.ObjectCall newNode = new FlatExpr.ObjectCall(expr.operator, expr.args.size() + 1, nodes.size() + queue.size() + 1);
         nodes.add(newNode);
 
         queue.add(expr.object);
@@ -202,8 +178,7 @@ final class AstFlatter implements Expr.Visitor<FlatExpr> {
 
     @Override
     public FlatExpr visitResolvedObjectCallExpr(final Expr.ResolvedObjectCall expr) {
-        final short nodeIndex = (short)nodes.size();
-        final FlatExpr.ResolvedObjectCall newNode = new FlatExpr.ResolvedObjectCall(expr.operator, nodeIndex, expr.args.size() + 1, nodes.size() + queue.size() + 1, expr.function);
+        final FlatExpr.ResolvedObjectCall newNode = new FlatExpr.ResolvedObjectCall(expr.operator, expr.args.size() + 1, nodes.size() + queue.size() + 1, expr.function);
         nodes.add(newNode);
 
         queue.add(expr.object);

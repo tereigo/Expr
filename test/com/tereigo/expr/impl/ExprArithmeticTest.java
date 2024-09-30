@@ -823,11 +823,8 @@ class ExprArithmeticTest extends ExprEvaluatorTestBase {
         err = assertThrows(ParseError.class, () -> evaluate("-true"));
         assertEquals("Expression parsing error [line 1, pos 2]: Unary minus is applicable to numbers only in expression '-true'", err.getMessage());
 
-        err = assertThrows(ParseError.class, () -> evaluate("5 -- 2"));
-        assertEquals("Expression parsing error [line 1, pos 6]: Double minus syntax ('--') is not supported as erroneous in expression '5 -- 2'", err.getMessage());
-
-        err = assertThrows(ParseError.class, () -> evaluate("5 - -2"));
-        assertEquals("Expression parsing error [line 1, pos 6]: Double minus syntax ('--') is not supported as erroneous in expression '5 - -2'", err.getMessage());
+        assertEquals(7, evaluateLong("5 -- 2"));
+        assertEquals(7, evaluateLong("5 - -2"));
 
         err = assertThrows(ParseError.class, () -> evaluate("5 (--2)"));
         assertEquals("Expression parsing error [line 1, pos 1]: Function name should be an identifier in expression '5 (--2)'", err.getMessage());

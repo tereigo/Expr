@@ -298,11 +298,6 @@ final class ExprParser {
         while (match(MINUS, PLUS)) {
             final Token operator = previous();
             final Expr right = factor();
-            // don't allow double minus syntax ("5 -- 2") since it's confusing
-            // it's possible however to write: "5 - (-2)"
-            if (operator.type == MINUS && right instanceof Expr.Unary) {
-                throw error(previous(), "Double minus syntax ('--') is not supported as erroneous");
-            }
             expr = new Expr.Binary(expr, operator, right);
         }
 
@@ -333,6 +328,17 @@ final class ExprParser {
                     throw error(peek(), "Unary minus is applicable to numbers only");
                 }
             }
+//            if (operator.type == MINUS && right instanceof Expr.Literal) {
+//                final Expr.Literal literal = (Expr.Literal) right;
+//                final Variant val = literal.result;
+//                if (!VariantUtils.isNumber(val)) {
+//                    throw error(peek(), "Unary minus is applicable to numbers only");
+//                }
+//                // if parsing "-1" then we combine from Unary(-) + Literal(1) into Literal (-1)
+//                final MutableVariant result = VariantFactory.createEmpty();
+//                VariantUtils.negateNumber(result, literal.result);
+//                return VariantUtils.isDouble(result) ? new Expr.Literal(result.getAsDouble()) : new Expr.Literal(result.getAsLong());
+//            }
             return new Expr.Unary(operator, right);
         }
         return unary_not();

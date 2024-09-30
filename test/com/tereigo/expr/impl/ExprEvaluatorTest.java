@@ -233,6 +233,8 @@ class ExprEvaluatorTest extends ExprEvaluatorTestBase {
         assertEquals(2.0, evaluateDouble("10.0 / 5"), EPS);
         assertEquals(1.0, evaluateDouble("10 / 10.0"), EPS);
         assertEquals(-2.5, evaluateDouble("10 / -4.0"), EPS);
+        assertEquals(-2.5, evaluateDouble("10 /- 4.0"), EPS);
+        assertEquals(-2.5, evaluateDouble("10 /-4.0"), EPS);
     }
 
     @Test
@@ -354,8 +356,24 @@ class ExprEvaluatorTest extends ExprEvaluatorTestBase {
         err = assertThrows(ParseError.class, () -> evaluateBool("--5 < -4"));
         assertEquals("Expression parsing error [line 1, pos 2]: Expect expression in expression '--5 < -4'", err.getMessage());
 
-        err = assertThrows(ParseError.class, () -> evaluate("5 -- 2"));
-        assertEquals("Expression parsing error [line 1, pos 6]: Double minus syntax ('--') is not supported as erroneous in expression '5 -- 2'", err.getMessage());
+        assertEquals(7, evaluateLong("5 -- 2"));
+        assertEquals(7, evaluateLong("5 - -2"));
+        assertEquals(7, evaluateLong("5 --2"));
+        assertEquals(7, evaluateLong("5 - - 2"));
+        assertEquals(3, evaluateLong("5 +- 2"));
+        assertEquals(3, evaluateLong("5 + -2"));
+        assertEquals(3, evaluateLong("5 +-2"));
+        assertEquals(3, evaluateLong("5 + - 2"));
+
+        assertEquals(-10, evaluateLong("5 *- 2"));
+        assertEquals(-10, evaluateLong("5 * -2"));
+        assertEquals(-10, evaluateLong("5 *-2"));
+        assertEquals(-10, evaluateLong("5 * - 2"));
+
+        assertEquals(-3, evaluateLong("6 /- 2"));
+        assertEquals(-3, evaluateLong("6 / -2"));
+        assertEquals(-3, evaluateLong("6 /-2"));
+        assertEquals(-3, evaluateLong("6 / - 2"));
     }
 
     @Test
@@ -620,8 +638,6 @@ class ExprEvaluatorTest extends ExprEvaluatorTestBase {
         assertEquals("Expression parsing error [line 1, pos 2]: Expect expression in expression '-not(true)'", err.getMessage());
         err = assertThrows(ParseError.class, () -> evaluate("not-true"));
         assertEquals("Expression parsing error [line 1, pos 4]: Operator NOT should be applied to the expression in parens '()' in expression 'not-true'", err.getMessage());
-        err = assertThrows(ParseError.class, () -> evaluate("5 -- 2"));
-        assertEquals("Expression parsing error [line 1, pos 6]: Double minus syntax ('--') is not supported as erroneous in expression '5 -- 2'", err.getMessage());
         err = assertThrows(ParseError.class, () -> evaluate("-true"));
         assertEquals("Expression parsing error [line 1, pos 2]: Unary minus is applicable to numbers only in expression '-true'", err.getMessage());
         err = assertThrows(ParseError.class, () -> evaluate("-'A'"));

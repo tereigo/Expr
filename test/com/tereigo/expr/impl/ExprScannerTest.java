@@ -80,9 +80,6 @@ class ExprScannerTest {
         testScanner("0", LONG_NUMBER);
         testScanner("1", LONG_NUMBER);
         testScanner("123", LONG_NUMBER);
-        testScanner("9223372036854775807", LONG_NUMBER);
-        testScanner("9223372036854775808", DOUBLE_NUMBER);
-        testScanner("9223372036854775807.0", DOUBLE_NUMBER);
         testScanner("0.0", DOUBLE_NUMBER);
         testScanner("1.0", DOUBLE_NUMBER);
         testScanner("1.", LONG_NUMBER, DOT);
@@ -107,6 +104,35 @@ class ExprScannerTest {
         testScanner("1.E-5", DOUBLE_NUMBER);
         testScanner("5.toDouble()", LONG_NUMBER, DOT, IDENTIFIER, LEFT_PAREN, RIGHT_PAREN);
         testScanner("1.e+1-2.e-3+4.0e-5", DOUBLE_NUMBER, MINUS, DOUBLE_NUMBER, PLUS, DOUBLE_NUMBER);
+    }
+
+    @Test
+    void scanEdgeNumbersTest() {
+        testScanner("9223372036854775806", LONG_NUMBER);
+        testScanner("9223372036854775806.", LONG_NUMBER, DOT); // ???
+        testScanner("9223372036854775806.0", DOUBLE_NUMBER);
+        testScanner("9223372036854775806.1", DOUBLE_NUMBER);
+        testScanner("-9223372036854775806", MINUS, LONG_NUMBER);
+        testScanner("-9223372036854775806.", MINUS, LONG_NUMBER, DOT); // ???
+        testScanner("-9223372036854775806.0", MINUS, DOUBLE_NUMBER);
+        testScanner("9223372036854775807", LONG_NUMBER);
+        testScanner("9223372036854775807.", LONG_NUMBER, DOT); // ???
+        testScanner("9223372036854775807.0", DOUBLE_NUMBER);
+        testScanner("-9223372036854775807", MINUS, LONG_NUMBER);
+        testScanner("-9223372036854775807.", MINUS, LONG_NUMBER, DOT); // ???
+        testScanner("-9223372036854775807.0", MINUS, DOUBLE_NUMBER);
+        testScanner("9223372036854775808", DOUBLE_NUMBER);
+        testScanner("9223372036854775808.", DOUBLE_NUMBER, DOT); // ???
+        testScanner("9223372036854775808.0", DOUBLE_NUMBER);
+        testScanner("-9223372036854775808", LONG_NUMBER);
+        testScanner("-9223372036854775808.", LONG_NUMBER, DOT); // ???
+        testScanner("-9223372036854775808.0", MINUS, DOUBLE_NUMBER);
+        testScanner("9223372036854775809", DOUBLE_NUMBER);
+        testScanner("9223372036854775809.", DOUBLE_NUMBER, DOT); // ???
+        testScanner("9223372036854775809.0", DOUBLE_NUMBER);
+        testScanner("-9223372036854775809", MINUS, DOUBLE_NUMBER);
+        testScanner("-9223372036854775809.", MINUS, DOUBLE_NUMBER, DOT);
+        testScanner("-9223372036854775809.0", MINUS, DOUBLE_NUMBER);
     }
 
     private void testScanner(final String source, final TokenType... expectedTypes) {

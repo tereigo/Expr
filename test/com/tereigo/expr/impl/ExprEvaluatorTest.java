@@ -278,6 +278,30 @@ class ExprEvaluatorTest extends ExprEvaluatorTestBase {
     }
 
     @Test
+    void edgeNumberTests() {
+        assertEquals(9223372036854775806L, evaluateLong("9223372036854775806 * 1"));
+        assertEquals(9223372036854775806L, evaluateLong("9223372036854775806 + 0"));
+        assertEquals(9223372036854775806.0, evaluateLong("9223372036854775806 * 1.0"), EPS);
+        assertEquals(9223372036854775806.0, evaluateLong("9223372036854775806 + 0.0"), EPS);
+    }
+
+    @Test
+    void edgeNumberWrongTests() {
+        // TODO:
+        // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        // NOTICE: these tests produce incorrect results
+        // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        // This is due to the limited precision of Double numbers
+        // "9223372036854775806.1" is parsed into the equivalent of "9.223372036854776E18"
+        // and then it tries to converts long value to double: 9.223372036854776E18
+        // and converts double value to double: 9.223372036854776E18
+        // and end up with the identical values
+        assertTrue(evaluateBool("9223372036854775806 == 9223372036854775806.1"));
+        assertFalse(evaluateBool("9223372036854775806 < 9223372036854775806.1"));
+        assertFalse(evaluateBool("9223372036854775806.0 < 9223372036854775806.1"));
+    }
+
+    @Test
     void booleanTests() {
         assertTrue(evaluateBool("true"));
         assertTrue(evaluateBool("True"));

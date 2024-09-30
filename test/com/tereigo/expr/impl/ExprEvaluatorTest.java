@@ -238,6 +238,25 @@ class ExprEvaluatorTest extends ExprEvaluatorTestBase {
     }
 
     @Test
+    void doubleScientificTests() {
+        assertEquals(3.0, evaluateDouble("(1.0e0+2.e0)"), EPS);
+        assertEquals(3.0, evaluateDouble("1.0e+0+2.0e-0"), EPS);
+        assertEquals(2.0e5, evaluateDouble(" 1e5  + 1.0e+5  "), EPS);
+        assertEquals(-2.0e-5, evaluateDouble("-2.0e-5"), EPS);
+        assertEquals(-2.0e3, evaluateDouble("-(2.0e+3)"), EPS);
+        assertEquals(-2.0e3, evaluateDouble("(-2.0e3)"), EPS);
+        assertEquals(1.0, evaluateDouble("10.0 / 1e1"), EPS);
+        assertEquals(50.0, evaluateDouble("1e2 / 2.0"), EPS);
+        assertEquals(50.0, evaluateDouble("1.e2 / 2.0"), EPS);
+        assertEquals(50.0, evaluateDouble("1.0e2 / 2.0"), EPS);
+        assertEquals(50.0, evaluateDouble("1.0e+02 / 2.0"), EPS);
+        assertEquals(50.0, evaluateDouble("1.0e+02 / 2.0e0"), EPS);
+        assertEquals(10 / -4.0e5, evaluateDouble("10 / -4.0e5"), EPS);
+        assertEquals(10e2 /- 4.0e3, evaluateDouble("10e2 /- 4.0e3"), EPS);
+        assertEquals(10e5 /-4.0e6, evaluateDouble("10e5 /-4.0e6"), EPS);
+    }
+
+    @Test
     void numberTests() {
         assertEquals(3.0, evaluateDouble("(1+2.0)"), EPS);
         assertEquals(3.0, evaluateDouble("1.0+2"), EPS);

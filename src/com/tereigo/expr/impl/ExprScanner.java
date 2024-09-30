@@ -210,35 +210,70 @@ final class ExprScanner {
     }
 
     private void number() {
+        // we get here if the current character is a digit
+        // The possible options are:
+        // 1. Long number:  "0", "1", "123"
+        // 2. Double with dot: "1.", "0.0", "123.456"
+        // 3. Scientific notation: "1e5",  "0.2e03", "1.123e-15", "3.1e+5"
+
+        // now we parse all sequential digits
         while (isDigit(peek())) {
             advance();
         }
 
-        boolean isDouble = false;
-
-        // Look for a fractional part.
+        // Look for a fractional part
         if (peek() == '.' && isDigit(peekNext())) {
-            isDouble = true;
             // Consume the "."
             advance();
             while (isDigit(peek())) {
                 advance();
             }
+        } else if (peek() == '.' && (peekNext() == 'e' || peekNext() == 'E') && (isDigit(peekAt(current + 2)) || peekAt(current + 2) == '-' || peekAt(current + 2) == '+')) {
+            // Consume the "."
+            advance();
+            if (peek() == 'e' || peek() == 'E') {
+                advance();
+            }
+            if (peek() == '-' || peek() == '+') {
+                advance();
+            }
+            while (isDigit(peek())) {
+                advance();
+            }
         }
+
+        // check if it has an exponent part
+        if ((peek() == 'e' || peek() == 'E') && (isDigit(peekNext()) || peekNext() == '-' || peekNext() == '+')) {
+            // Consume the "e"
+            advance();
+            if (peek() == '-' || peek() == '+') {
+                advance();
+            }
+            while (isDigit(peek())) {
+                advance();
+            }
+        }
+
         final String literal = source.substring(start, current);
-        final double asDouble = Double.parseDouble(literal);
-        if (isDouble || asDouble > Long.MAX_VALUE || asDouble < Long.MIN_VALUE) {
-            addToken(DOUBLE_NUMBER, asDouble, literal);
+        // this is a special case to be able to parse Long.MIN_VALUE ("-9223372036854775808")
+        // this is because Long.parseLong("9223372036854775808") fails because 9223372036854775808 > Long.MAX_VALUE (9223372036854775807)
+        if (literal.equals("9223372036854775808") && tokens.size() > 0 && tokens.get(tokens.size() - 1).type == MINUS) {
+            // remove previous "minus"
+            tokens.remove(tokens.size() - 1);
+            addToken(LONG_NUMBER, Long.MIN_VALUE, "-9223372036854775808");
         } else {
-            // this is a special case to be able to parse Long.MIN_VALUE ("-9223372036854775808")
-            // this is because Long.parseLong("9223372036854775808") fails because 9223372036854775808 > Long.MAX_VALUE (9223372036854775807)
-            if (literal.equals("9223372036854775808") && tokens.size() > 0 && tokens.get(tokens.size() - 1).type == MINUS) {
-                // remove previous "minus"
-                tokens.remove(tokens.size() - 1);
-                addToken(LONG_NUMBER, Long.MIN_VALUE, "-9223372036854775808");
-            } else {
+            try {
                 final long asLong = Long.parseLong(literal);
                 addToken(LONG_NUMBER, asLong, literal);
+                return;
+            } catch (final NumberFormatException e) {
+                // Not a valid long, continue to check for double
+            }
+            try {
+                final double asDouble = Double.parseDouble(literal);
+                addToken(DOUBLE_NUMBER, asDouble, literal);
+            } catch (final NumberFormatException e) {
+                error(line, start, "Invalid number format");
             }
         }
     }
@@ -284,10 +319,14 @@ final class ExprScanner {
     }
 
     private char peekNext() {
-        if (current + 1 >= source.length()) {
+        return peekAt(current + 1);
+    }
+
+    private char peekAt(final int pos) {
+        if (pos >= source.length()) {
             return '\0';
         }
-        return source.charAt(current + 1);
+        return source.charAt(pos);
     }
 
     private boolean isAtEnd() {
@@ -295,8 +334,7 @@ final class ExprScanner {
     }
 
     private char advance() {
-        current++;
-        return source.charAt(current - 1);
+        return source.charAt(current++);
     }
 
     private void addToken(final TokenType type) {
@@ -311,5 +349,4 @@ final class ExprScanner {
     private void addToken(final TokenType type, final Object literal, final String text) {
         tokens.add(new Token(type, text, literal, line, start));
     }
-
 }

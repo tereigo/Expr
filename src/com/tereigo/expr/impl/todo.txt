@@ -1,20 +1,18 @@
 TODO:
-2. Support scientific input for Doubles: 1e-6, 1.15E6
+0. convert project to Maven/Gradle
 
-3. convert project to Maven/Gradle
+1. Migrate to Java 11/17/21
 
-4. Migrate to Java 11/17/21
-
-5. Another possible optimization is to analyze in/within/between contents in the brackets and if they are all literals then don't "evaluate" them
+2. Another possible optimization is to analyze in/within/between contents in the brackets and if they are all literals then don't "evaluate" them
    so that the contents of [] becomes 1 collection of immutable objects
 
-2. Add power operator: "pow(2, 5) == 32 and 2 ** 5 == 32" or 2 ^ 5 == 32
+3. Add power operator: "pow(2, 5) == 32 and 2 ** 5 == 32" or 2 ^ 5 == 32
    Needed?
 
-3. See if it's doable to introduce an ability to add user-specific operators
+4. See if it's doable to introduce an ability to add user-specific operators
    For example: Bit logic manipulations
 
-4. is it doable to add an ability to add user types?
+5. is it doable to add an ability to add user types?
   Like "Bytes" which is a read-only ByteBuffer and can be used to compare with String/ByteBuffer in all read-only operations
   May be it's possible to introduce Bytes and a BytesToByteBufferWrapper class that will translate all operations?
   The questions:
@@ -22,7 +20,7 @@ TODO:
       how we add support for the new type for various existing functions? contains, isEmpty, startsWith, equals, ...
       how we add it to "VariantUtils.isString()"
 
-5. do we need to add TIME and DATE types?
+6. do we need to add TIME and DATE types?
    in which units?
    potential domains: date, time, today (time.now, today.date, time.hour, time.min, date.today + 1)
    time syntax: 12:34:56, 12:34
@@ -100,6 +98,8 @@ TODO:
 ///////////////////////////////////////////////////////////////////////////////////////////
 // Done:
 ///////////////////////////////////////////////////////////////////////////////////////////
+2. Support scientific input for Doubles: 1e-6, 1.15E6
+
 1. Investigate if "-1.0" is compiled into 1 node (Literal(1.0)) or in 2: Unary(-) + Literal(1.0)
    If 2 then we can optimize it into 1
    But "-qty" can't be optimized!

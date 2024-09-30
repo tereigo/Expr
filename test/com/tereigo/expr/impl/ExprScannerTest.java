@@ -6,7 +6,9 @@ import static com.tereigo.expr.impl.TokenType.AND;
 import static com.tereigo.expr.impl.TokenType.BETWEEN;
 import static com.tereigo.expr.impl.TokenType.COMMA;
 import static com.tereigo.expr.impl.TokenType.DIV;
+import static com.tereigo.expr.impl.TokenType.DOT;
 import static com.tereigo.expr.impl.TokenType.DOUBLE_NUMBER;
+import static com.tereigo.expr.impl.TokenType.EOF;
 import static com.tereigo.expr.impl.TokenType.EQUAL_EQUAL;
 import static com.tereigo.expr.impl.TokenType.FALSE;
 import static com.tereigo.expr.impl.TokenType.GREATER;
@@ -73,11 +75,47 @@ class ExprScannerTest {
         testScanner("(10 % 3 + myFunc(1, $id)) - 2.3", LEFT_PAREN, LONG_NUMBER, MODULUS, LONG_NUMBER, PLUS, IDENTIFIER, LEFT_PAREN, LONG_NUMBER, COMMA, IDENTIFIER, RIGHT_PAREN, RIGHT_PAREN, MINUS, DOUBLE_NUMBER);
     }
 
+    @Test
+    void scanNumbersTest() {
+        testScanner("0", LONG_NUMBER);
+        testScanner("1", LONG_NUMBER);
+        testScanner("123", LONG_NUMBER);
+        testScanner("9223372036854775807", LONG_NUMBER);
+        testScanner("9223372036854775808", DOUBLE_NUMBER);
+        testScanner("9223372036854775807.0", DOUBLE_NUMBER);
+        testScanner("0.0", DOUBLE_NUMBER);
+        testScanner("1.0", DOUBLE_NUMBER);
+        testScanner("1.", LONG_NUMBER, DOT);
+        testScanner("0.", LONG_NUMBER, DOT);
+        testScanner("1.2", DOUBLE_NUMBER);
+        testScanner("123.456", DOUBLE_NUMBER);
+        testScanner("1e5", DOUBLE_NUMBER);
+        testScanner("1E5", DOUBLE_NUMBER);
+        testScanner("1.e5", DOUBLE_NUMBER);
+        testScanner("1.E5", DOUBLE_NUMBER);
+        testScanner("0.2e03", DOUBLE_NUMBER);
+        testScanner("0.2E03", DOUBLE_NUMBER);
+        testScanner("1.123e-15", DOUBLE_NUMBER);
+        testScanner("1.123E-15", DOUBLE_NUMBER);
+        testScanner("3.1e+5", DOUBLE_NUMBER);
+        testScanner("3.1E+5", DOUBLE_NUMBER);
+        testScanner("1e+5", DOUBLE_NUMBER);
+        testScanner("1E+5", DOUBLE_NUMBER);
+        testScanner("1.e+5", DOUBLE_NUMBER);
+        testScanner("1.E+5", DOUBLE_NUMBER);
+        testScanner("1.e-5", DOUBLE_NUMBER);
+        testScanner("1.E-5", DOUBLE_NUMBER);
+        testScanner("5.toDouble()", LONG_NUMBER, DOT, IDENTIFIER, LEFT_PAREN, RIGHT_PAREN);
+        testScanner("1.e+1-2.e-3+4.0e-5", DOUBLE_NUMBER, MINUS, DOUBLE_NUMBER, PLUS, DOUBLE_NUMBER);
+    }
+
     private void testScanner(final String source, final TokenType... expectedTypes) {
         final ExprScanner scanner = new ExprScanner(source);
         int i = 0;
         for (final TokenType type : expectedTypes) {
             assertEquals(type, scanner.tokens().get(i++).type);
         }
+        assertEquals(expectedTypes.length, scanner.tokens().size() - 1, "Actual tokens: " + scanner.tokens());
+        assertEquals(EOF, scanner.tokens().get(scanner.tokens().size() - 1).type);
     }
 }

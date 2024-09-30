@@ -281,8 +281,8 @@ class ExprEvaluatorTest extends ExprEvaluatorTestBase {
     void edgeNumberTests() {
         assertEquals(9223372036854775806L, evaluateLong("9223372036854775806 * 1"));
         assertEquals(9223372036854775806L, evaluateLong("9223372036854775806 + 0"));
-        assertEquals(9223372036854775806.0, evaluateLong("9223372036854775806 * 1.0"), EPS);
-        assertEquals(9223372036854775806.0, evaluateLong("9223372036854775806 + 0.0"), EPS);
+        assertEquals(9223372036854775806.0, evaluateDouble("9223372036854775806 * 1.0"), EPS);
+        assertEquals(9223372036854775806.0, evaluateDouble("9223372036854775806 + 0.0"), EPS);
     }
 
     @Test

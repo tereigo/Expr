@@ -47,6 +47,16 @@ final class AstOptimizer implements Expr.Visitor<Expr> {
     }
 
     @Override
+    public Expr visitStaticWithinOperator(final Expr.StaticWithinOperator expr) {
+        return new Expr.StaticWithinOperator(evaluate(expr.operand), expr.operator, expr.min, expr.max);
+    }
+
+    @Override
+    public Expr visitStaticBetweenOperator(final Expr.StaticBetweenOperator expr) {
+        return new Expr.StaticBetweenOperator(evaluate(expr.operand), expr.operator, expr.min, expr.max);
+    }
+
+    @Override
     public Expr visitLiteralExpr(final Expr.Literal expr) {
         return expr;
     }

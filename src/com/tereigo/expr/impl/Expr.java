@@ -20,6 +20,10 @@ abstract class Expr {
 
         R visitBetweenOperator(BetweenOperator expr); // between [...] - excluding boundaries
 
+        R visitStaticWithinOperator(StaticWithinOperator expr); // within [...] - including boundaries
+
+        R visitStaticBetweenOperator(StaticBetweenOperator expr); // between [...] - excluding boundaries
+
         R visitLiteralExpr(Literal expr);   // long, double, string, boolean, ByteBuffer values
 
         R visitLogicalExpr(Logical expr);   // or, and
@@ -115,6 +119,41 @@ abstract class Expr {
         @Override
         <R> R accept(final Visitor<R> visitor) {
             return visitor.visitBetweenOperator(this);
+        }
+    }
+
+    abstract static class StaticRangeOperator extends BaseExpr {
+        final Expr operand;
+        final Variant min;
+        final Variant max;
+
+        StaticRangeOperator(final Expr operand, final Token operator, final Variant min, final Variant max) {
+            super(operator);
+            this.operand = operand;
+            this.min = min;
+            this.max = max;
+        }
+    }
+
+    static class StaticWithinOperator extends StaticRangeOperator {
+        StaticWithinOperator(final Expr operand, final Token operator, final Variant min, final Variant max) {
+            super(operand, operator, min, max);
+        }
+
+        @Override
+        <R> R accept(final Visitor<R> visitor) {
+            return visitor.visitStaticWithinOperator(this);
+        }
+    }
+
+    static class StaticBetweenOperator extends StaticRangeOperator {
+        StaticBetweenOperator(final Expr operand, final Token operator, final Variant min, final Variant max) {
+            super(operand, operator, min, max);
+        }
+
+        @Override
+        <R> R accept(final Visitor<R> visitor) {
+            return visitor.visitStaticBetweenOperator(this);
         }
     }
 

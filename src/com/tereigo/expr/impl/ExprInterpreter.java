@@ -146,6 +146,36 @@ final class ExprInterpreter implements Expr.Visitor<Variant> {
     }
 
     @Override
+    public Variant visitStaticWithinOperator(final Expr.StaticWithinOperator expr) {
+        final Variant operand = evaluate(expr.operand);
+        try {
+            if (VariantUtils.isGreaterOrEqualNumbers(operand, expr.min) && VariantUtils.isLessOrEqualNumbers(operand, expr.max)) {
+                expr.result.accept(true);
+                return expr.result;
+            }
+        } catch (final RuntimeException ex) {
+            throw new RuntimeError(expr.operator, getExceptionMsg(ex), ex);
+        }
+        expr.result.accept(false);
+        return expr.result;
+    }
+
+    @Override
+    public Variant visitStaticBetweenOperator(final Expr.StaticBetweenOperator expr) {
+        final Variant operand = evaluate(expr.operand);
+        try {
+            if (VariantUtils.isGreaterNumbers(operand, expr.min) && VariantUtils.isLessNumbers(operand, expr.max)) {
+                expr.result.accept(true);
+                return expr.result;
+            }
+        } catch (final RuntimeException ex) {
+            throw new RuntimeError(expr.operator, getExceptionMsg(ex), ex);
+        }
+        expr.result.accept(false);
+        return expr.result;
+    }
+
+    @Override
     public Variant visitLiteralExpr(final Expr.Literal expr) {
         return expr.result;
     }

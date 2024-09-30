@@ -73,6 +73,29 @@ final class AstHierarchyPrinter implements Expr.Visitor<String> {
     }
 
     @Override
+    public String visitStaticWithinOperator(final Expr.StaticWithinOperator expr) {
+        return formatRangeOperator(expr);
+    }
+
+    @Override
+    public String visitStaticBetweenOperator(final Expr.StaticBetweenOperator expr) {
+        return formatRangeOperator(expr);
+    }
+
+    private String formatRangeOperator(final Expr.StaticRangeOperator expr) {
+        final StringBuilder builder = new StringBuilder();
+        final String ident = generateIdent(level);
+        builder.append(expr.operator.lexeme).append("\n");
+        builder.append(ident).append('│').append("\n");
+        level++;
+        builder.append(ident).append("├── ").append(expr.operand.accept(this)).append("\n");
+        builder.append(ident).append('│').append("\n");
+        builder.append(ident).append("├── [").append(expr.min.getAsObject().toString()).append(", ").append(expr.max.getAsObject().toString()).append("]");
+        level--;
+        return builder.toString();
+    }
+
+    @Override
     public String visitLiteralExpr(final Expr.Literal expr) {
         return expr.result.getAsObject().toString();
     }

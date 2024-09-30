@@ -61,6 +61,31 @@ final class AstPolishPrinter implements Expr.Visitor<String> {
     }
 
     @Override
+    public String visitStaticWithinOperator(final Expr.StaticWithinOperator expr) {
+        return formatRangeOperator(expr);
+    }
+
+    @Override
+    public String visitStaticBetweenOperator(final Expr.StaticBetweenOperator expr) {
+        return formatRangeOperator(expr);
+    }
+
+    private String formatRangeOperator(final Expr.StaticRangeOperator expr) {
+        final StringBuilder builder = new StringBuilder();
+
+        builder.append("(").append(expr.operator.lexeme);
+        builder.append(" ");
+        builder.append(expr.operand.accept(this));
+        builder.append(" [");
+        builder.append(expr.min.getAsObject().toString());
+        builder.append(", ");
+        builder.append(expr.max.getAsObject().toString());
+        builder.append("])");
+
+        return builder.toString();
+    }
+
+    @Override
     public String visitLiteralExpr(final Expr.Literal expr) {
         return expr.result.getAsObject().toString();
     }

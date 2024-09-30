@@ -242,14 +242,24 @@ final class ExprParser {
     private Expr.BaseExpr parseRangeOperands(final Expr expr) {
         final Token operator = previous();
         if (match(LEFT_BRACKET)) {
-            final Expr val1 = range_entry();
+            final Expr entry1 = range_entry();
             consume(COMMA, "Expect 2 values separated by ',' in range operator");
-            final Expr val2 = range_entry();
+            final Expr entry2 = range_entry();
             consume(RIGHT_BRACKET, "Expect ']' after '[' and 2 numbers");
             if (operator.type == WITHIN) {
-                return new Expr.WithinOperator(expr, operator, val1, val2);
+                if (entry1 instanceof Expr.Literal && entry2 instanceof Expr.Literal) {
+                    final Variant min = VariantUtils.min(((Expr.Literal) entry1).result, ((Expr.Literal) entry2).result);
+                    final Variant max = VariantUtils.max(((Expr.Literal) entry1).result, ((Expr.Literal) entry2).result);
+                    return new Expr.StaticWithinOperator(expr, operator, min, max);
+                }
+                return new Expr.WithinOperator(expr, operator, entry1, entry2);
             } else {
-                return new Expr.BetweenOperator(expr, operator, val1, val2);
+                if (entry1 instanceof Expr.Literal && entry2 instanceof Expr.Literal) {
+                    final Variant min = VariantUtils.min(((Expr.Literal) entry1).result, ((Expr.Literal) entry2).result);
+                    final Variant max = VariantUtils.max(((Expr.Literal) entry1).result, ((Expr.Literal) entry2).result);
+                    return new Expr.StaticBetweenOperator(expr, operator, min, max);
+                }
+                return new Expr.BetweenOperator(expr, operator, entry1, entry2);
             }
         } else {
             throw error(peek(), "Expect '[' after WITHIN/BETWEEN operator");

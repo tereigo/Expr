@@ -148,6 +148,38 @@ final class ExprFlatInterpreter implements FlatExpr.Visitor<Variant> {
     }
 
     @Override
+    public Variant visitStaticWithinOperator(final FlatExpr.StaticWithinOperator expr) {
+        final short childPos = expr.startChild;
+        final Variant operand = evaluate(flatAST.getNodes()[childPos]);
+        try {
+            if (VariantUtils.isGreaterOrEqualNumbers(operand, expr.min) && VariantUtils.isLessOrEqualNumbers(operand, expr.max)) {
+                expr.result.accept(true);
+                return expr.result;
+            }
+        } catch (final RuntimeException ex) {
+            throw new RuntimeError(expr.operator, getExceptionMsg(ex), ex);
+        }
+        expr.result.accept(false);
+        return expr.result;
+    }
+
+    @Override
+    public Variant visitStaticBetweenOperator(final FlatExpr.StaticBetweenOperator expr) {
+        final short childPos = expr.startChild;
+        final Variant operand = evaluate(flatAST.getNodes()[childPos]);
+        try {
+            if (VariantUtils.isGreaterNumbers(operand, expr.min) && VariantUtils.isLessNumbers(operand, expr.max)) {
+                expr.result.accept(true);
+                return expr.result;
+            }
+        } catch (final RuntimeException ex) {
+            throw new RuntimeError(expr.operator, getExceptionMsg(ex), ex);
+        }
+        expr.result.accept(false);
+        return expr.result;
+    }
+
+    @Override
     public Variant visitLiteralExpr(final FlatExpr.Literal expr) {
         return expr.result;
     }

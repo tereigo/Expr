@@ -1,10 +1,10 @@
 TODO:
-0. convert project to Maven/Gradle
-
-1. Migrate to Java 11/17/21
-
-2. Another possible optimization is to analyze in/within/between contents in the brackets and if they are all literals then don't "evaluate" them
+0. Another possible optimization is to analyze in contents in the brackets and if they are all literals then don't "evaluate" them
    so that the contents of [] becomes 1 collection of immutable objects
+
+1. convert project to Maven/Gradle
+
+2. Migrate to Java 11/17/21
 
 3. Add power operator: "pow(2, 5) == 32 and 2 ** 5 == 32" or 2 ^ 5 == 32
    Needed?
@@ -98,6 +98,9 @@ TODO:
 ///////////////////////////////////////////////////////////////////////////////////////////
 // Done:
 ///////////////////////////////////////////////////////////////////////////////////////////
+0. Another possible optimization is to analyze within/between contents in the brackets and if they are all literals then don't "evaluate" them
+   so that the contents of [] becomes 1 collection of immutable objects
+
 2. Support scientific input for Doubles: 1e-6, 1.15E6
 
 1. Investigate if "-1.0" is compiled into 1 node (Literal(1.0)) or in 2: Unary(-) + Literal(1.0)

@@ -18,8 +18,6 @@ abstract class FlatExpr {
 
         R visitBetweenOperator(BetweenOperator expr); // between [...] - excluding boundaries
 
-        R visitGroupingExpr(Grouping expr); // ()
-
         R visitLiteralExpr(Literal expr);   // long, double, string, boolean, ByteBuffer values
 
         R visitLogicalExpr(Logical expr);   // or, and
@@ -116,18 +114,6 @@ abstract class FlatExpr {
         @Override
         <R> R accept(final Visitor<R> visitor) {
             return visitor.visitBetweenOperator(this);
-        }
-    }
-
-    static class Grouping extends BaseExpr {
-
-        Grouping(final int startChild) {
-            super(null, 1, startChild);
-        }
-
-        @Override
-        <R> R accept(final Visitor<R> visitor) {
-            return visitor.visitGroupingExpr(this);
         }
     }
 

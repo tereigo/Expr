@@ -61,11 +61,6 @@ final class AstPolishPrinter implements Expr.Visitor<String> {
     }
 
     @Override
-    public String visitGroupingExpr(final Expr.Grouping expr) {
-        return parenthesize("group", expr.expression);
-    }
-
-    @Override
     public String visitLiteralExpr(final Expr.Literal expr) {
         return expr.result.getAsObject().toString();
     }

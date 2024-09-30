@@ -146,11 +146,6 @@ final class ExprInterpreter implements Expr.Visitor<Variant> {
     }
 
     @Override
-    public Variant visitGroupingExpr(final Expr.Grouping expr) {
-        return evaluate(expr.expression);
-    }
-
-    @Override
     public Variant visitLiteralExpr(final Expr.Literal expr) {
         return expr.result;
     }

@@ -77,16 +77,6 @@ final class AstFlatter implements Expr.Visitor<FlatExpr> {
     }
 
     @Override
-    public FlatExpr visitGroupingExpr(final Expr.Grouping expr) {
-        final FlatExpr.Grouping newNode = new FlatExpr.Grouping(nodes.size() + queue.size() + 1);
-        nodes.add(newNode);
-
-        queue.add(expr.expression);
-
-        return newNode;
-    }
-
-    @Override
     public FlatExpr visitLiteralExpr(final Expr.Literal expr) {
         final FlatExpr.Literal newNode = new FlatExpr.Literal(expr.result);
         nodes.add(newNode);

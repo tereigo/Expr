@@ -73,11 +73,6 @@ final class AstHierarchyPrinter implements Expr.Visitor<String> {
     }
 
     @Override
-    public String visitGroupingExpr(final Expr.Grouping expr) {
-        return expr.expression.accept(this);
-    }
-
-    @Override
     public String visitLiteralExpr(final Expr.Literal expr) {
         return expr.result.getAsObject().toString();
     }

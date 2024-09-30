@@ -148,11 +148,6 @@ final class ExprFlatInterpreter implements FlatExpr.Visitor<Variant> {
     }
 
     @Override
-    public Variant visitGroupingExpr(final FlatExpr.Grouping expr) {
-        return evaluate(flatAST.getNodes()[expr.startChild]);
-    }
-
-    @Override
     public Variant visitLiteralExpr(final FlatExpr.Literal expr) {
         return expr.result;
     }

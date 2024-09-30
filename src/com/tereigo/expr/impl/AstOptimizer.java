@@ -8,7 +8,7 @@ import java.util.List;
 
 /**
  * AST tree optimization for the case when ExprContext is known at startup and it doesn't change for evaluation
- * We traverse AST tree with a given static, and resolve functions and identifiers and store them as resolved functions
+ * We traverse AST tree with a given static context, resolve all functions and identifiers and store them as resolved functions
  * In that case we don't have to do function lookups by name during evaluation
  */
 final class AstOptimizer implements Expr.Visitor<Expr> {
@@ -44,13 +44,6 @@ final class AstOptimizer implements Expr.Visitor<Expr> {
     @Override
     public Expr visitBetweenOperator(final Expr.BetweenOperator expr) {
         return new Expr.BetweenOperator(evaluate(expr.operand), expr.operator, evaluate(expr.min), evaluate(expr.max));
-    }
-
-    @Override
-    public Expr visitGroupingExpr(final Expr.Grouping expr) {
-        // TODO: it feels like we can we return expr.expression here
-        // This way we'll remove Grouping from AST
-        return expr;
     }
 
     @Override

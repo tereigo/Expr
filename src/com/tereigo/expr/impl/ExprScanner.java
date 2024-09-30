@@ -231,15 +231,6 @@ final class ExprScanner {
         } else if (peek() == '.' && (peekNext() == 'e' || peekNext() == 'E') && (isDigit(peekAt(current + 2)) || peekAt(current + 2) == '-' || peekAt(current + 2) == '+')) {
             // Consume the "."
             advance();
-            if (peek() == 'e' || peek() == 'E') {
-                advance();
-            }
-            if (peek() == '-' || peek() == '+') {
-                advance();
-            }
-            while (isDigit(peek())) {
-                advance();
-            }
         }
 
         // check if it has an exponent part

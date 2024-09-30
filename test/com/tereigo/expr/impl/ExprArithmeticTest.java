@@ -819,12 +819,11 @@ class ExprArithmeticTest extends ExprEvaluatorTestBase {
         assertEquals(7, evaluateLong("5 - (((-2)))"));
         assertEquals(3, evaluateLong("5 - (-(-2))"));
         assertEquals(-3.141592653589793, evaluateDouble("-pi"), EPS);
+        assertEquals(7, evaluateLong("5 -- 2"));
+        assertEquals(7, evaluateLong("5 - -2"));
 
         err = assertThrows(ParseError.class, () -> evaluate("-true"));
         assertEquals("Expression parsing error [line 1, pos 2]: Unary minus is applicable to numbers only in expression '-true'", err.getMessage());
-
-        assertEquals(7, evaluateLong("5 -- 2"));
-        assertEquals(7, evaluateLong("5 - -2"));
 
         err = assertThrows(ParseError.class, () -> evaluate("5 (--2)"));
         assertEquals("Expression parsing error [line 1, pos 1]: Function name should be an identifier in expression '5 (--2)'", err.getMessage());

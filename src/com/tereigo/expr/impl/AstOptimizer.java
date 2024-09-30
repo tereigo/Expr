@@ -2,9 +2,6 @@ package com.tereigo.expr.impl;
 
 import com.tereigo.expr.ExprContext;
 import com.tereigo.expr.function.Function0;
-import com.tereigo.expr.variant.MutableVariant;
-import com.tereigo.expr.variant.VariantFactory;
-import com.tereigo.expr.variant.VariantUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -73,15 +70,7 @@ final class AstOptimizer implements Expr.Visitor<Expr> {
 
     @Override
     public Expr visitUnaryExpr(final Expr.Unary expr) {
-        if (expr.expression instanceof Expr.Literal) {
-            // if parsing "-1" then we combine from Unary(-) + Literal(1) into Literal (-1)
-            final Expr.Literal literal = (Expr.Literal) expr.expression;
-            final MutableVariant result = VariantFactory.createEmpty();
-            VariantUtils.negateNumber(result, literal.result);
-            return VariantUtils.isDouble(result) ? new Expr.Literal(result.getAsDouble()) : new Expr.Literal(result.getAsLong());
-        } else {
-            return new Expr.Unary(expr.operator, evaluate(expr.expression));
-        }
+        return new Expr.Unary(expr.operator, evaluate(expr.expression));
     }
 
     @Override

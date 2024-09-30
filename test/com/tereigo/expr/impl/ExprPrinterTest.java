@@ -81,9 +81,7 @@ class ExprPrinterTest extends ExprEvaluatorTestBase {
                 "│   │   │\n" +
                 "│   │   ├── >=\n" +
                 "│   │   │   │\n" +
-                "│   │   │   ├── -\n" +
-                "│   │   │   │   │\n" +
-                "│   │   │   │   ├── 5\n" +
+                "│   │   │   ├── -5\n" +
                 "│   │   │   │\n" +
                 "│   │   │   ├── 6", printer.print(ExprCompiler.compile("1+4 == 5 and not(true or -5 >= 6)")));
 
@@ -171,9 +169,9 @@ class ExprPrinterTest extends ExprEvaluatorTestBase {
         assertEquals("true", printer.print(ExprCompiler.compile("true")));
         assertEquals("(not true)", printer.print(ExprCompiler.compile("not(true)")));
         assertEquals("1.0", printer.print(ExprCompiler.compile("1.0")));
-        assertEquals("(- 1.0)", printer.print(ExprCompiler.compile("-1.0")));
+        assertEquals("-1.0", printer.print(ExprCompiler.compile("-1.0")));
         assertEquals("2", printer.print(ExprCompiler.compile("2")));
-        assertEquals("(- 2)", printer.print(ExprCompiler.compile("-2")));
+        assertEquals("-2", printer.print(ExprCompiler.compile("-2")));
         assertEquals("true", printer.print(ExprCompiler.compile("true")));
         assertEquals("a", printer.print(ExprCompiler.compile("\"a\"")));
         assertEquals("(not true)", printer.print(ExprCompiler.compile("(not(true))")));

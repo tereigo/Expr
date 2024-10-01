@@ -8,10 +8,6 @@ import com.tereigo.expr.variant.VariantUtils;
 /*
   Provides Expr native functions
 
- TODO:
-     add the following functions: equals, equalsIgnoreCase, containsIgnoreCase, startsWithIgnoreCase,
-     endsWith, endsWithIgnoreCase, indexOfIgnoreCase
-
  */
 final class ExprContextNativeEnricher implements ExprContextEnricher {
     private static final ExprContextEnricher INSTANCE = new ExprContextNativeEnricher();
@@ -192,7 +188,6 @@ final class ExprContextNativeEnricher implements ExprContextEnricher {
             }
         });
 
-        // TODO: test!!!
         ctx.addFunction("equals", (result, arg1, arg2) -> {
             if (VariantUtils.isString(arg1) && VariantUtils.isString(arg2)) {
                 result.accept(arg1.getAsString().equals(arg2.getAsString()));
@@ -207,7 +202,6 @@ final class ExprContextNativeEnricher implements ExprContextEnricher {
             }
         });
 
-        // TODO: test it
         ctx.addFunction("equalsIgnoreCase", (result, arg1, arg2) -> {
             if (VariantUtils.isString(arg1) && VariantUtils.isString(arg2)) {
                 result.accept(arg1.getAsString().equalsIgnoreCase(arg2.getAsString()));
@@ -221,8 +215,6 @@ final class ExprContextNativeEnricher implements ExprContextEnricher {
                 throw new RuntimeException("Operand must be a STRING or BYTE_BUFFER");
             }
         });
-
-        // TODO: add containsIgnoreCase, indexOfIgnoreCase
 
         ctx.addFunction("contains", (result, arg1, arg2) -> {
             // alternative syntax. I'm not sure it's better
@@ -242,6 +234,20 @@ final class ExprContextNativeEnricher implements ExprContextEnricher {
                 } else {
                     throw new RuntimeException("Operand must be a STRING or BYTE_BUFFER");
                 }
+            } else {
+                throw new RuntimeException("Operand must be a STRING or BYTE_BUFFER");
+            }
+        });
+
+        ctx.addFunction("containsIgnoreCase", (result, arg1, arg2) -> {
+            if (VariantUtils.isString(arg1) && VariantUtils.isString(arg2)) {
+                result.accept(ByteBufferUtils.containsIgnoreCase(arg1.getAsString(), arg2.getAsString()));
+            } else if (VariantUtils.isString(arg1) && VariantUtils.isByteBuffer(arg2)) {
+                result.accept(ByteBufferUtils.containsIgnoreCase(arg1.getAsString(), arg2.getAsByteBuffer()));
+            } else if (VariantUtils.isByteBuffer(arg1) && VariantUtils.isString(arg2)) {
+                result.accept(ByteBufferUtils.containsIgnoreCase(arg1.getAsByteBuffer(), arg2.getAsString()));
+            } else if (VariantUtils.isByteBuffer(arg1) && VariantUtils.isByteBuffer(arg2)) {
+                result.accept(ByteBufferUtils.containsIgnoreCase(arg1.getAsByteBuffer(), arg2.getAsByteBuffer()));
             } else {
                 throw new RuntimeException("Operand must be a STRING or BYTE_BUFFER");
             }
@@ -326,9 +332,22 @@ final class ExprContextNativeEnricher implements ExprContextEnricher {
             }
         });
 
+        ctx.addFunction("indexOfIgnoreCase", (result, arg1, arg2) -> {
+            if (VariantUtils.isString(arg1) && VariantUtils.isString(arg2)) {
+                result.accept(ByteBufferUtils.indexOfIgnoreCase(arg1.getAsString(), arg2.getAsString()));
+            } else if (VariantUtils.isString(arg1) && VariantUtils.isByteBuffer(arg2)) {
+                result.accept(ByteBufferUtils.indexOfIgnoreCase(arg1.getAsString(), arg2.getAsByteBuffer()));
+            } else if (VariantUtils.isByteBuffer(arg1) && VariantUtils.isString(arg2)) {
+                result.accept(ByteBufferUtils.indexOfIgnoreCase(arg1.getAsByteBuffer(), arg2.getAsString()));
+            } else if (VariantUtils.isByteBuffer(arg1) && VariantUtils.isByteBuffer(arg2)) {
+                result.accept(ByteBufferUtils.indexOfIgnoreCase(arg1.getAsByteBuffer(), arg2.getAsByteBuffer()));
+            } else {
+                throw new RuntimeException("Operand must be a STRING or BYTE_BUFFER");
+            }
+        });
+
         // "percentOf(5, 1000) == 50 or 5.pctOf(1000) == 50"
         ctx.addFunction("percentOf", (result, pct, value) -> result.accept(value.getAsNumber() * pct.getAsNumber() / 100.0));
         ctx.addAlias("percentOf", "pctOf");
     }
-
 }

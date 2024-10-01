@@ -439,7 +439,31 @@ public final class ByteBufferUtils {
         return indexOf(str, pattern) > -1;
     }
 
+    public static boolean containsIgnoreCase(final ByteBuffer str, final String pattern) {
+        return indexOfIgnoreCase(str, pattern) > -1;
+    }
+
+    public static boolean containsIgnoreCase(final String str, final ByteBuffer pattern) {
+        return indexOfIgnoreCase(str, pattern) > -1;
+    }
+
+    public static boolean containsIgnoreCase(final ByteBuffer str, final ByteBuffer pattern) {
+        return indexOfIgnoreCase(str, pattern) > -1;
+    }
+
+    public static boolean containsIgnoreCase(final String str, final String pattern) {
+        return indexOfIgnoreCase(str, pattern) > -1;
+    }
+
     public static int indexOf(final ByteBuffer str, final String pattern) {
+        return indexOf(str, pattern, BYTE_CASE_SENSITIVE_COMPARATOR);
+    }
+
+    public static int indexOfIgnoreCase(final ByteBuffer str, final String pattern) {
+        return indexOf(str, pattern, BYTE_CASE_INSENSITIVE_COMPARATOR);
+    }
+
+    private static int indexOf(final ByteBuffer str, final String pattern, final ByteComparator comparator) {
         if (pattern.isEmpty()) {
             return 0;
         }
@@ -449,14 +473,14 @@ public final class ByteBufferUtils {
 
         for (int i = 0; i <= max; i++) {
             // search for the first same character in str
-            if (str.get(i) != firstByte) {
-                while (++i <= max && str.get(i) != firstByte) ;
+            if (comparator.compare(str.get(i), firstByte) != 0) {
+                while (++i <= max && comparator.compare(str.get(i), firstByte) != 0) ;
             }
 
             if (i <= max) {
                 int j = i + 1;
                 final int end = j + pattern.length() - 1;
-                for (int k = 1; j < end && str.get(j) == (byte) (pattern.charAt(k) & 0xFF); j++, k++) ;
+                for (int k = 1; j < end && comparator.compare(str.get(j), (byte) (pattern.charAt(k) & 0xFF)) == 0; j++, k++) ;
 
                 if (j == end) {
                     return i;
@@ -467,6 +491,14 @@ public final class ByteBufferUtils {
     }
 
     public static int indexOf(final String str, final ByteBuffer pattern) {
+        return indexOf(str, pattern, BYTE_CASE_SENSITIVE_COMPARATOR);
+    }
+
+    public static int indexOfIgnoreCase(final String str, final ByteBuffer pattern) {
+        return indexOf(str, pattern, BYTE_CASE_INSENSITIVE_COMPARATOR);
+    }
+
+    private static int indexOf(final String str, final ByteBuffer pattern, final ByteComparator comparator) {
         if (!pattern.hasRemaining()) {
             return 0;
         }
@@ -476,14 +508,14 @@ public final class ByteBufferUtils {
 
         for (int i = 0; i <= max; i++) {
             // search for the first same character in str
-            if ((byte) (str.charAt(i) & 0xFF) != firstByte) {
-                while (++i <= max && (byte) (str.charAt(i) & 0xFF) != firstByte) ;
+            if (comparator.compare((byte) (str.charAt(i) & 0xFF), firstByte) != 0) {
+                while (++i <= max && comparator.compare((byte) (str.charAt(i) & 0xFF), firstByte) != 0) ;
             }
 
             if (i <= max) {
                 int j = i + 1;
                 final int end = j + pattern.remaining() - 1;
-                for (int k = 1; j < end && (byte) (str.charAt(j) & 0xFF) == pattern.get(k); j++, k++) ;
+                for (int k = 1; j < end && comparator.compare((byte) (str.charAt(j) & 0xFF), pattern.get(k)) == 0; j++, k++) ;
 
                 if (j == end) {
                     return i;
@@ -494,6 +526,14 @@ public final class ByteBufferUtils {
     }
 
     public static int indexOf(final ByteBuffer str, final ByteBuffer pattern) {
+        return indexOf(str, pattern, BYTE_CASE_SENSITIVE_COMPARATOR);
+    }
+
+    public static int indexOfIgnoreCase(final ByteBuffer str, final ByteBuffer pattern) {
+        return indexOf(str, pattern, BYTE_CASE_INSENSITIVE_COMPARATOR);
+    }
+
+    private static int indexOf(final ByteBuffer str, final ByteBuffer pattern, final ByteComparator comparator) {
         if (!pattern.hasRemaining()) {
             return 0;
         }
@@ -503,14 +543,45 @@ public final class ByteBufferUtils {
 
         for (int i = 0; i <= max; i++) {
             // search for the first same character in str
-            if (str.get(i) != firstByte) {
-                while (++i <= max && str.get(i) != firstByte) ;
+            if (comparator.compare(str.get(i), firstByte) != 0) {
+                while (++i <= max && comparator.compare(str.get(i), firstByte) != 0) ;
             }
 
             if (i <= max) {
                 int j = i + 1;
                 final int end = j + pattern.remaining() - 1;
-                for (int k = 1; j < end && str.get(j) == pattern.get(k); j++, k++) ;
+                for (int k = 1; j < end && comparator.compare(str.get(j), pattern.get(k)) == 0; j++, k++) ;
+
+                if (j == end) {
+                    return i;
+                }
+            }
+        }
+        return -1;
+    }
+
+    public static int indexOfIgnoreCase(final String str, final String pattern) {
+        return indexOf(str, pattern, BYTE_CASE_INSENSITIVE_COMPARATOR);
+    }
+
+    private static int indexOf(final String str, final String pattern, final ByteComparator comparator) {
+        if (pattern.isEmpty()) {
+            return 0;
+        }
+
+        final byte firstByte = (byte) (pattern.charAt(0) & 0xFF);
+        final int max = str.length() - pattern.length();
+
+        for (int i = 0; i <= max; i++) {
+            // search for the first same character in str
+            if (comparator.compare((byte)(str.charAt(i) & 0xFF), firstByte) != 0) {
+                while (++i <= max && comparator.compare((byte)(str.charAt(i) & 0xFF), firstByte) != 0) ;
+            }
+
+            if (i <= max) {
+                int j = i + 1;
+                final int end = j + pattern.length() - 1;
+                for (int k = 1; j < end && comparator.compare((byte)(str.charAt(j) & 0xFF), (byte) (pattern.charAt(k) & 0xFF)) == 0; j++, k++) ;
 
                 if (j == end) {
                     return i;

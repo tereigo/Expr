@@ -1,4 +1,7 @@
 TODO:
+
+1. Write tests for all native string functions: equals, equalsIgnoreCase, indexOf/contains/startsWith/endsWith
+
 0. Another possible optimization is to analyze in contents in the brackets and if they are all literals then don't "evaluate" them
    so that the contents of [] becomes 1 collection of immutable objects
 
@@ -25,16 +28,6 @@ TODO:
    potential domains: date, time, today (time.now, today.date, time.hour, time.min, date.today + 1)
    time syntax: 12:34:56, 12:34
    date syntax: 2024-01-30
-
-7. Add string operators:
- indexOfIgnoreCase
- containsIgnoreCase
-
-// may be add BBUtils but don't hook up to expressions since they modify the data
- charAt   - for that we'll need Variant to support a new Char type!
- matches
-
-
 
 3. Add tests for VariantImpl equals / hashCode
 
@@ -98,6 +91,14 @@ TODO:
 ///////////////////////////////////////////////////////////////////////////////////////////
 // Done:
 ///////////////////////////////////////////////////////////////////////////////////////////
+7. Add string operators:
+ indexOfIgnoreCase
+ containsIgnoreCase
+
+// may be add BBUtils but don't hook up to expressions since they modify the data
+ charAt   - for that we'll need Variant to support a new Char type!
+ matches
+
 0. Another possible optimization is to analyze within/between contents in the brackets and if they are all literals then don't "evaluate" them
    so that the contents of [] becomes 1 collection of immutable objects
 

@@ -433,7 +433,7 @@ final class ExprParser {
 
         if (match(IDENTIFIER)) {
             final Expr.Literal constant = constants.get(previous().lexeme);
-            return (constant != null) ? constant : new Expr.Identifier(previous());
+            return constant != null ? constant : new Expr.Identifier(previous());
         }
 
         if (match(LEFT_PAREN)) {

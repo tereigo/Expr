@@ -46,7 +46,7 @@ public class ByteBufferUtilsBenchmarkTest {
 
     @Test
     public void runBenchmarks() throws RunnerException {
-        Options options = new OptionsBuilder()
+        final Options options = new OptionsBuilder()
                 .include(this.getClass().getName() + ".benchmark*")
                 .build();
 

@@ -1,8 +1,5 @@
-package com.tereigo.expr.impl;
+package com.tereigo.expr;
 
-import com.tereigo.expr.ExprEvaluatorCache;
-import com.tereigo.expr.ExprEvaluatorFactory;
-import com.tereigo.expr.ExprEvaluatorWithContext;
 import com.tereigo.expr.utils.ByteBufferUtils;
 import org.junit.jupiter.api.Test;
 

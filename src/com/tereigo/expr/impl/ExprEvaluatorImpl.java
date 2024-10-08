@@ -32,12 +32,7 @@ final class ExprEvaluatorImpl extends ExprEvaluatorBase implements ExprEvaluator
 
     @Override
     public boolean evaluateBool() {
-        final Variant result = evaluate(ExprContextNative.get());
-        try {
-            return result.getAsBoolean();
-        } catch (final RuntimeException ex) {
-            throw new RuntimeException("Result of an unexpected type: " + ExceptionUtils.getExceptionMsg(ex));
-        }
+        return evaluateBool(ExprContextNative.get());
     }
 
     @Override
@@ -52,12 +47,7 @@ final class ExprEvaluatorImpl extends ExprEvaluatorBase implements ExprEvaluator
 
     @Override
     public long evaluateLong() {
-        final Variant result = evaluate(ExprContextNative.get());
-        try {
-            return result.getAsLong();
-        } catch (final RuntimeException ex) {
-            throw new RuntimeException("Result of an unexpected type: " + ExceptionUtils.getExceptionMsg(ex));
-        }
+        return evaluateLong(ExprContextNative.get());
     }
 
     @Override
@@ -72,12 +62,7 @@ final class ExprEvaluatorImpl extends ExprEvaluatorBase implements ExprEvaluator
 
     @Override
     public double evaluateDouble() {
-        final Variant result = evaluate(ExprContextNative.get());
-        try {
-            return result.getAsDouble();
-        } catch (final RuntimeException ex) {
-            throw new RuntimeException("Result of an unexpected type: " + ExceptionUtils.getExceptionMsg(ex));
-        }
+        return evaluateDouble(ExprContextNative.get());
     }
 
     @Override
@@ -92,12 +77,7 @@ final class ExprEvaluatorImpl extends ExprEvaluatorBase implements ExprEvaluator
 
     @Override
     public double evaluateNumber() {
-        final Variant result = evaluate(ExprContextNative.get());
-        try {
-            return result.getAsNumber();
-        } catch (final RuntimeException ex) {
-            throw new RuntimeException("Result of an unexpected type: " + ExceptionUtils.getExceptionMsg(ex));
-        }
+        return evaluateNumber(ExprContextNative.get());
     }
 
     @Override
@@ -112,12 +92,7 @@ final class ExprEvaluatorImpl extends ExprEvaluatorBase implements ExprEvaluator
 
     @Override
     public String evaluateString() {
-        final Variant result = evaluate(ExprContextNative.get());
-        try {
-            return result.getAsString();
-        } catch (final RuntimeException ex) {
-            throw new RuntimeException("Result of an unexpected type: " + ExceptionUtils.getExceptionMsg(ex));
-        }
+        return evaluateString(ExprContextNative.get());
     }
 
     @Override
@@ -132,12 +107,7 @@ final class ExprEvaluatorImpl extends ExprEvaluatorBase implements ExprEvaluator
 
     @Override
     public ByteBuffer evaluateByteBuffer() {
-        final Variant result = evaluate(ExprContextNative.get());
-        try {
-            return result.getAsByteBuffer();
-        } catch (final RuntimeException ex) {
-            throw new RuntimeException("Result of an unexpected type: " + ExceptionUtils.getExceptionMsg(ex));
-        }
+        return evaluateByteBuffer(ExprContextNative.get());
     }
 
     @Override
@@ -153,12 +123,7 @@ final class ExprEvaluatorImpl extends ExprEvaluatorBase implements ExprEvaluator
     @GeneratesGarbage
     @Override
     public Object evaluateAsObject() {
-        final Variant result = evaluate(ExprContextNative.get());
-        try {
-            return result.getAsObject();
-        } catch (final RuntimeException ex) {
-            throw new RuntimeException("Result of an unexpected type: " + ExceptionUtils.getExceptionMsg(ex));
-        }
+        return evaluateAsObject(ExprContextNative.get());
     }
 
     @GeneratesGarbage

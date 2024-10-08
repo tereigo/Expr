@@ -2,6 +2,12 @@ package com.tereigo.expr.impl;
 
 import java.util.List;
 
+/**
+ * Experimental: we use flat array-like structure for nodes (see FlatAST)
+ *
+ * It doesn't demonstrate any performance improvements
+ *
+ */
 public class FlatAST {
     private final FlatExpr.BaseExpr[] nodes;
 

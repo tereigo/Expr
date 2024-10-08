@@ -13,18 +13,6 @@ import java.util.List;
 final class AstHierarchyPrinter implements Expr.Visitor<String> {
     private int level = 0;
 
-    private static String generateIdent(final int level) {
-        final StringBuilder builder = new StringBuilder();
-        for (int i = 0; i < level * 4; i++) {
-            if (i % 4 == 0) {
-                builder.append('│');
-            } else {
-                builder.append(' ');
-            }
-        }
-        return builder.toString();
-    }
-
     String print(final ASTRoot root) {
         level = 0;
         return root.expr().accept(this);
@@ -195,6 +183,18 @@ final class AstHierarchyPrinter implements Expr.Visitor<String> {
             }
         }
         builder.append("]");
+        return builder.toString();
+    }
+
+    private static String generateIdent(final int level) {
+        final StringBuilder builder = new StringBuilder();
+        for (int i = 0; i < level * 4; i++) {
+            if (i % 4 == 0) {
+                builder.append('│');
+            } else {
+                builder.append(' ');
+            }
+        }
         return builder.toString();
     }
 }

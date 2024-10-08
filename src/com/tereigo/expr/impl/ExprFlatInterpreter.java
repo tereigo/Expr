@@ -15,8 +15,13 @@ import static com.tereigo.expr.impl.ExceptionUtils.getExceptionMsg;
 import static com.tereigo.expr.variant.VariantUtils.isBoolean;
 import static com.tereigo.expr.variant.VariantUtils.isExprContext;
 
-/*
-  Evaluates the expressions defined in FlatExpr class using the provided ExprContext
+/**
+ * Experimental: we use flat array-like structure for nodes (see FlatAST)
+ *
+ * It doesn't demonstrate any performance improvements
+ *
+ * Evaluates the expressions defined in FlatExpr class using the provided ExprContext
+ *
  */
 final class ExprFlatInterpreter implements FlatExpr.Visitor<Variant> {
     private final FlatAST flatAST;

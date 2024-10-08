@@ -7,6 +7,9 @@ import java.util.Queue;
 
 /**
  * Experimental: we use flat array-like structure for nodes (see FlatAST)
+ *
+ * It doesn't demonstrate any performance improvements
+ *
  */
 final class AstFlatter implements Expr.Visitor<FlatExpr> {
     private List<FlatExpr.BaseExpr> nodes = new ArrayList<>();

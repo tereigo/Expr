@@ -5,6 +5,12 @@ import com.tereigo.expr.variant.MutableVariant;
 import com.tereigo.expr.variant.Variant;
 import com.tereigo.expr.variant.VariantFactory;
 
+/**
+ * Experimental: we use flat array-like structure for nodes (see FlatAST)
+ *
+ * It doesn't demonstrate any performance improvements
+ *
+ */
 abstract class FlatExpr {
 
     abstract <R> R accept(Visitor<R> visitor);

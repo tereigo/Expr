@@ -319,16 +319,16 @@ class ExprNativeFunctionsTest extends ExprEvaluatorTestBase {
         assertFalse(evaluateBool("region.isEmpty()", ctx2));
         assertTrue(evaluateBool("algoType().length() == 5", ctx2));
         assertTrue(evaluateBool("region.length() == 4", ctx2));
-
-        // TODO: implement ByteBufferUtils.contains() for all combinations
-//        runErr = assertThrows(RuntimeError.class, () -> evaluate("\"ABC\".contains(region)", ctx2));
-//        assertEquals("Expression evaluation error [line 1, pos 7]: RuntimeException in function 'contains': Operand must be a STRING in expression '\"ABC\".contains(region)'", runErr.getMessage());
-//        runErr = assertThrows(RuntimeError.class, () -> evaluate("\"ABC\".contains(algoType())", ctx2));
-//        assertEquals("Expression evaluation error [line 1, pos 7]: RuntimeException in function 'contains': Operand must be a STRING in expression '\"ABC\".contains(algoType())'", runErr.getMessage());
-//        runErr = assertThrows(RuntimeError.class, () -> evaluate("region.contains(\"A\")", ctx2));
-//        assertEquals("Expression evaluation error [line 1, pos 8]: RuntimeException in function 'contains': Operand must be a STRING in expression 'region.contains(\"A\")'", runErr.getMessage());
-//        runErr = assertThrows(RuntimeError.class, () -> evaluate("algoType().contains(\"A\")", ctx2));
-//        assertEquals("Expression evaluation error [line 1, pos 12]: RuntimeException in function 'contains': Operand must be a STRING in expression 'algoType().contains(\"A\")'", runErr.getMessage());
+        assertFalse(evaluateBool("\"ABC\".contains(region)", ctx2));
+        assertFalse(evaluateBool("\"ABC\".contains(algoType())", ctx2));
+        assertTrue(evaluateBool("region.contains(\"A\")", ctx2));
+        assertTrue(evaluateBool("algoType().contains(\"A\")", ctx2));
+        assertFalse(evaluateBool("'ABC'.contains(region)", ctx2));
+        assertFalse(evaluateBool("'ABC'.contains(algoType())", ctx2));
+        assertFalse(evaluateBool("'ABC'.contains(algoType)", ctx2));
+        assertTrue(evaluateBool("region.contains('A')", ctx2));
+        assertTrue(evaluateBool("algoType().contains('A')", ctx2));
+        assertTrue(evaluateBool("algoType.contains('A')", ctx2));
 
         final ExprContextBuilder mutCtx3 = ExprContextFactory.globalContext();
         mutCtx3.addString("region", () -> "EMEA");
@@ -352,10 +352,8 @@ class ExprNativeFunctionsTest extends ExprEvaluatorTestBase {
         assertTrue(evaluateBool("length(country) == 5", ctx3));
         assertTrue(evaluateBool("region.contains('A')", ctx3));
         assertTrue(evaluateBool("contains(region, 'A')", ctx3));
-        // TODO: implement
-        //assertFalse(evaluateBool("country.contains('ly')", ctx3));
-        // TODO: implement
-        //assertFalse(evaluateBool("contains(country, 'ly')", ctx3));
+        assertTrue(evaluateBool("country.contains('ly')", ctx3));
+        assertTrue(evaluateBool("contains(country, 'ly')", ctx3));
 
         // Try the same with optimized AST
         assertFalse(evaluateBoolOptimized(ctx3, "algoType().isEmpty()"));
@@ -373,9 +371,7 @@ class ExprNativeFunctionsTest extends ExprEvaluatorTestBase {
         assertTrue(evaluateBoolOptimized(ctx3, "length(country) == 5"));
         assertTrue(evaluateBoolOptimized(ctx3, "region.contains('A')"));
         assertTrue(evaluateBoolOptimized(ctx3, "contains(region, 'A')"));
-        // TODO: implement
-        //assertFalse(evaluateBoolOptimized("country.contains('ly')", ctx3));
-        // TODO: implement
-        //assertFalse(evaluateBoolOptimized("contains(country, 'ly')", ctx3));
+        assertTrue(evaluateBoolOptimized(ctx3, "country.contains('ly')"));
+        assertTrue(evaluateBoolOptimized(ctx3, "contains(country, 'ly')"));
     }
 }

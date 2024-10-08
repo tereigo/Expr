@@ -17,9 +17,9 @@ final class VariantImpl implements MutableVariant {
     private long longVal;
     // IMPORTANT NOTE on implementation:
     // String value and ByteBuffer values are interchangeable
-    // we consider Variant values equal if strVal == other.strVal || strVal == other.bbVal || bbVal == other.bbVal
+    // we consider Variant values equal if strVal == other.strVal || strVal == other.bbVal || bbVal == other.bbVal || bbVal == other.strVal
     // So if v1.strVal == "ABC" and v2.bbVal == "ABC" then they are equal
-    // This is needed to be able to compare ByteBuffer values returned from the msg (order.ric) to String values in the expressions:
+    // This is needed to be able to compare ByteBuffer values returned from the external data providers (order.ric) to String values in the expressions:
     // $ric == "VOD.L"
     // Here $ric - will be ByteBuffer taken from the msg and "VOD.L" will be String as a result of expression parsing
     //

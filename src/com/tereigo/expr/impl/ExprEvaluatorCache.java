@@ -1,6 +1,9 @@
-package com.tereigo.expr;
+package com.tereigo.expr.impl;
 
 import com.sun.istack.internal.NotNull;
+import com.tereigo.expr.ExprEvaluator;
+import com.tereigo.expr.ExprEvaluatorCreator;
+import com.tereigo.expr.ExprEvaluatorSupplier;
 import com.tereigo.expr.annotations.GeneratesGarbage;
 import com.tereigo.expr.utils.ByteBufferUtils;
 
@@ -8,7 +11,7 @@ import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Map;
 
-public final class ExprEvaluatorCache<T extends ExprEvaluator> {
+final class ExprEvaluatorCache<T extends ExprEvaluator> implements ExprEvaluatorSupplier<T> {
     private final Map<ByteBuffer, T> cache = new HashMap<>();
     private final ExprEvaluatorCreator<T> creator;
 
@@ -18,7 +21,8 @@ public final class ExprEvaluatorCache<T extends ExprEvaluator> {
 
     @GeneratesGarbage
     @NotNull
-    public T getExprEvaluator(final ByteBuffer expr) {
+    @Override
+    public T getEvaluator(final ByteBuffer expr) {
         T entry = cache.get(expr);
         if (entry == null) {
             final ByteBuffer exprClone = ByteBufferUtils.clone(expr);

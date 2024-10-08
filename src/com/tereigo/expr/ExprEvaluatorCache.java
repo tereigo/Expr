@@ -8,17 +8,21 @@ import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Map;
 
-// TODO: test
-public final class ExprEvaluatorCache {
-    private final Map<ByteBuffer, ExprEvaluatorWithContext> cache = new HashMap<>();
+public final class ExprEvaluatorCache<T extends ExprEvaluator> {
+    private final Map<ByteBuffer, T> cache = new HashMap<>();
+    private final ExprEvaluatorCreator<T> creator;
+
+    public ExprEvaluatorCache(final ExprEvaluatorCreator<T> creator) {
+        this.creator = creator;
+    }
 
     @GeneratesGarbage
     @NotNull
-    public ExprEvaluatorWithContext getExprEvaluator(final ByteBuffer expr) {
-        ExprEvaluatorWithContext entry = cache.get(expr);
+    public T getExprEvaluator(final ByteBuffer expr) {
+        T entry = cache.get(expr);
         if (entry == null) {
             final ByteBuffer exprClone = ByteBufferUtils.clone(expr);
-            entry = ExprEvaluatorFactory.create(exprClone);
+            entry = creator.create(exprClone);
             cache.put(exprClone, entry);
         }
         return entry;

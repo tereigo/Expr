@@ -407,7 +407,6 @@ public final class ByteBufferUtils {
         return buffer.remaining() - other.remaining();
     }
 
-    // TODO: is it supposed to change buffer.position?
     public static void toString(final ByteBuffer buffer, final StringBuilder sb) {
         int pos = buffer.position();
         final int lim = buffer.limit();

@@ -34,7 +34,7 @@ class VwapOrderExprContextTest {
 
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.openMocks(this);
+        MockitoAnnotations.initMocks(this);
 
         when(refData.getTuidByClientId(1)).thenReturn(ByteBufferUtils.constant("CLIENT1"));
         when(refData.getTuidByClientId(2)).thenReturn(ByteBufferUtils.constant("CLIENT2"));

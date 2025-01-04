@@ -9,10 +9,7 @@ import org.junit.jupiter.api.Test;
 import java.nio.ByteBuffer;
 
 import static com.tereigo.expr.utils.ByteBufferUtils.constant;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 class ExprEvaluatorTest extends ExprEvaluatorTestBase {
 
@@ -787,13 +784,11 @@ class ExprEvaluatorTest extends ExprEvaluatorTestBase {
 
         // error: 0 parameters instead of 1
         runErr = assertThrows(RuntimeError.class, () -> evaluate("isEven()", ctx));
-        assertTrue(runErr.getMessage().contains("ClassCastException in function 'isEven'"));
-        assertTrue(runErr.getMessage().contains("cannot be cast to com.tereigo.expr.function.Function0"));
+        assertTrue(runErr.getMessage().matches(".*ClassCastException in function 'isEven':.*cannot be cast to.*com.tereigo.expr.function.Function0.*"));
 
         // error: 2 parameters instead of 1
         runErr = assertThrows(RuntimeError.class, () -> evaluate("isEven(1, 2)", ctx));
-        assertTrue(runErr.getMessage().contains("ClassCastException in function 'isEven'"));
-        assertTrue(runErr.getMessage().contains("cannot be cast to com.tereigo.expr.function.Function2"));
+        assertTrue(runErr.getMessage().matches(".*ClassCastException in function 'isEven':.*cannot be cast to.*com.tereigo.expr.function.Function2.*"));
 
         // error: func2(10, 1) it expects Double as a second parameter
         runErr = assertThrows(RuntimeError.class, () -> evaluate("func5(func1(100), func2(func1(10), func2(10, 1)), not($enabled), $ric, $tuid)", ctx));
@@ -801,8 +796,7 @@ class ExprEvaluatorTest extends ExprEvaluatorTestBase {
 
         // error is: func2(10) - expected call with 2 args
         runErr = assertThrows(RuntimeError.class, () -> evaluate("func5(func1(100), func2(func1(10), func2(10)), not($enabled), $ric, $tuid)", ctx));
-        assertTrue(runErr.getMessage().contains("RuntimeException in function 'func5': RuntimeException in function 'func2': ClassCastException in function 'func2'"));
-        assertTrue(runErr.getMessage().contains("cannot be cast to com.tereigo.expr.function.Function1"));
+        assertTrue(runErr.getMessage().matches(".*RuntimeException in function 'func5': RuntimeException in function 'func2': ClassCastException in function 'func2'.*cannot be cast to.*com.tereigo.expr.function.Function1.*"));
 
         // error: Expects Long parameter instead of Double
         runErr = assertThrows(RuntimeError.class, () -> evaluate("isEven(1.0)", ctx));

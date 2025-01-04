@@ -1,11 +1,11 @@
 package com.tereigo.expr.impl;
 
-import com.sun.istack.internal.NotNull;
 import com.tereigo.expr.ExprEvaluator;
 import com.tereigo.expr.ExprEvaluatorCreator;
 import com.tereigo.expr.ExprEvaluatorSupplier;
 import com.tereigo.expr.annotations.GeneratesGarbage;
 import com.tereigo.expr.utils.ByteBufferUtils;
+import org.jetbrains.annotations.NotNull;
 
 import java.nio.ByteBuffer;
 import java.util.HashMap;

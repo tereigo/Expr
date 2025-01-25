@@ -1,4 +1,4 @@
-package com.tereigo.expr.metrics.producer;
+package com.tereigo.expr.metrics.producer.impl;
 
 import com.tereigo.expr.metrics.metric.SimpleBoolMetric;
 import com.tereigo.expr.metrics.metric.SimpleLongMetric;
@@ -12,6 +12,7 @@ import com.tereigo.expr.metrics.metric.impl.BoolMetricImpl;
 import com.tereigo.expr.metrics.metric.impl.BoolMetricProxy;
 import com.tereigo.expr.metrics.metric.impl.LongMetricImpl;
 import com.tereigo.expr.metrics.metric.impl.LongMetricProxy;
+import com.tereigo.expr.metrics.producer.MetricFactory;
 
 import java.util.ArrayList;
 import java.util.List;

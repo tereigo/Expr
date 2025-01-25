@@ -1,4 +1,4 @@
-package com.tereigo.expr.metrics.producer;
+package com.tereigo.expr.metrics.producer.impl;
 
 import com.tereigo.expr.metrics.metric.Metric;
 import com.tereigo.expr.metrics.metric.MetricRegistration;
@@ -6,6 +6,8 @@ import com.tereigo.expr.metrics.metric.SimpleBoolMetric;
 import com.tereigo.expr.metrics.metric.SimpleLongMetric;
 import com.tereigo.expr.metrics.metric.dedup.DedupBoolMetric;
 import com.tereigo.expr.metrics.metric.dedup.DedupLongMetric;
+import com.tereigo.expr.metrics.producer.MetricStore;
+import com.tereigo.expr.metrics.producer.RegistrationListener;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -1,7 +1,7 @@
 package com.tereigo.expr.metrics;
 
 import com.tereigo.expr.metrics.node.NodeInfoProviderImpl;
-import com.tereigo.expr.metrics.producer.*;
+import com.tereigo.expr.metrics.producer.impl.*;
 
 import java.util.function.LongSupplier;
 

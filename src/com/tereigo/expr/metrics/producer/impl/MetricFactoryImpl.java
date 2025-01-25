@@ -1,4 +1,4 @@
-package com.tereigo.expr.metrics.producer;
+package com.tereigo.expr.metrics.producer.impl;
 
 import com.tereigo.expr.metrics.metric.MetricRegistration;
 import com.tereigo.expr.metrics.metric.SimpleBoolMetric;
@@ -11,6 +11,8 @@ import com.tereigo.expr.metrics.metric.impl.BoolMetricImpl;
 import com.tereigo.expr.metrics.metric.impl.LongMetricImpl;
 import com.tereigo.expr.metrics.metric.impl.MetricRegistrationImpl;
 import com.tereigo.expr.metrics.node.NodeInfoProvider;
+import com.tereigo.expr.metrics.producer.MetricFactory;
+import com.tereigo.expr.metrics.producer.RegistrationListener;
 
 public class MetricFactoryImpl implements MetricFactory {
 

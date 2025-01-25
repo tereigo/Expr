@@ -1,8 +1,10 @@
-package com.tereigo.expr.metrics.producer;
+package com.tereigo.expr.metrics.producer.impl;
 
 import com.tereigo.expr.metrics.metric.SimpleBoolMetric;
 import com.tereigo.expr.metrics.metric.SimpleLongMetric;
 import com.tereigo.expr.metrics.node.NodeInfoProvider;
+import com.tereigo.expr.metrics.producer.MetricPublisher;
+import com.tereigo.expr.metrics.producer.MetricSender;
 
 public class MetricSenderImpl implements MetricSender {
 

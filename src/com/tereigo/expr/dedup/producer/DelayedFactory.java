@@ -31,7 +31,7 @@ public class DelayedFactory implements MetricFactory {
         if (ready) {
             return factory.createDedup(name, autoPublish);
         } else {
-            DedupLongMetricProxy proxy = new DedupLongMetricProxy(new DummyLongMetric(new LongMetricImpl(name)));
+            DedupLongMetricProxy proxy = new DedupLongMetricProxy(new DedupDummyLongMetric(new LongMetricImpl(name)));
             dedupLongRecords.add(new DedupLongRecord(name, autoPublish, proxy));
             return proxy;
         }

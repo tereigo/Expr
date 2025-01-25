@@ -1,6 +1,6 @@
 package com.tereigo.expr.dedup.metric;
 
-public interface DedupMetric<T extends Metric> {
+public interface DedupMetric<T extends SimpleMetric> {
 
     T getUnderlying();
 

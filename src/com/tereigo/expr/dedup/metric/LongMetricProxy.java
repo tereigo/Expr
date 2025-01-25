@@ -1,6 +1,7 @@
 package com.tereigo.expr.dedup.metric;
 
-public class LongMetricProxy extends SimpleLongMetricProxy {
+public class LongMetricProxy extends MutableLongMetricProxy
+                             implements SimpleLongMetric {
 
     public LongMetricProxy(final SimpleLongMetric delegate) {
         super(delegate);

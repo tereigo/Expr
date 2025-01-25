@@ -1,4 +1,6 @@
-package com.tereigo.expr.dedup.metric;
+package com.tereigo.expr.dedup.not_used;
+
+import com.tereigo.expr.dedup.metric.SimpleLongMetric;
 
 public abstract class SimpleLongMetricProxy implements SimpleLongMetric {
 

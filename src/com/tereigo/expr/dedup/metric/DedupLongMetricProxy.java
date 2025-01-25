@@ -1,10 +1,10 @@
 package com.tereigo.expr.dedup.metric;
 
-public class DedupLongMetricProxy implements DedupLongMetric {
-    private DedupLongMetric delegate;
+public final class DedupLongMetricProxy extends MutableLongMetricProxy
+                                        implements DedupLongMetric {
 
     public DedupLongMetricProxy(final DedupLongMetric delegate) {
-        this.delegate = delegate;
+        super(delegate);
     }
 
     public void reset(DedupLongMetric newDelegate) {
@@ -12,43 +12,22 @@ public class DedupLongMetricProxy implements DedupLongMetric {
         delegate = newDelegate;
     }
 
+    private DedupLongMetric castDelegate() {
+        return (DedupLongMetric)delegate;
+    }
+
     @Override
     public SimpleLongMetric getUnderlying() {
-        return delegate.getUnderlying();
+        return castDelegate().getUnderlying();
     }
 
     @Override
     public boolean needsPublishing() {
-        return delegate.needsPublishing();
+        return castDelegate().needsPublishing();
     }
 
     @Override
     public void onPublished() {
-        delegate.onPublished();
-    }
-
-    @Override
-    public String getName() {
-        return delegate.getName();
-    }
-
-    @Override
-    public void set(final long value) {
-        delegate.set(value);
-    }
-
-    @Override
-    public long get() {
-        return delegate.get();
-    }
-
-    @Override
-    public int getMetricId() {
-        return delegate.getMetricId();
-    }
-
-    @Override
-    public String toString() {
-        return delegate.toString();
+        castDelegate().onPublished();
     }
 }

@@ -1,10 +1,12 @@
 package com.tereigo.expr.dedup.metric;
 
-public interface DedupMetric {
+public interface DedupMetric<T extends Metric> {
 
     boolean needsPublishing();
 
     void onPublished();
 
-    //void publishIfChanged(Sender sender);
+    T getUnderlying();
+
+//    void publishIfChanged(Sender sender);
 }

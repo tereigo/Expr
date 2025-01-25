@@ -1,10 +1,7 @@
 package com.tereigo.expr.dedup;
 
 import com.tereigo.expr.dedup.node.NodeInfoProviderImpl;
-import com.tereigo.expr.dedup.producer.DelayedFactory;
-import com.tereigo.expr.dedup.producer.FactoryImpl;
-import com.tereigo.expr.dedup.producer.SenderImpl;
-import com.tereigo.expr.dedup.producer.StoreImpl;
+import com.tereigo.expr.dedup.producer.*;
 
 import java.util.function.LongSupplier;
 
@@ -13,13 +10,14 @@ import static com.tereigo.expr.dedup.MathUtils.randomBetween;
 public class TestApp {
 
     public static void main(String[] args) {
-        StoreImpl store = new StoreImpl();
+        MetricStoreImpl store = new MetricStoreImpl();
         NodeInfoProviderImpl nodeInfoProvider = new NodeInfoProviderImpl();
-        FactoryImpl realFactory = new FactoryImpl(nodeInfoProvider);
+        MetricFactoryImpl realFactory = new MetricFactoryImpl(nodeInfoProvider);
         realFactory.setListener(store);
 
         DelayedFactory delayedFactory = new DelayedFactory(realFactory);
-        SenderImpl sender = new SenderImpl();
+        ConsolePublisher publisher = new ConsolePublisher();
+        MetricSenderImpl sender = new MetricSenderImpl(nodeInfoProvider, publisher);
         Client client = new Client(delayedFactory);
         ManualClient manualClientBefore = new ManualClient(delayedFactory, "before");
 

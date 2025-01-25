@@ -2,19 +2,19 @@ package com.tereigo.expr.dedup;
 
 import com.tereigo.expr.dedup.metric.DedupLongMetric;
 import com.tereigo.expr.dedup.metric.SimpleLongMetric;
-import com.tereigo.expr.dedup.producer.Sender;
-import com.tereigo.expr.dedup.producer.Store;
+import com.tereigo.expr.dedup.producer.MetricSender;
+import com.tereigo.expr.dedup.producer.MetricStore;
 
 import java.util.List;
 
 public class MetricsHandler {
-    private final Store store;
+    private final MetricStore store;
 
-    public MetricsHandler(Store store) {
+    public MetricsHandler(MetricStore store) {
         this.store = store;
     }
 
-    public void publish(Sender sender) {
+    public void publish(MetricSender sender) {
         List<SimpleLongMetric> metrics = store.getLongMetrics();
         for (SimpleLongMetric metric: metrics) {
             sender.send(metric);

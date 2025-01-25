@@ -2,7 +2,7 @@ package com.tereigo.expr.dedup;
 
 import com.tereigo.expr.dedup.metric.DedupLongMetric;
 import com.tereigo.expr.dedup.metric.SimpleLongMetric;
-import com.tereigo.expr.dedup.producer.Factory;
+import com.tereigo.expr.dedup.producer.MetricFactory;
 
 import java.util.function.LongSupplier;
 
@@ -11,7 +11,7 @@ public class Client {
     private final SimpleLongMetric dupMetric;
     private final DedupLongMetric dedupMetric;
 
-    public Client(Factory factory) {
+    public Client(MetricFactory factory) {
         this.dupMetric = factory.create("client1_dupMetric", true);
         this.dedupMetric = factory.createDedup("client1_dedupMetric", true);
     }

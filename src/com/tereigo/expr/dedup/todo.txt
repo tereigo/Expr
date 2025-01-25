@@ -1,0 +1,26 @@
+1. Collapse MutableLongMetric and LongMetric into a single class
+   in that case SimpleLongMentric and DedupLongMetric will not have a common mutable parent
+   it won't be possible to do smth like this:
+   MutableLongMetric dedupMetric;
+   factory.createDedup("client1_dedupMetric", true);
+
+2. Add a check that we don't generate metrics with the same names
+
+
+4. Do we need MetricProxy at all?
+
+    @Override
+    public DedupLongMetric getDelegate() {
+        return delegate;
+    }
+
+
+
+
+/////////////////////////////////////////////////////////////////////////
+
+Done:
+
+3. for DedupLongMetricProxy we need to throw if we tried using publish interface!!!
+  so no need to create 3 levels
+  DedupLongMetricProxy proxy = new DedupLongMetricProxy(new DedupLongMetricImpl(new LongMetricImpl(name)));

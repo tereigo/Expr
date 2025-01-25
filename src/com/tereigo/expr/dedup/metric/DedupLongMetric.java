@@ -1,19 +1,5 @@
 package com.tereigo.expr.dedup.metric;
 
-public final class DedupLongMetric extends LongMetricProxy implements DedupMetric {
-    private long lastValue = Long.MIN_VALUE;
+public interface DedupLongMetric extends MutableLongMetric, DedupMetric<SimpleLongMetric> {
 
-    public DedupLongMetric(SimpleLongMetric delegate) {
-        super(delegate);
-    }
-
-    @Override
-    public boolean needsPublishing() {
-        return lastValue != get();
-    }
-
-    @Override
-    public void onPublished() {
-        lastValue = get();
-    }
 }

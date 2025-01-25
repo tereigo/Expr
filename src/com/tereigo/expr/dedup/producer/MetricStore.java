@@ -5,7 +5,7 @@ import com.tereigo.expr.dedup.metric.SimpleLongMetric;
 
 import java.util.List;
 
-public interface Store {
+public interface MetricStore {
 
     List<SimpleLongMetric> getLongMetrics();
 

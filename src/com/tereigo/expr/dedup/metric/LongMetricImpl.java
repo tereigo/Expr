@@ -38,4 +38,9 @@ public final class LongMetricImpl implements SimpleLongMetric {
     public int getMetricId() {
         return metricId;
     }
+
+    @Override
+    public String toString() {
+        return "LongMetric{" + name + ", val=" + value + "}";
+    }
 }

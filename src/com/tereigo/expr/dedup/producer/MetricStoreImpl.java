@@ -5,7 +5,7 @@ import com.tereigo.expr.dedup.metric.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class StoreImpl implements Store, RegistrationListener {
+public class MetricStoreImpl implements MetricStore, RegistrationListener {
     private final List<SimpleLongMetric> longMetrics = new ArrayList<>();
     private final List<DedupLongMetric> longDedupMetrics = new ArrayList<>();
 
@@ -14,7 +14,7 @@ public class StoreImpl implements Store, RegistrationListener {
         if (autoPublish) {
             if (metric instanceof DedupLongMetric dedup) {
                 longDedupMetrics.add(dedup);
-            } else if (metric instanceof LongMetricImpl longMetric) {
+            } else if (metric instanceof SimpleLongMetric longMetric) {
                 longMetrics.add(longMetric);
             } else {
                 throw new IllegalArgumentException("Unknown metric type: " + metric.getClass());

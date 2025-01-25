@@ -1,17 +1,28 @@
 package com.tereigo.expr.dedup.producer;
 
-import com.tereigo.expr.dedup.MetricUtils;
-import com.tereigo.expr.dedup.metric.Dedup;
-import com.tereigo.expr.dedup.metric.DedupLongMetric;
-import com.tereigo.expr.dedup.metric.LongMetricProxy;
 import com.tereigo.expr.dedup.metric.SimpleLongMetric;
+import com.tereigo.expr.dedup.node.NodeInfoProvider;
 
-public class SenderImpl implements Sender {
+public class MetricSenderImpl implements MetricSender {
+
+    private final NodeInfoProvider nodeInfoProvider;
+    private final MetricPublisher publisher;
+
+    public MetricSenderImpl(NodeInfoProvider nodeInfoProvider,
+                            MetricPublisher publisher) {
+        this.nodeInfoProvider = nodeInfoProvider;
+        this.publisher = publisher;
+    }
 
     @Override
-    public void send(LongMetricProxy metric) {
-        MetricUtils.publish(metric.getDelegate());
+    public void send(SimpleLongMetric metric) {
+        publisher.publish(nodeInfoProvider.getNodeId(), metric);
     }
+
+//    @Override
+//    public void send(LongMetricProxy metric) {
+//        MetricUtils.publish(metric.getDelegate());
+//    }
 
 //    @Override
 //    public void send(LongMetric metric) {
@@ -29,13 +40,4 @@ public class SenderImpl implements Sender {
 ////        }
 //    }
 
-    @Override
-    public void send(DedupLongMetric metric) {
-        Dedup.sendIfChanged(this, metric);
-    }
-
-    @Override
-    public void send(SimpleLongMetric metric) {
-        MetricUtils.publish(metric);
-    }
 }

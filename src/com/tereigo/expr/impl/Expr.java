@@ -175,7 +175,7 @@ abstract class Expr {
             this.result = VariantFactory.createImmutableLong(value);
         }
 
-        private Literal(final boolean value) {
+        Literal(final boolean value) {
             this.result = VariantFactory.createImmutableBoolean(value);
         }
 

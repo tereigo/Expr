@@ -35,7 +35,6 @@ TODO:
    array? it can also be a map of int?: features[0] == 1
    map: features['abc'] == 2
 
-
 5. May be add "matrix" namespace with a list of functions to work with matrices and a special object type: MATRIX
    Can it be stored in a GC-free way however?
 

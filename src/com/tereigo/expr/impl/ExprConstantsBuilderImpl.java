@@ -14,6 +14,13 @@ final class ExprConstantsBuilderImpl implements ExprConstantsBuilder {
     }
 
     @Override
+    public ExprConstantsBuilder addBool(final String name, final boolean value) {
+        validateName(name);
+        constants.put(name, new Expr.Literal(value));
+        return this;
+    }
+
+    @Override
     public ExprConstantsBuilder addLong(final String name, final long value) {
         validateName(name);
         constants.put(name, new Expr.Literal(value));

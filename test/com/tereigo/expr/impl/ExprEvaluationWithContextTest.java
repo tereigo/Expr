@@ -55,6 +55,7 @@ class ExprEvaluationWithContextTest extends ExprEvaluatorTestBase {
                 .addLong("$productId", 123L)
                 .addString("$ric", "VOD.L")
                 .addString("$nodeAlgoType", "Vwap")
+                .addBool("$featureEnabled", true)
                 .build();
 
         assertEquals(4.14, evaluateDouble("1.0+$PI", constants, ctx), EPS);
@@ -65,6 +66,7 @@ class ExprEvaluationWithContextTest extends ExprEvaluatorTestBase {
         assertFalse(evaluateBool("$nodeAlgoType == $ric", constants, ctx));
         assertEquals(124, evaluateLong("$productId + 1", constants, ctx));
         assertTrue(evaluateBool("$tuid == 'CLIENT1'", constants, ctx));
+        assertTrue(evaluateBool("$featureEnabled", constants, ctx));
     }
 
     @Test

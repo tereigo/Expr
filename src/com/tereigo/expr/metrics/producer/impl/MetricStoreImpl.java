@@ -20,14 +20,15 @@ public class MetricStoreImpl implements MetricStore, RegistrationListener {
 
     @Override
     public void onMetricRegistration(int nodeId, MetricRegistration registration, boolean autoPublish, Metric metric) {
-        if (autoPublish) {
-            switch (metric) {
-                case DedupBoolMetric dedup -> boolDedupMetrics.add(dedup);
-                case SimpleBoolMetric boolMetric -> boolMetrics.add(boolMetric);
-                case DedupLongMetric dedup -> longDedupMetrics.add(dedup);
-                case SimpleLongMetric longMetric -> longMetrics.add(longMetric);
-                default -> throw new IllegalArgumentException("Unknown metric type: " + metric.getClass());
-            }
+        if (!autoPublish) {
+            return;
+        }
+        switch (metric) {
+            case SimpleBoolMetric boolMetric -> boolMetrics.add(boolMetric);
+            case DedupBoolMetric dedupMetric -> boolDedupMetrics.add(dedupMetric);
+            case SimpleLongMetric longMetric -> longMetrics.add(longMetric);
+            case DedupLongMetric dedupMetric -> longDedupMetrics.add(dedupMetric);
+            default -> throw new IllegalArgumentException("Unknown metric type: " + metric.getClass());
         }
     }
 

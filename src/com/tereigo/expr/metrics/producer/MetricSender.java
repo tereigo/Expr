@@ -24,7 +24,4 @@ public interface MetricSender {
             metric.onPublished();
         }
     }
-
-//    void send(LongMetricProxy metric);
-
 }

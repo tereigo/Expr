@@ -1,16 +1,18 @@
 package com.tereigo.expr.metrics.metric.dedup.impl;
 
+import com.tereigo.expr.metrics.metric.MetricProxy;
 import com.tereigo.expr.metrics.metric.SimpleBoolMetric;
 import com.tereigo.expr.metrics.metric.dedup.DedupBoolMetric;
 import com.tereigo.expr.metrics.metric.impl.MutableBoolMetricProxy;
 
 public final class DedupBoolMetricProxy extends MutableBoolMetricProxy
-                                        implements DedupBoolMetric {
+                                        implements DedupBoolMetric, MetricProxy<DedupBoolMetric> {
 
     public DedupBoolMetricProxy(final DedupBoolMetric delegate) {
         super(delegate);
     }
 
+    @Override
     public void reset(DedupBoolMetric newDelegate) {
         newDelegate.set(delegate.get());
         delegate = newDelegate;

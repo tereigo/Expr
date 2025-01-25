@@ -20,9 +20,9 @@ public class MetricFactoryImpl implements MetricFactory {
     @Override
     public SimpleLongMetric create(final String name, boolean autoPublish) {
         int metricId = ++counter;
-        SimpleLongMetric result = new LongMetricImpl(name, metricId);
         MetricRegistration registration = new MetricRegistrationImpl(name, metricId,
                 nodeInfoProvider.getSessionName(), nodeInfoProvider.getNodeName());
+        SimpleLongMetric result = new LongMetricImpl(name, metricId);
         listener.onMetricRegistration(nodeInfoProvider.getNodeId(), registration, autoPublish, result);
         return result;
     }
@@ -30,10 +30,10 @@ public class MetricFactoryImpl implements MetricFactory {
     @Override
     public DedupLongMetric createDedup(String name, boolean autoPublish) {
         int metricId = ++counter;
-        SimpleLongMetric realMetric = new LongMetricImpl(name, metricId);
-        DedupLongMetric result = new DedupLongMetricImpl(realMetric);
         MetricRegistration registration = new MetricRegistrationImpl(name, metricId,
                 nodeInfoProvider.getSessionName(), nodeInfoProvider.getNodeName());
+        SimpleLongMetric realMetric = new LongMetricImpl(name, metricId);
+        DedupLongMetric result = new DedupLongMetricImpl(realMetric);
         listener.onMetricRegistration(nodeInfoProvider.getNodeId(), registration, autoPublish, result);
         return result;
     }

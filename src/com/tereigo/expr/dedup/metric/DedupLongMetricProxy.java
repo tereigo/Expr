@@ -12,22 +12,18 @@ public final class DedupLongMetricProxy extends MutableLongMetricProxy
         delegate = newDelegate;
     }
 
-    private DedupLongMetric castDelegate() {
-        return (DedupLongMetric)delegate;
-    }
-
     @Override
     public SimpleLongMetric getUnderlying() {
-        return castDelegate().getUnderlying();
+        return ((DedupLongMetric)delegate).getUnderlying();
     }
 
     @Override
     public boolean needsPublishing() {
-        return castDelegate().needsPublishing();
+        return ((DedupLongMetric)delegate).needsPublishing();
     }
 
     @Override
     public void onPublished() {
-        castDelegate().onPublished();
+        ((DedupLongMetric)delegate).onPublished();
     }
 }

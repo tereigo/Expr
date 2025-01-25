@@ -1,18 +1,18 @@
 package com.tereigo.expr.dedup.metric;
 
-public class LongMetricProxy implements MutableLongMetric, MetricProxy<MutableLongMetric> {
-    private MutableLongMetric delegate;
+public class LongMetricProxy implements SimpleLongMetric, MetricProxy<SimpleLongMetric> {
+    private SimpleLongMetric delegate;
 
-    public LongMetricProxy(final MutableLongMetric delegate) {
+    public LongMetricProxy(final SimpleLongMetric delegate) {
         this.delegate = delegate;
     }
 
     @Override
-    public MutableLongMetric getDelegate() {
+    public SimpleLongMetric getDelegate() {
         return delegate;
     }
 
-    public void reset(MutableLongMetric newDelegate) {
+    public void reset(SimpleLongMetric newDelegate) {
         newDelegate.set(delegate.get());
         delegate = newDelegate;
     }

@@ -1,9 +1,9 @@
 package com.tereigo.expr.dedup.metric;
 
-public class DedupLongMetric extends LongMetricProxy implements DedupMetric {
+public final class DedupLongMetric extends LongMetricProxy implements DedupMetric {
     private long lastValue = Long.MIN_VALUE;
 
-    public DedupLongMetric(MutableLongMetric delegate) {
+    public DedupLongMetric(SimpleLongMetric delegate) {
         super(delegate);
     }
 

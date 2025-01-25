@@ -1,6 +1,6 @@
 package com.tereigo.expr.dedup.metric;
 
-public class LongMetricImpl implements MutableLongMetric {
+public final class LongMetricImpl implements SimpleLongMetric {
 
     private final String name;
     private final int metricId;

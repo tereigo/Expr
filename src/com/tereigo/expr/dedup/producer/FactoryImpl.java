@@ -18,9 +18,9 @@ public class FactoryImpl implements Factory {
     }
 
     @Override
-    public MutableLongMetric create(final String name, boolean autoPublish) {
+    public SimpleLongMetric create(final String name, boolean autoPublish) {
         int metricId = ++counter;
-        MutableLongMetric result = new LongMetricImpl(name, metricId);
+        SimpleLongMetric result = new LongMetricImpl(name, metricId);
         MetricRegistration registration = new MetricRegistrationImpl(name, metricId,
                 nodeInfoProvider.getSessionName(), nodeInfoProvider.getNodeName());
         listener.onMetricRegistration(nodeInfoProvider.getNodeId(), registration, autoPublish, result);
@@ -30,7 +30,7 @@ public class FactoryImpl implements Factory {
     @Override
     public DedupLongMetric createDedup(String name, boolean autoPublish) {
         int metricId = ++counter;
-        MutableLongMetric realMetric = new LongMetricImpl(name, metricId);
+        SimpleLongMetric realMetric = new LongMetricImpl(name, metricId);
         DedupLongMetric result = new DedupLongMetric(realMetric);
         MetricRegistration registration = new MetricRegistrationImpl(name, metricId,
                 nodeInfoProvider.getSessionName(), nodeInfoProvider.getNodeName());

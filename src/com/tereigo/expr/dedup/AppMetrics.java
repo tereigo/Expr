@@ -1,13 +1,13 @@
 package com.tereigo.expr.dedup;
 
 import com.tereigo.expr.dedup.metric.DedupLongMetric;
-import com.tereigo.expr.dedup.metric.MutableLongMetric;
+import com.tereigo.expr.dedup.metric.SimpleLongMetric;
 import com.tereigo.expr.dedup.producer.Factory;
 
 import java.util.function.LongSupplier;
 
 public class AppMetrics {
-    private final MutableLongMetric dupMetric;
+    private final SimpleLongMetric dupMetric;
     private final DedupLongMetric dedupMetric;
 
     public AppMetrics(Factory factory) {

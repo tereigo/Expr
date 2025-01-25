@@ -1,19 +1,20 @@
 package com.tereigo.expr.dedup.experimental;
 
 import com.tereigo.expr.dedup.metric.MutableLongMetric;
+import com.tereigo.expr.dedup.metric.SimpleLongMetric;
 
 public class LongMetricProxy implements MutableLongMetric {
-    private MutableLongMetric delegate;
+    private SimpleLongMetric delegate;
 
-    public LongMetricProxy(final MutableLongMetric delegate) {
+    public LongMetricProxy(final SimpleLongMetric delegate) {
         this.delegate = delegate;
     }
 
-    MutableLongMetric getDelegate() {
+    SimpleLongMetric getDelegate() {
         return delegate;
     }
 
-    void reset(MutableLongMetric newDelegate) {
+    void reset(SimpleLongMetric newDelegate) {
         newDelegate.set(delegate.get());
         delegate = newDelegate;
     }

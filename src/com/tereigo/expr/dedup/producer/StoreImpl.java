@@ -1,15 +1,12 @@
 package com.tereigo.expr.dedup.producer;
 
-import com.tereigo.expr.dedup.metric.DedupLongMetric;
-import com.tereigo.expr.dedup.metric.LongMetricImpl;
-import com.tereigo.expr.dedup.metric.Metric;
-import com.tereigo.expr.dedup.metric.MetricRegistration;
+import com.tereigo.expr.dedup.metric.*;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class StoreImpl implements Store, RegistrationListener {
-    private final List<LongMetricImpl> longMetrics = new ArrayList<>();
+    private final List<SimpleLongMetric> longMetrics = new ArrayList<>();
     private final List<DedupLongMetric> longDedupMetrics = new ArrayList<>();
 
     @Override
@@ -26,7 +23,7 @@ public class StoreImpl implements Store, RegistrationListener {
     }
 
     @Override
-    public List<LongMetricImpl> getLongMetrics() {
+    public List<SimpleLongMetric> getLongMetrics() {
         return longMetrics;
     }
 

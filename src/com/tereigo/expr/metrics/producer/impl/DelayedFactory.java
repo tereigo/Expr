@@ -2,6 +2,7 @@ package com.tereigo.expr.metrics.producer.impl;
 
 import com.tereigo.expr.metrics.metric.SimpleBoolMetric;
 import com.tereigo.expr.metrics.metric.SimpleLongMetric;
+import com.tereigo.expr.metrics.metric.SimpleMetric;
 import com.tereigo.expr.metrics.metric.dedup.DedupBoolMetric;
 import com.tereigo.expr.metrics.metric.dedup.DedupLongMetric;
 import com.tereigo.expr.metrics.metric.dedup.impl.DedupBoolMetricProxy;
@@ -19,9 +20,8 @@ import java.util.List;
 
 public class DelayedFactory implements MetricFactory {
     private final MetricFactoryImpl factory;
-    private final List<BoolRecord> boolRecords = new ArrayList<>();
+    private final List<SimpleRecord> simpleRecords = new ArrayList<>();
     private final List<DedupBoolRecord> dedupBoolRecords = new ArrayList<>();
-    private final List<LongRecord> longRecords = new ArrayList<>();
     private final List<DedupLongRecord> dedupLongRecords = new ArrayList<>();
     private boolean ready = false;
 
@@ -35,7 +35,7 @@ public class DelayedFactory implements MetricFactory {
             return factory.createBool(name, autoPublish);
         } else {
             BoolMetricProxy proxy = new BoolMetricProxy(new BoolMetricImpl(name));
-            boolRecords.add(new BoolRecord(name, autoPublish, proxy));
+            simpleRecords.add(new SimpleRecord(name, autoPublish, proxy));
             return proxy;
         }
     }
@@ -57,7 +57,7 @@ public class DelayedFactory implements MetricFactory {
             return factory.createLong(name, autoPublish);
         } else {
             LongMetricProxy proxy = new LongMetricProxy(new LongMetricImpl(name));
-            longRecords.add(new LongRecord(name, autoPublish, proxy));
+            simpleRecords.add(new SimpleRecord(name, autoPublish, proxy));
             return proxy;
         }
     }
@@ -75,16 +75,15 @@ public class DelayedFactory implements MetricFactory {
 
     public void onReady() {
         ready = true;
-        for (BoolRecord rec : boolRecords) {
-            SimpleBoolMetric realMetric = factory.createBool(rec.name, rec.autoPublish());
-            rec.proxy.reset(realMetric);
+        for (SimpleRecord rec : simpleRecords) {
+            switch (rec.proxy) {
+                case BoolMetricProxy boolProxy -> boolProxy.reset(factory.createBool(rec.name, rec.autoPublish()));
+                case LongMetricProxy longProxy -> longProxy.reset(factory.createLong(rec.name, rec.autoPublish()));
+                default -> throw new IllegalArgumentException("Unknown proxy type: " + rec.proxy.getClass());
+            }
         }
         for (DedupBoolRecord rec : dedupBoolRecords) {
             DedupBoolMetric realMetric = factory.createBoolDedup(rec.name, rec.autoPublish());
-            rec.proxy.reset(realMetric);
-        }
-        for (LongRecord rec : longRecords) {
-            SimpleLongMetric realMetric = factory.createLong(rec.name, rec.autoPublish());
             rec.proxy.reset(realMetric);
         }
         for (DedupLongRecord rec : dedupLongRecords) {
@@ -93,8 +92,8 @@ public class DelayedFactory implements MetricFactory {
         }
     }
 
-    record BoolRecord(String name, boolean autoPublish, BoolMetricProxy proxy) { }
+    record SimpleRecord(String name, boolean autoPublish, SimpleMetric proxy) { }
+
     record DedupBoolRecord(String name, boolean autoPublish, DedupBoolMetricProxy proxy) { }
-    record LongRecord(String name, boolean autoPublish, LongMetricProxy proxy) { }
     record DedupLongRecord(String name, boolean autoPublish, DedupLongMetricProxy proxy) { }
 }

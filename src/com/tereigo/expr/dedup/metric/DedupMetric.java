@@ -2,11 +2,11 @@ package com.tereigo.expr.dedup.metric;
 
 public interface DedupMetric<T extends Metric> {
 
+    T getUnderlying();
+
     boolean needsPublishing();
 
     void onPublished();
-
-    T getUnderlying();
 
 //    void publishIfChanged(Sender sender);
 }

@@ -1,10 +1,15 @@
 package com.tereigo.expr.dedup.metric;
 
-public class DedupLongMetricProxy implements DedupLongMetric, MetricProxy<DedupLongMetric> {
+public class DedupLongMetricProxy implements DedupLongMetric {
     private DedupLongMetric delegate;
 
     public DedupLongMetricProxy(final DedupLongMetric delegate) {
         this.delegate = delegate;
+    }
+
+    public void reset(DedupLongMetric newDelegate) {
+        newDelegate.set(delegate.get());
+        delegate = newDelegate;
     }
 
     @Override
@@ -13,13 +18,13 @@ public class DedupLongMetricProxy implements DedupLongMetric, MetricProxy<DedupL
     }
 
     @Override
-    public DedupLongMetric getDelegate() {
-        return delegate;
+    public boolean needsPublishing() {
+        return delegate.needsPublishing();
     }
 
-    public void reset(DedupLongMetric newDelegate) {
-        newDelegate.set(delegate.get());
-        delegate = newDelegate;
+    @Override
+    public void onPublished() {
+        delegate.onPublished();
     }
 
     @Override
@@ -40,16 +45,6 @@ public class DedupLongMetricProxy implements DedupLongMetric, MetricProxy<DedupL
     @Override
     public int getMetricId() {
         return delegate.getMetricId();
-    }
-
-    @Override
-    public boolean needsPublishing() {
-        return delegate.needsPublishing();
-    }
-
-    @Override
-    public void onPublished() {
-        delegate.onPublished();
     }
 
     @Override

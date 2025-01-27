@@ -55,6 +55,6 @@ public final class LongMetricImpl implements SimpleLongMetric {
 
     @Override
     public String toString() {
-        return "LongMetric{" + name + ", id=" + metricId + ", val=" + value + ", kes=" + keys + "}";
+        return "LongMetric{" + name + ", id=" + metricId + ", val=" + value + ", keys=" + keys.size() + "}";
     }
 }

@@ -62,6 +62,6 @@ public final class BoolMetricImpl implements SimpleBoolMetric {
 
     @Override
     public String toString() {
-        return "BoolMetric{" + name + ", id=" + metricId + ", val=" + value + ", kes=" + keys + "}";
+        return "BoolMetric{" + name + ", id=" + metricId + ", val=" + value + ", keys=" + keys.size() + "}";
     }
 }

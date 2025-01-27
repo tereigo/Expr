@@ -5,6 +5,8 @@ import com.tereigo.expr.metrics.metric.LongMetric;
 import com.tereigo.expr.metrics.metric.Metric;
 
 import java.nio.ByteBuffer;
+import java.util.List;
+import java.util.function.IntSupplier;
 
 public class ByteBufferSerializer implements Serializer<ByteBuffer> {
     private final ByteBuffer buffer = ByteBuffer.allocate(1024);
@@ -28,9 +30,10 @@ public class ByteBufferSerializer implements Serializer<ByteBuffer> {
         buffer.putShort((short)nodeId);
         buffer.put((byte)type.ordinal());
         buffer.putInt(metric.getMetricId());
-        buffer.put((byte)metric.getKeys().size());
-        for (int i = 0; i < metric.getKeys().size(); i++) {
-            buffer.putInt(metric.getKeys().get(i).getAsInt());
+        List<IntSupplier> keys = metric.getKeys();
+        buffer.put((byte)keys.size());
+        for (int i = 0; i < keys.size(); i++) {
+            buffer.putInt(keys.get(i).getAsInt());
         }
         return buffer;
     }

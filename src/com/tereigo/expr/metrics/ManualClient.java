@@ -4,10 +4,13 @@ import com.tereigo.expr.metrics.metric.SimpleBoolMetric;
 import com.tereigo.expr.metrics.metric.SimpleLongMetric;
 import com.tereigo.expr.metrics.metric.dedup.DedupBoolMetric;
 import com.tereigo.expr.metrics.metric.dedup.DedupLongMetric;
+import com.tereigo.expr.metrics.params.BoolParam;
 import com.tereigo.expr.metrics.producer.MetricFactory;
 import com.tereigo.expr.metrics.producer.MetricSender;
 
 import java.util.function.LongSupplier;
+
+import static com.tereigo.expr.metrics.producer.MetricFactory.builder;
 
 public class ManualClient {
     private final SimpleBoolMetric boolMetric;
@@ -16,7 +19,7 @@ public class ManualClient {
     private final DedupLongMetric dedupMetric;
 
     public ManualClient(MetricFactory factory, String prefix) {
-        this.boolMetric = factory.createBool(prefix + "_manualClient_BoolMetric", false);
+        this.boolMetric = factory.create(new BoolParam(prefix + "_manualClient_BoolMetric"), builder().autoPublish(false));
         this.dedupBoolMetric = factory.createBoolDedup(prefix + "_manualClient_DedupBoolMetric", false);
         this.dupMetric = factory.createLong(prefix + "_manualClient_DupMetric", false);
         this.dedupMetric = factory.createLongDedup(prefix + "_manualClient_DedupMetric", false);

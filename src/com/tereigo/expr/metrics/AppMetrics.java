@@ -4,6 +4,7 @@ import com.tereigo.expr.metrics.metric.SimpleBoolMetric;
 import com.tereigo.expr.metrics.metric.SimpleLongMetric;
 import com.tereigo.expr.metrics.metric.dedup.DedupBoolMetric;
 import com.tereigo.expr.metrics.metric.dedup.DedupLongMetric;
+import com.tereigo.expr.metrics.params.BoolParam;
 import com.tereigo.expr.metrics.producer.MetricFactory;
 
 import java.util.function.LongSupplier;
@@ -15,7 +16,7 @@ public class AppMetrics {
     private final DedupLongMetric dedupMetric;
 
     public AppMetrics(MetricFactory factory) {
-        this.boolMetric = factory.createBool("appClient_BoolMetric", true);
+        this.boolMetric = factory.create(new BoolParam("appClient_BoolMetric"));
         this.dedupBoolMetric = factory.createBoolDedup("appClient_DedupBoolMetric", true);
         this.dupMetric = factory.createLong("appClient_DupMetric", true);
         this.dedupMetric = factory.createLongDedup("appClient_DedupMetric", true);

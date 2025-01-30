@@ -8,7 +8,7 @@ import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.function.IntSupplier;
 
-public class ByteBufferSerializer implements Serializer<ByteBuffer> {
+public class MetricByteBufferSerializer implements MetricSerializer<ByteBuffer> {
     private final ByteBuffer buffer = ByteBuffer.allocate(1024);
 
     @Override

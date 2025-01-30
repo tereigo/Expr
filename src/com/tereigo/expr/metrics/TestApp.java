@@ -2,7 +2,7 @@ package com.tereigo.expr.metrics;
 
 import com.tereigo.expr.metrics.node.NodeInfoProviderImpl;
 import com.tereigo.expr.metrics.producer.impl.*;
-import com.tereigo.expr.metrics.serializers.StringSerializer;
+import com.tereigo.expr.metrics.serializers.MetricStringSerializer;
 
 import java.util.function.LongSupplier;
 
@@ -17,7 +17,7 @@ public class TestApp {
         realFactory.setListener(store);
 
         DelayedFactory delayedFactory = new DelayedFactory(realFactory);
-        ConsolePublisher publisher = new ConsolePublisher(new StringSerializer());
+        ConsolePublisher publisher = new ConsolePublisher(new MetricStringSerializer());
         MetricSenderImpl sender = new MetricSenderImpl(nodeInfoProvider, publisher);
         Client client = new Client(delayedFactory);
         ManualClient manualClientBefore = new ManualClient(delayedFactory, "before");

@@ -3,13 +3,13 @@ package com.tereigo.expr.metrics.producer.impl;
 import com.tereigo.expr.metrics.metric.BoolMetric;
 import com.tereigo.expr.metrics.metric.LongMetric;
 import com.tereigo.expr.metrics.producer.MetricPublisher;
-import com.tereigo.expr.metrics.serializers.Serializer;
+import com.tereigo.expr.metrics.serializers.MetricSerializer;
 
 public class ConsolePublisher implements MetricPublisher {
 
-    private final Serializer<String> serializer;
+    private final MetricSerializer<String> serializer;
 
-    public ConsolePublisher(Serializer<String> serializer) {
+    public ConsolePublisher(MetricSerializer<String> serializer) {
         this.serializer = serializer;
     }
 

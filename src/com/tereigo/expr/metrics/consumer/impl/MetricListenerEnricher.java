@@ -1,19 +1,19 @@
-package com.tereigo.expr.metrics.producer.impl;
+package com.tereigo.expr.metrics.consumer.impl;
 
 import com.tereigo.expr.metrics.metric.BoolMetric;
 import com.tereigo.expr.metrics.metric.LongMetric;
 import com.tereigo.expr.metrics.metric.MetricRegistration;
-import com.tereigo.expr.metrics.producer.MetricEnrichedListener;
-import com.tereigo.expr.metrics.producer.MetricListener;
+import com.tereigo.expr.metrics.consumer.MetricEnrichedListener;
+import com.tereigo.expr.metrics.consumer.MetricListener;
 
 import java.util.HashMap;
 import java.util.Map;
 
-public final class EnrichingListener implements MetricListener {
+public final class MetricListenerEnricher implements MetricListener {
     private final Map<Long, MetricRegistration> registrations = new HashMap<>();
     private final MetricEnrichedListener listener;
 
-    public EnrichingListener(MetricEnrichedListener listener) {
+    public MetricListenerEnricher(MetricEnrichedListener listener) {
         this.listener = listener;
     }
 

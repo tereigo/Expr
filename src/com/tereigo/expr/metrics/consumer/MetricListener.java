@@ -1,4 +1,4 @@
-package com.tereigo.expr.metrics.producer;
+package com.tereigo.expr.metrics.consumer;
 
 import com.tereigo.expr.metrics.metric.BoolMetric;
 import com.tereigo.expr.metrics.metric.LongMetric;

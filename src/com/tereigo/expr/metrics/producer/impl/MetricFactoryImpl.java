@@ -13,7 +13,7 @@ import com.tereigo.expr.metrics.metric.impl.MetricRegistrationImpl;
 import com.tereigo.expr.metrics.node.NodeInfoProvider;
 import com.tereigo.expr.metrics.params.BoolParam;
 import com.tereigo.expr.metrics.producer.MetricFactory;
-import com.tereigo.expr.metrics.producer.RegistrationListener;
+import com.tereigo.expr.metrics.producer.MetricRegistrationListener;
 import com.tereigo.expr.metrics.serializers.MetricType;
 import org.jetbrains.annotations.NotNull;
 
@@ -26,14 +26,14 @@ import java.util.function.IntSupplier;
 public class MetricFactoryImpl implements MetricFactory {
 
     private final NodeInfoProvider nodeInfoProvider;
-    private RegistrationListener listener = RegistrationListener.NOOP;
+    private MetricRegistrationListener listener = MetricRegistrationListener.NOOP;
     private int counter = 0;
 
     public MetricFactoryImpl(NodeInfoProvider nodeInfoProvider) {
         this.nodeInfoProvider = nodeInfoProvider;
     }
 
-    public void setListener(RegistrationListener listener) {
+    public void setListener(MetricRegistrationListener listener) {
         this.listener = listener;
     }
 

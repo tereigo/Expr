@@ -7,12 +7,12 @@ import com.tereigo.expr.metrics.metric.SimpleLongMetric;
 import com.tereigo.expr.metrics.metric.dedup.DedupBoolMetric;
 import com.tereigo.expr.metrics.metric.dedup.DedupLongMetric;
 import com.tereigo.expr.metrics.producer.MetricStore;
-import com.tereigo.expr.metrics.producer.RegistrationListener;
+import com.tereigo.expr.metrics.producer.MetricRegistrationListener;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class MetricStoreImpl implements MetricStore, RegistrationListener {
+public class MetricStoreImpl implements MetricStore, MetricRegistrationListener {
     private final List<SimpleBoolMetric> boolMetrics = new ArrayList<>();
     private final List<DedupBoolMetric> boolDedupMetrics = new ArrayList<>();
     private final List<SimpleLongMetric> longMetrics = new ArrayList<>();

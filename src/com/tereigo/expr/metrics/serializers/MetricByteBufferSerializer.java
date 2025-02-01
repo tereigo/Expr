@@ -3,6 +3,8 @@ package com.tereigo.expr.metrics.serializers;
 import com.tereigo.expr.metrics.metric.BoolMetric;
 import com.tereigo.expr.metrics.metric.LongMetric;
 import com.tereigo.expr.metrics.metric.Metric;
+import com.tereigo.expr.metrics.metric.MetricRegistration;
+import com.tereigo.expr.metrics.producer.MetricSerializer;
 
 import java.nio.ByteBuffer;
 import java.util.List;
@@ -10,6 +12,12 @@ import java.util.function.IntSupplier;
 
 public class MetricByteBufferSerializer implements MetricSerializer<ByteBuffer> {
     private final ByteBuffer buffer = ByteBuffer.allocate(1024);
+
+    @Override
+    public ByteBuffer serialize(int nodeId, MetricRegistration registration) {
+        // TODO: Implement this method
+        return buffer;
+    }
 
     @Override
     public ByteBuffer serialize(int nodeId, BoolMetric metric) {

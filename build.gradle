@@ -1,0 +1,62 @@
+plugins {
+    id 'java'
+    id 'java-test-fixtures'
+}
+
+group = 'com.tereigo'
+version = '1.0-SNAPSHOT'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(11)
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+sourceSets {
+    benchmarks {
+        java.srcDirs = ['src/benchmarks/java']
+        compileClasspath += sourceSets.main.output + sourceSets.testFixtures.output
+        runtimeClasspath += sourceSets.main.output + sourceSets.testFixtures.output
+    }
+}
+
+configurations {
+    benchmarksImplementation.extendsFrom testFixturesImplementation
+}
+
+dependencies {
+    implementation 'org.jetbrains:annotations:24.0.0'
+
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.11.4'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    testImplementation 'org.mockito:mockito-all:1.10.19'
+
+    benchmarksImplementation 'org.openjdk.jmh:jmh-core:1.37'
+    benchmarksAnnotationProcessor 'org.openjdk.jmh:jmh-generator-annprocess:1.37'
+    benchmarksImplementation 'org.junit.jupiter:junit-jupiter:5.11.4'
+}
+
+test {
+    useJUnitPlatform()
+}
+
+tasks.register('benchmarksJar', Jar) {
+    dependsOn benchmarksClasses
+    archiveClassifier.set('benchmarks')
+    from sourceSets.benchmarks.output
+    manifest {
+        attributes 'Main-Class': 'org.openjdk.jmh.Main'
+    }
+}
+
+tasks.register('benchmarks', JavaExec) {
+    dependsOn benchmarksClasses
+    group = 'verification'
+    description = 'Runs the JMH benchmarks (pass args via --args, e.g. --args="Vwap")'
+    classpath = sourceSets.benchmarks.runtimeClasspath
+    mainClass.set('org.openjdk.jmh.Main')
+}

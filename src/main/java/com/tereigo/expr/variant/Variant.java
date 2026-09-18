@@ -17,6 +17,6 @@ public interface Variant extends LongSupplier, DoubleSupplier, NumberSupplier, B
 
     ExprType exprType();
 
-    void cloneTo(final VariantImpl target);
+    void cloneTo(final Variant target);
 
 }

@@ -65,12 +65,12 @@ class ByteBufferUtilsTest {
             "To be or not to be that is a question, question, true",
             "To be or not to be that is a question, question!, false",
             "To be or not to be that is a question, questiom, false",
-            "If you also want to run the benchmarks from within your IDE instead of through Gradle, you can do either of the following, Gradle, true",
-            "If you also want to run the benchmarks from within your IDE instead of through Gradle, you can do either of the following, gradle, false",
-            "If you also want to run the benchmarks from within your IDE instead of through Gradle, you can do either of the following, the following, true",
-            "If you also want to run the benchmarks from within your IDE instead of through Gradle, you can do either of the following, following, true",
-            "If you also want to run the benchmarks from within your IDE instead of through Gradle, you can do either of the following, you can do either of the following, true",
-            "If you also want to run the benchmarks from within your IDE instead of through Gradle, you can do either of the following, If you also want to run the benchmarks from within your IDE instead of through Gradle, you can do either of the following, true",
+            "If you also want to run the benchmarks from within your IDE instead of through Gradle you can do either of the following, Gradle, true",
+            "If you also want to run the benchmarks from within your IDE instead of through Gradle you can do either of the following, gradle, false",
+            "If you also want to run the benchmarks from within your IDE instead of through Gradle you can do either of the following, the following, true",
+            "If you also want to run the benchmarks from within your IDE instead of through Gradle you can do either of the following, following, true",
+            "If you also want to run the benchmarks from within your IDE instead of through Gradle you can do either of the following, you can do either of the following, true",
+            "If you also want to run the benchmarks from within your IDE instead of through Gradle you can do either of the following, If you also want to run the benchmarks from within your IDE instead of through Gradle you can do either of the following, true",
     })
     void containsTests(final String str, final String pattern, final boolean expected) {
         assertEquals(expected, str.contains(pattern));
@@ -164,12 +164,12 @@ class ByteBufferUtilsTest {
             "To be or not to be that is a question, question, false",
             "To be or not to be that is a question, question!, false",
             "To be or not to be that is a question, questiom, false",
-            "If you also want to run the benchmarks from within your IDE instead of through Gradle, you can do either of the following, Gradle, false",
-            "If you also want to run the benchmarks from within your IDE instead of through Gradle, you can do either of the following, gradle, false",
-            "If you also want to run the benchmarks from within your IDE instead of through Gradle, you can do either of the following, the following, false",
-            "If you also want to run the benchmarks from within your IDE instead of through Gradle, you can do either of the following, following, false",
-            "If you also want to run the benchmarks from within your IDE instead of through Gradle, you can do either of the following, you can do either of the following, false",
-            "If you also want to run the benchmarks from within your IDE instead of through Gradle, you can do either of the following, If you also want to run the benchmarks from within your IDE instead of through Gradle, you can do either of the following, true"
+            "If you also want to run the benchmarks from within your IDE instead of through Gradle you can do either of the following, Gradle, false",
+            "If you also want to run the benchmarks from within your IDE instead of through Gradle you can do either of the following, gradle, false",
+            "If you also want to run the benchmarks from within your IDE instead of through Gradle you can do either of the following, the following, false",
+            "If you also want to run the benchmarks from within your IDE instead of through Gradle you can do either of the following, following, false",
+            "If you also want to run the benchmarks from within your IDE instead of through Gradle you can do either of the following, you can do either of the following, false",
+            "If you also want to run the benchmarks from within your IDE instead of through Gradle you can do either of the following, If you also want to run the benchmarks from within your IDE instead of through Gradle you can do either of the following, true"
     })
     void startsWithTests(final String str, final String pattern, final boolean expected) {
         assertEquals(expected, str.startsWith(pattern));
@@ -214,12 +214,12 @@ class ByteBufferUtilsTest {
             "To be or not to be that is a question, question, false",
             "To be or not to be that is a question, question!, false",
             "To be or not to be that is a question, questiom, false",
-            "If you also want to run the benchmarks from within your IDE instead of through Gradle, you can do either of the following, Gradle, false",
-            "If you also want to run the benchmarks from within your IDE instead of through Gradle, you can do either of the following, gradle, false",
-            "If you also want to run the benchmarks from within your IDE instead of through Gradle, you can do either of the following, the following, false",
-            "If you also want to run the benchmarks from within your IDE instead of through Gradle, you can do either of the following, following, false",
-            "If you also want to run the benchmarks from within your IDE instead of through Gradle, you can do either of the following, you can do either of the following, false",
-            "If you also want to run the benchmarks from within your IDE instead of through Gradle, you can do either of the following, If you also want to run the benchmarks from within your IDE instead of through Gradle, you can do either of the following, true"
+            "If you also want to run the benchmarks from within your IDE instead of through Gradle you can do either of the following, Gradle, false",
+            "If you also want to run the benchmarks from within your IDE instead of through Gradle you can do either of the following, gradle, false",
+            "If you also want to run the benchmarks from within your IDE instead of through Gradle you can do either of the following, the following, false",
+            "If you also want to run the benchmarks from within your IDE instead of through Gradle you can do either of the following, following, false",
+            "If you also want to run the benchmarks from within your IDE instead of through Gradle you can do either of the following, you can do either of the following, false",
+            "If you also want to run the benchmarks from within your IDE instead of through Gradle you can do either of the following, If you also want to run the benchmarks from within your IDE instead of through Gradle you can do either of the following, true"
     })
     void startsWithTestsIgnoreCase(final String str, final String pattern, final boolean expected) {
         assertEquals(expected, startsWithIgnoreCase(str, pattern));

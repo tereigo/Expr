@@ -67,10 +67,11 @@ final class VariantImpl implements MutableVariant {
     }
 
     @Override
-    public void cloneTo(final VariantImpl target) {
-        target.type = type;
-        target.longVal = longVal;
-        target.objVal = objVal;
+    public void cloneTo(final Variant target) {
+        final VariantImpl impl = (VariantImpl) target;
+        impl.type = type;
+        impl.longVal = longVal;
+        impl.objVal = objVal;
     }
 
     @Override

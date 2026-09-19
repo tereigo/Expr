@@ -41,7 +41,7 @@ final class ExprEvaluatorImpl extends ExprEvaluatorBase implements ExprEvaluator
         try {
             return result.getAsBoolean();
         } catch (final RuntimeException ex) {
-            throw new RuntimeException("Result of an unexpected type: " + ExceptionUtils.getExceptionMsg(ex), ex);
+            throw wrapTypeError(ex);
         }
     }
 
@@ -56,7 +56,7 @@ final class ExprEvaluatorImpl extends ExprEvaluatorBase implements ExprEvaluator
         try {
             return result.getAsLong();
         } catch (final RuntimeException ex) {
-            throw new RuntimeException("Result of an unexpected type: " + ExceptionUtils.getExceptionMsg(ex), ex);
+            throw wrapTypeError(ex);
         }
     }
 
@@ -71,7 +71,7 @@ final class ExprEvaluatorImpl extends ExprEvaluatorBase implements ExprEvaluator
         try {
             return result.getAsDouble();
         } catch (final RuntimeException ex) {
-            throw new RuntimeException("Result of an unexpected type: " + ExceptionUtils.getExceptionMsg(ex), ex);
+            throw wrapTypeError(ex);
         }
     }
 
@@ -86,7 +86,7 @@ final class ExprEvaluatorImpl extends ExprEvaluatorBase implements ExprEvaluator
         try {
             return result.getAsNumber();
         } catch (final RuntimeException ex) {
-            throw new RuntimeException("Result of an unexpected type: " + ExceptionUtils.getExceptionMsg(ex), ex);
+            throw wrapTypeError(ex);
         }
     }
 
@@ -101,7 +101,7 @@ final class ExprEvaluatorImpl extends ExprEvaluatorBase implements ExprEvaluator
         try {
             return result.getAsString();
         } catch (final RuntimeException ex) {
-            throw new RuntimeException("Result of an unexpected type: " + ExceptionUtils.getExceptionMsg(ex), ex);
+            throw wrapTypeError(ex);
         }
     }
 
@@ -116,7 +116,7 @@ final class ExprEvaluatorImpl extends ExprEvaluatorBase implements ExprEvaluator
         try {
             return result.getAsByteBuffer();
         } catch (final RuntimeException ex) {
-            throw new RuntimeException("Result of an unexpected type: " + ExceptionUtils.getExceptionMsg(ex), ex);
+            throw wrapTypeError(ex);
         }
     }
 
@@ -133,7 +133,7 @@ final class ExprEvaluatorImpl extends ExprEvaluatorBase implements ExprEvaluator
         try {
             return result.getAsObject();
         } catch (final RuntimeException ex) {
-            throw new RuntimeException("Result of an unexpected type: " + ExceptionUtils.getExceptionMsg(ex), ex);
+            throw wrapTypeError(ex);
         }
     }
 }

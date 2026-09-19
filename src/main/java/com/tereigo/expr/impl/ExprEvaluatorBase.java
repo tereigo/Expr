@@ -35,4 +35,8 @@ abstract class ExprEvaluatorBase {
     private String getSourceString() {
         return source.isEmpty() ? "" : " in expression '" + source + "'";
     }
+
+    protected static RuntimeException wrapTypeError(final RuntimeException ex) {
+        return new RuntimeException("Result of an unexpected type: " + getExceptionMsg(ex), ex);
+    }
 }

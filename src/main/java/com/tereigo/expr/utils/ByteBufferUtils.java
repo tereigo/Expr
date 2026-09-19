@@ -21,7 +21,7 @@ public final class ByteBufferUtils {
 
     @GeneratesGarbage
     public static ByteBuffer constant(final String from) {
-        return ByteBuffer.wrap(from.getBytes()).asReadOnlyBuffer();
+        return ByteBuffer.wrap(from.getBytes(StandardCharsets.US_ASCII)).asReadOnlyBuffer();
     }
 
     public static ByteBuffer empty() {

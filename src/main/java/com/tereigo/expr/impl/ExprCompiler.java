@@ -20,7 +20,7 @@ final class ExprCompiler {
     }
 
     static ASTRoot compile(final ByteBuffer source) {
-        return compile(source, Collections.EMPTY_MAP);
+        return compile(source, Collections.emptyMap());
     }
 
     // Convert Expression into AST

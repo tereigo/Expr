@@ -21,7 +21,6 @@ import java.util.Map;
         ExprEvaluator evaluator = ExprEvaluatorFactory.create(ctx, "$ric == 'VOD.L' and $productId == 123 or 5 != 2");
         evaluator.evaluateBool();
  */
-@SuppressWarnings("unchecked")
 public final class ExprEvaluatorFactory {
 
     /**
@@ -29,11 +28,11 @@ public final class ExprEvaluatorFactory {
      * or the context will be supplied during evaluation (evaluator.evaluate(exprContext))
      */
     public static ExprEvaluatorWithContext create(final ByteBuffer source) {
-        return ExprEvaluatorAccessor.create(PASS, source, Collections.EMPTY_MAP);
+        return ExprEvaluatorAccessor.create(PASS, source, Collections.emptyMap());
     }
 
     public static ExprEvaluatorWithContext create(final String source) {
-        return ExprEvaluatorAccessor.create(PASS, source, Collections.EMPTY_MAP);
+        return ExprEvaluatorAccessor.create(PASS, source, Collections.emptyMap());
     }
 
     public static ExprEvaluatorWithContext create(final ByteBuffer source, final Map<String, ?> constants) {
@@ -53,7 +52,7 @@ public final class ExprEvaluatorFactory {
      * @param source - Expression
      */
     public static ExprEvaluator create(final ExprContext ctx, final String source) {
-        return ExprEvaluatorAccessor.create(PASS, ctx, source, Collections.EMPTY_MAP);
+        return ExprEvaluatorAccessor.create(PASS, ctx, source, Collections.emptyMap());
     }
 
     public static ExprEvaluator create(final ExprContext ctx, final String source, final Map<String, ?> constants) {
@@ -61,7 +60,7 @@ public final class ExprEvaluatorFactory {
     }
 
     public static ExprEvaluator create(final ExprContext ctx, final ByteBuffer source) {
-        return ExprEvaluatorAccessor.create(PASS, ctx, source, Collections.EMPTY_MAP);
+        return ExprEvaluatorAccessor.create(PASS, ctx, source, Collections.emptyMap());
     }
 
     public static ExprEvaluator create(final ExprContext ctx, final ByteBuffer source, final Map<String, ?> constants) {

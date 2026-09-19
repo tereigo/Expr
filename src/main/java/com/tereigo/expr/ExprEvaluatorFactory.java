@@ -35,11 +35,11 @@ public final class ExprEvaluatorFactory {
         return ExprEvaluatorAccessor.create(PASS, source, Collections.emptyMap());
     }
 
-    public static ExprEvaluatorWithContext create(final ByteBuffer source, final Map<String, ?> constants) {
+    public static ExprEvaluatorWithContext create(final ByteBuffer source, final Map<String, ExprConstant> constants) {
         return ExprEvaluatorAccessor.create(PASS, source, constants);
     }
 
-    public static ExprEvaluatorWithContext create(final String source, final Map<String, ?> constants) {
+    public static ExprEvaluatorWithContext create(final String source, final Map<String, ExprConstant> constants) {
         return ExprEvaluatorAccessor.create(PASS, source, constants);
     }
 
@@ -55,7 +55,7 @@ public final class ExprEvaluatorFactory {
         return ExprEvaluatorAccessor.create(PASS, ctx, source, Collections.emptyMap());
     }
 
-    public static ExprEvaluator create(final ExprContext ctx, final String source, final Map<String, ?> constants) {
+    public static ExprEvaluator create(final ExprContext ctx, final String source, final Map<String, ExprConstant> constants) {
         return ExprEvaluatorAccessor.create(PASS, ctx, source, constants);
     }
 
@@ -63,7 +63,7 @@ public final class ExprEvaluatorFactory {
         return ExprEvaluatorAccessor.create(PASS, ctx, source, Collections.emptyMap());
     }
 
-    public static ExprEvaluator create(final ExprContext ctx, final ByteBuffer source, final Map<String, ?> constants) {
+    public static ExprEvaluator create(final ExprContext ctx, final ByteBuffer source, final Map<String, ExprConstant> constants) {
         return ExprEvaluatorAccessor.create(PASS, ctx, source, constants);
     }
 

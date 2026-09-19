@@ -12,5 +12,5 @@ public interface ExprConstantsBuilder {
 
     ExprConstantsBuilder addString(final String name, final String value);
 
-    Map<String, ?> build();
+    Map<String, ExprConstant> build();
 }

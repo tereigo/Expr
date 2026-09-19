@@ -1,5 +1,6 @@
 package com.tereigo.expr.impl;
 
+import com.tereigo.expr.ExprConstant;
 import com.tereigo.expr.function.Function0;
 import com.tereigo.expr.variant.MutableVariant;
 import com.tereigo.expr.variant.Variant;
@@ -157,7 +158,7 @@ abstract class Expr {
         }
     }
 
-    static class Literal extends Expr {
+    static class Literal extends Expr implements ExprConstant {
         static final Literal BOOL_TRUE = new Expr.Literal(true);
         static final Literal BOOL_FALSE = new Expr.Literal(false);
 

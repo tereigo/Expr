@@ -1,5 +1,6 @@
 package com.tereigo.expr.impl;
 
+import com.tereigo.expr.ExprConstant;
 import com.tereigo.expr.ExprConstantsBuilder;
 
 import java.util.HashMap;
@@ -42,7 +43,7 @@ final class ExprConstantsBuilderImpl implements ExprConstantsBuilder {
     }
 
     @Override
-    public Map<String, ?> build() {
+    public Map<String, ExprConstant> build() {
         return new HashMap<>(constants);
     }
 

@@ -1,5 +1,6 @@
 package com.tereigo.expr.impl;
 
+import com.tereigo.expr.ExprConstant;
 import com.tereigo.expr.ExprContext;
 import com.tereigo.expr.ExprEvaluator;
 import com.tereigo.expr.ExprEvaluatorFactory;
@@ -16,16 +17,16 @@ public final class ExprEvaluatorAccessor {
 
     public static ExprEvaluatorWithContext create(final ExprEvaluatorFactory.Pass pass,
                                                   final ByteBuffer source,
-                                                  final Map<String, ?> constants) {
+                                                  final Map<String, ExprConstant> constants) {
         Objects.requireNonNull(pass);
-        return new ExprEvaluatorImpl(source, (Map<String, Expr.Literal>)constants);
+        return new ExprEvaluatorImpl(source, (Map<String, Expr.Literal>)(Map<String, ?>) constants);
     }
 
     public static ExprEvaluatorWithContext create(final ExprEvaluatorFactory.Pass pass,
                                                   final String source,
-                                                  final Map<String, ?> constants) {
+                                                  final Map<String, ExprConstant> constants) {
         Objects.requireNonNull(pass);
-        return new ExprEvaluatorImpl(source, (Map<String, Expr.Literal>)constants);
+        return new ExprEvaluatorImpl(source, (Map<String, Expr.Literal>)(Map<String, ?>) constants);
     }
 
     /**
@@ -39,16 +40,16 @@ public final class ExprEvaluatorAccessor {
     public static ExprEvaluator create(final ExprEvaluatorFactory.Pass pass,
                                        final ExprContext ctx,
                                        final String source,
-                                       final Map<String, ?> constants) {
+                                       final Map<String, ExprConstant> constants) {
         Objects.requireNonNull(pass);
-        return new ExprEvaluatorOptimized(ctx, source, (Map<String, Expr.Literal>)constants);
+        return new ExprEvaluatorOptimized(ctx, source, (Map<String, Expr.Literal>)(Map<String, ?>) constants);
     }
 
     public static ExprEvaluator create(final ExprEvaluatorFactory.Pass pass,
                                        final ExprContext ctx,
                                        final ByteBuffer source,
-                                       final Map<String, ?> constants) {
+                                       final Map<String, ExprConstant> constants) {
         Objects.requireNonNull(pass);
-        return new ExprEvaluatorOptimized(ctx, source, (Map<String, Expr.Literal>)constants);
+        return new ExprEvaluatorOptimized(ctx, source, (Map<String, Expr.Literal>)(Map<String, ?>) constants);
     }
 }

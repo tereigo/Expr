@@ -1,5 +1,6 @@
 package com.tereigo.expr.impl;
 
+import com.tereigo.expr.ExprConstant;
 import com.tereigo.expr.ExprConstantsFactory;
 import com.tereigo.expr.ExprContext;
 import com.tereigo.expr.ExprContextBuilder;
@@ -50,7 +51,7 @@ class ExprEvaluationWithContextTest extends ExprEvaluatorTestBase {
                 .addByteBuffer("$tuid", () -> constant("CLIENT1"))
                 .getAsExprContext();
 
-        final Map<String, ?> constants = ExprConstantsFactory.create()
+        final Map<String, ExprConstant> constants = ExprConstantsFactory.create()
                 .addDouble("$PI", 3.14)
                 .addLong("$productId", 123L)
                 .addString("$ric", "VOD.L")
@@ -86,7 +87,7 @@ class ExprEvaluationWithContextTest extends ExprEvaluatorTestBase {
                 .addByteBuffer("$tuid", () -> constant("CLIENT1"))
                 .getAsExprContext();
 
-        final Map<String, ?> constants = ExprConstantsFactory.create()
+        final Map<String, ExprConstant> constants = ExprConstantsFactory.create()
                 .addDouble("$PI", 3.14)
                 .addLong("$productId", 123L)
                 .addString("$ric", "VOD.L")

@@ -66,7 +66,7 @@ final class ExprParser {
         this.constants.putAll(constants);
     }
 
-    private static boolean isTypesCompatible(final ExprType type, final Variant val) {
+    private static boolean areTypesCompatible(final ExprType type, final Variant val) {
         if ((type == ExprType.DOUBLE || type == ExprType.LONG) && VariantUtils.isNumber(val)) {
             return true;
         }
@@ -169,7 +169,7 @@ final class ExprParser {
                 if (type == null) {
                     type = val.exprType();
                 } else {
-                    if (!isTypesCompatible(type, val)) {
+                    if (!areTypesCompatible(type, val)) {
                         throw error(peek(), "Different value types in IN operator list: " + type + " and " + val.exprType());
                     }
                 }

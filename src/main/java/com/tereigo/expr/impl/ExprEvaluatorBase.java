@@ -23,11 +23,11 @@ abstract class ExprEvaluatorBase {
         } catch (final RuntimeError err) {
             // Let's enhance the error with the relevant context info
             final String msg = "Expression evaluation error [line " + err.token.line + ", pos " + (err.token.pos + 1) + "]: "
-                    + err.getMessage() + getSourceString();
-            throw new RuntimeError(err.token, msg);
+                    + ExceptionUtils.getExceptionMsg(err) + getSourceString();
+            throw new RuntimeError(err.token, msg, err);
         } catch (final RuntimeException ex) {
             // Let's enhance the error with the relevant context info
-            final String msg = "Expression evaluation error: " + getExceptionMsg(ex) + getSourceString();
+            final String msg = "Expression evaluation error: " + ExceptionUtils.getExceptionMsg(ex) + getSourceString();
             throw new RuntimeException(msg, ex);
         }
     }

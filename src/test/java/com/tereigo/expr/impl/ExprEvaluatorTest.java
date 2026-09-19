@@ -41,6 +41,8 @@ class ExprEvaluatorTest extends ExprEvaluatorTestBase {
 
         err = assertThrows(ParseError.class, () -> evaluate("(0 == 1) ? (1 + 3 : 2 + 0)"));
         assertEquals("Expression parsing error [line 1, pos 19]: Expect ')' after expression in expression '(0 == 1) ? (1 + 3 : 2 + 0)'", err.getMessage());
+        assertNotNull(err.getCause());
+        assertEquals("[line 1, pos 19]: Expect ')' after expression", err.getCause().getMessage());
 
         err = assertThrows(ParseError.class, () -> evaluate("true ? 1 ; 2"));
         assertEquals("Expression parsing error [line 1, pos 10]: Unexpected character in expression 'true ? 1 ; 2'", err.getMessage());
@@ -56,6 +58,8 @@ class ExprEvaluatorTest extends ExprEvaluatorTestBase {
 
         runErr = assertThrows(RuntimeError.class, () -> evaluate("1 ? 1 : 2"));
         assertEquals("Expression evaluation error [line 1, pos 3]: Operand must be a boolean in expression '1 ? 1 : 2'", runErr.getMessage());
+        assertNotNull(runErr.getCause());
+        assertEquals("Operand must be a boolean", runErr.getCause().getMessage());
     }
 
     @Test
@@ -266,8 +270,19 @@ class ExprEvaluatorTest extends ExprEvaluatorTestBase {
         RuntimeException runEx; // thjs is supposed to be RuntimeError!
         runEx = assertThrows(RuntimeException.class, () -> evaluateDouble("1 + 1"));
         assertEquals("Result of an unexpected type: Variant type mismatch: LONG, expected: DOUBLE", runEx.getMessage());
+        assertNotNull(runEx.getCause());
+        assertEquals("Variant type mismatch: LONG, expected: DOUBLE", runEx.getCause().getMessage());
         runEx = assertThrows(RuntimeException.class, () -> evaluateDouble("round(1.0)"));
         assertEquals("Result of an unexpected type: Variant type mismatch: LONG, expected: DOUBLE", runEx.getMessage());
+        assertNotNull(runEx.getCause());
+        assertEquals("Variant type mismatch: LONG, expected: DOUBLE", runEx.getCause().getMessage());
+
+        // same "unexpected type" cause-chaining for the optimized evaluator
+        final ExprContext emptyCtx = ExprContextFactory.globalContext().getAsExprContext();
+        runEx = assertThrows(RuntimeException.class, () -> evaluateDoubleOptimized(emptyCtx, "1 + 1"));
+        assertEquals("Result of an unexpected type: Variant type mismatch: LONG, expected: DOUBLE", runEx.getMessage());
+        assertNotNull(runEx.getCause());
+        assertEquals("Variant type mismatch: LONG, expected: DOUBLE", runEx.getCause().getMessage());
 
         assertEquals(0.0, evaluateNumber("(3 + 2) * 0.0"), EPS);
         assertEquals(2.0, evaluateNumber("1 + 1"), EPS);

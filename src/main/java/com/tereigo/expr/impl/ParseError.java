@@ -6,7 +6,7 @@ final class ParseError extends RuntimeException {
         super("[line " + line + ", pos " + pos + "]: " + message);
     }
 
-    ParseError(final String message) {
-        super(message);
+    ParseError(final String message, final Throwable cause) {
+        super(message, cause);
     }
 }

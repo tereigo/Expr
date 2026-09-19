@@ -36,7 +36,7 @@ final class ExprCompiler {
             return root;
         } catch (final ParseError err) {
             // Let's enhance the error with the relevant context info
-            throw new ParseError("Expression parsing error " + err.getMessage() + " in expression '" + strSource + "'");
+            throw new ParseError("Expression parsing error " + ExceptionUtils.getExceptionMsg(err) + " in expression '" + strSource + "'", err);
         }
     }
 }

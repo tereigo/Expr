@@ -17,8 +17,12 @@ final class VariantImpl implements MutableVariant {
     private long longVal;
     // IMPORTANT NOTE on implementation:
     // String value and ByteBuffer values are interchangeable
-    // we consider Variant values equal if strVal == other.strVal || strVal == other.bbVal || bbVal == other.bbVal || bbVal == other.strVal
-    // So if v1.strVal == "ABC" and v2.bbVal == "ABC" then they are equal
+    // we consider Variant values equal if
+    // 1. Both are Strings and objVal == other.objVal
+    // 2. First is String and second is ByteBuffer and ByteBufferUtils.equals((String) objVal, (ByteBuffer) variant.objVal)
+    // 3. First is ByteBuffer and second is String and ByteBufferUtils.equals((ByteBuffer) objVal, (String) variant.objVal)
+    // 4. Both are ByteBuffers and ByteBufferUtils.equals((ByteBuffer) objVal, (ByteBuffer) variant.objVal)
+    // So if v1.objVal == "ABC" and v2.objVal == "ABC" then they are equal
     // This is needed to be able to compare ByteBuffer values returned from the external data providers (order.ric) to String values in the expressions:
     // $ric == "VOD.L"
     // Here $ric - will be ByteBuffer taken from the msg and "VOD.L" will be String as a result of expression parsing
@@ -221,9 +225,26 @@ final class VariantImpl implements MutableVariant {
 
     @Override
     public int hashCode() {
+        // NOTE: STRING and BYTE_BUFFER variants holding equal content are `.equals()` (see equals() above),
+        // so they must hash identically no matter which of the two concrete types backs them.
+        // That's why the content hash below is computed the same way for both types (and why `type`
+        // itself is deliberately left out of the hash - it isn't needed for the contract, and mixing
+        // it in would make STRING/BYTE_BUFFER equal variants hash differently).
         int result = 31 + Long.hashCode(longVal);
-        result = 31 * result + (objVal == null ? 0 : objVal.hashCode());
-        result = 31 * result + (type == null ? 0 : type.hashCode());
+        result = 31 * result + valueHashCode();
         return result;
+    }
+
+    private int valueHashCode() {
+        if (objVal == null) {
+            return 0;
+        }
+        if (type == ExprType.STRING) {
+            return ByteBufferUtils.hashCode((String) objVal);
+        }
+        if (type == ExprType.BYTE_BUFFER) {
+            return ByteBufferUtils.hashCode((ByteBuffer) objVal);
+        }
+        return objVal.hashCode();
     }
 }

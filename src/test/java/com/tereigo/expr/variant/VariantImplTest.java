@@ -41,7 +41,9 @@ class VariantImplTest {
         assertNotEquals(VariantFactory.createString("A"), VariantFactory.createString(""));
         assertNotEquals(VariantFactory.createString("A"), VariantFactory.createString("B"));
         assertEquals(createByteBuffer(constant("")), createByteBuffer(constant("")));
+        assertEquals(createByteBuffer(constant("")).hashCode(), createByteBuffer(constant("")).hashCode());
         assertEquals(createByteBuffer(constant("A")), createByteBuffer(constant("A")));
+        assertEquals(createByteBuffer(constant("A")).hashCode(), createByteBuffer(constant("A")).hashCode());
         assertNotEquals(createByteBuffer(constant("A")), createByteBuffer(constant("B")));
         // cross type comparisons
         assertNotEquals(VariantFactory.createEmpty(), VariantFactory.createBoolean(true));
@@ -112,14 +114,43 @@ class VariantImplTest {
         assertNotEquals(VariantFactory.createString("0.0"), VariantFactory.createDouble(0));
         assertNotEquals(VariantFactory.createString("0"), VariantFactory.createLong(0));
         assertEquals(VariantFactory.createString(""), createByteBuffer(constant("")));
+        assertEquals(VariantFactory.createString("").hashCode(), createByteBuffer(constant("")).hashCode());
         assertEquals(VariantFactory.createString("A"), createByteBuffer(constant("A")));
+        assertEquals(VariantFactory.createString("A").hashCode(), createByteBuffer(constant("A")).hashCode());
         assertNotEquals(VariantFactory.createString("A"), createByteBuffer(constant("B")));
         assertNotEquals(VariantFactory.createDouble(0), VariantFactory.createString(""));
         assertNotEquals(VariantFactory.createLong(0), VariantFactory.createString(""));
         assertNotEquals(VariantFactory.createDouble(0), VariantFactory.createString("0.0"));
         assertNotEquals(VariantFactory.createLong(0), VariantFactory.createString("0"));
         assertEquals(createByteBuffer(constant("")), VariantFactory.createString(""));
+        assertEquals(createByteBuffer(constant("")).hashCode(), VariantFactory.createString("").hashCode());
         assertEquals(createByteBuffer(constant("A")), VariantFactory.createString("A"));
+        assertEquals(createByteBuffer(constant("A")).hashCode(), VariantFactory.createString("A").hashCode());
         assertNotEquals(createByteBuffer(constant("B")), VariantFactory.createString("A"));
+    }
+
+    // the hashCode/equals contract requires that objects considered equal by equals() produce
+    // the same hashCode() - this is exercised explicitly here because STRING and BYTE_BUFFER
+    // variants can be equal to each other despite being backed by different concrete objects
+    @Test
+    void testHashCode() {
+        assertEquals(VariantFactory.createEmpty().hashCode(), VariantFactory.createEmpty().hashCode());
+        assertEquals(VariantFactory.createBoolean(true).hashCode(), VariantFactory.createBoolean(true).hashCode());
+        assertEquals(VariantFactory.createBoolean(false).hashCode(), VariantFactory.createBoolean(false).hashCode());
+        assertEquals(VariantFactory.createLong(0).hashCode(), VariantFactory.createLong(0).hashCode());
+        assertEquals(VariantFactory.createLong(123).hashCode(), VariantFactory.createLong(123).hashCode());
+        assertEquals(VariantFactory.createDouble(0.0).hashCode(), VariantFactory.createDouble(0.0).hashCode());
+        assertEquals(VariantFactory.createDouble(1.5).hashCode(), VariantFactory.createDouble(1.5).hashCode());
+        assertEquals(VariantFactory.createString("").hashCode(), VariantFactory.createString("").hashCode());
+        assertEquals(VariantFactory.createString("ABC").hashCode(), VariantFactory.createString("ABC").hashCode());
+        assertEquals(createByteBuffer(constant("")).hashCode(), createByteBuffer(constant("")).hashCode());
+        assertEquals(createByteBuffer(constant("ABC")).hashCode(), createByteBuffer(constant("ABC")).hashCode());
+
+        // the actual contract fix: a STRING and a BYTE_BUFFER variant with equal content
+        // are `.equals()` to each other (see testEquals above), so they must hash the same
+        assertEquals(VariantFactory.createString("").hashCode(), createByteBuffer(constant("")).hashCode());
+        assertEquals(VariantFactory.createString("A").hashCode(), createByteBuffer(constant("A")).hashCode());
+        assertEquals(VariantFactory.createString("ABC").hashCode(), createByteBuffer(constant("ABC")).hashCode());
+        assertEquals(createByteBuffer(constant("A")).hashCode(), VariantFactory.createString("A").hashCode());
     }
 }

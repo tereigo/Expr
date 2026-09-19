@@ -3,6 +3,10 @@ package com.tereigo.expr.utils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.ValueSource;
+
+import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 
 import static com.tereigo.expr.utils.ByteBufferUtils.constant;
 import static com.tereigo.expr.utils.ByteBufferUtils.contains;
@@ -27,6 +31,43 @@ class ByteBufferUtilsTest {
         assertFalse(isEmpty(constant("A")));
         assertFalse(isEmpty(constant("ABC")));
         assertFalse(isEmpty(constant(" ")));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "",
+            "A",
+            "AB",
+            "ABC",
+            "abc",
+            "AbCd",
+            "aaaaabbb",
+            " ",
+            "0",
+            "0.0",
+            "To be or not to be that is a question",
+    })
+    void hashCodeTests(final String str) {
+        // hashCode(CharSequence) is documented to match String.hashCode() for ASCII content
+        assertEquals(str.hashCode(), ByteBufferUtils.hashCode(str));
+        // hashCode(ByteBuffer) must agree with hashCode(CharSequence) for the same content,
+        // otherwise a String and an equal ByteBuffer (see ByteBufferUtils.equals) would hash differently
+        assertEquals(str.hashCode(), ByteBufferUtils.hashCode(constant(str)));
+        assertEquals(ByteBufferUtils.hashCode(str), ByteBufferUtils.hashCode(constant(str)));
+    }
+
+    @Test
+    void hashCodeOnlyConsidersRemainingBytesTest() {
+        final ByteBuffer buffer = ByteBuffer.wrap("XXABCXX".getBytes(StandardCharsets.US_ASCII));
+        buffer.position(2);
+        buffer.limit(5);
+
+        assertEquals("ABC".hashCode(), ByteBufferUtils.hashCode(buffer));
+        assertEquals(ByteBufferUtils.hashCode("ABC"), ByteBufferUtils.hashCode(buffer));
+
+        // hashCode() must not mutate the buffer
+        assertEquals(2, buffer.position());
+        assertEquals(5, buffer.limit());
     }
 
     @ParameterizedTest

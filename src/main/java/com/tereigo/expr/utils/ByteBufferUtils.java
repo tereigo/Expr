@@ -378,6 +378,31 @@ public final class ByteBufferUtils {
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
+    // hashCode
+    ///////////////////////////////////////////////////////////////////////////////////////////////////
+
+    // Computes the same hash code String.hashCode() would compute for the equivalent ASCII content,
+    // so that a ByteBuffer and a CharSequence holding the same bytes/characters hash identically.
+    // This must stay in sync with equals(ByteBuffer, CharSequence) above.
+    public static int hashCode(final ByteBuffer buffer) {
+        int h = 0;
+        final int pos = buffer.position();
+        final int lim = buffer.limit();
+        for (int i = pos; i < lim; i++) {
+            h = 31 * h + (buffer.get(i) & 0xFF);
+        }
+        return h;
+    }
+
+    public static int hashCode(final CharSequence chars) {
+        int h = 0;
+        for (int i = 0; i < chars.length(); i++) {
+            h = 31 * h + (chars.charAt(i) & 0xFF);
+        }
+        return h;
+    }
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////////
     // compare / compareCaseInsensitive
     ///////////////////////////////////////////////////////////////////////////////////////////////////
 

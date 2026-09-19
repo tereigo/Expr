@@ -11,7 +11,7 @@ import java.util.Map;
 final class ExprContextImpl implements ExprContext {
 
     // Map of "name" -> Function0/1/2/3/4/5 objects
-    private final Map<String, Object> functions = new HashMap<>();
+    private final HashMap<String, Object> functions = new HashMap<>();
 
     ExprContextImpl(final Map<String, Object> functions) {
         this.functions.putAll(functions);

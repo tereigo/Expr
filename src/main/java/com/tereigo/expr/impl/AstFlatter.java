@@ -3,7 +3,6 @@ package com.tereigo.expr.impl;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Queue;
 
 /**
  * Experimental: we use flat array-like structure for nodes (see FlatAST)
@@ -12,8 +11,8 @@ import java.util.Queue;
  *
  */
 final class AstFlatter implements Expr.Visitor<FlatExpr> {
-    private List<FlatExpr.BaseExpr> nodes = new ArrayList<>();
-    private final Queue<Expr> queue = new LinkedList<>();
+    private final ArrayList<FlatExpr.BaseExpr> nodes = new ArrayList<>();
+    private final LinkedList<Expr> queue = new LinkedList<>();
 
     FlatAST flatten(final ASTRoot root) {
 

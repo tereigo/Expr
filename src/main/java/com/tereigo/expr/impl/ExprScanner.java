@@ -3,48 +3,14 @@ package com.tereigo.expr.impl;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
-import static com.tereigo.expr.impl.TokenType.AND;
-import static com.tereigo.expr.impl.TokenType.BETWEEN;
-import static com.tereigo.expr.impl.TokenType.COMMA;
-import static com.tereigo.expr.impl.TokenType.DIV;
-import static com.tereigo.expr.impl.TokenType.DOT;
-import static com.tereigo.expr.impl.TokenType.DOUBLE_NUMBER;
-import static com.tereigo.expr.impl.TokenType.EOF;
-import static com.tereigo.expr.impl.TokenType.EQUAL_EQUAL;
-import static com.tereigo.expr.impl.TokenType.FALSE;
-import static com.tereigo.expr.impl.TokenType.GREATER;
-import static com.tereigo.expr.impl.TokenType.GREATER_EQUAL;
-import static com.tereigo.expr.impl.TokenType.IDENTIFIER;
-import static com.tereigo.expr.impl.TokenType.IN;
-import static com.tereigo.expr.impl.TokenType.LEFT_BRACKET;
-import static com.tereigo.expr.impl.TokenType.LEFT_PAREN;
-import static com.tereigo.expr.impl.TokenType.LESS;
-import static com.tereigo.expr.impl.TokenType.LESS_EQUAL;
-import static com.tereigo.expr.impl.TokenType.LONG_NUMBER;
-import static com.tereigo.expr.impl.TokenType.MATH_E;
-import static com.tereigo.expr.impl.TokenType.MATH_PI;
-import static com.tereigo.expr.impl.TokenType.MINUS;
-import static com.tereigo.expr.impl.TokenType.MODULUS;
-import static com.tereigo.expr.impl.TokenType.MUL;
-import static com.tereigo.expr.impl.TokenType.NOT;
-import static com.tereigo.expr.impl.TokenType.NOT_EQUAL;
-import static com.tereigo.expr.impl.TokenType.OR;
-import static com.tereigo.expr.impl.TokenType.PLUS;
-import static com.tereigo.expr.impl.TokenType.RIGHT_BRACKET;
-import static com.tereigo.expr.impl.TokenType.RIGHT_PAREN;
-import static com.tereigo.expr.impl.TokenType.STRING;
-import static com.tereigo.expr.impl.TokenType.TERNARY_ELSE;
-import static com.tereigo.expr.impl.TokenType.TERNARY_IF;
-import static com.tereigo.expr.impl.TokenType.TRUE;
-import static com.tereigo.expr.impl.TokenType.WITHIN;
+import static com.tereigo.expr.impl.TokenType.*;
 
 /*
   Converts a given String into a list of Tokens
  */
 final class ExprScanner {
-    private static final Map<String, TokenType> KEYWORDS;
+    private static final HashMap<String, TokenType> KEYWORDS;
 
     static {
         KEYWORDS = new HashMap<>();
@@ -61,7 +27,7 @@ final class ExprScanner {
     }
 
     private final String source;
-    private final List<Token> tokens = new ArrayList<>();
+    private final ArrayList<Token> tokens = new ArrayList<>();
     private int start = 0;
     private int current = 0;
     private int line = 1;

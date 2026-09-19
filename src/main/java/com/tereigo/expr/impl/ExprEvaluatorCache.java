@@ -10,7 +10,6 @@ import org.jetbrains.annotations.NotNull;
 
 import java.nio.ByteBuffer;
 import java.util.HashMap;
-import java.util.Map;
 
 // `cache` is a plain HashMap with no synchronization. Concurrent calls to getEvaluator()
 // from multiple threads can corrupt the map (e.g. during a resize) or race on the
@@ -18,7 +17,7 @@ import java.util.Map;
 // access externally, until this is changed to something like a ConcurrentHashMap.
 @NotThreadSafe
 final class ExprEvaluatorCache<T extends ExprEvaluator> implements ExprEvaluatorSupplier<T> {
-    private final Map<ByteBuffer, T> cache = new HashMap<>();
+    private final HashMap<ByteBuffer, T> cache = new HashMap<>();
     private final ExprEvaluatorCreator<T> creator;
 
     public ExprEvaluatorCache(final ExprEvaluatorCreator<T> creator) {

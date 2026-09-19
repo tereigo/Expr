@@ -3,17 +3,9 @@ package com.tereigo.expr.impl;
 import com.tereigo.expr.ExprContext;
 import com.tereigo.expr.ExprContextBuilder;
 import com.tereigo.expr.ExprContextEnricher;
-import com.tereigo.expr.function.ByteBufferSupplier;
-import com.tereigo.expr.function.Function0;
-import com.tereigo.expr.function.Function1;
-import com.tereigo.expr.function.Function2;
-import com.tereigo.expr.function.Function3;
-import com.tereigo.expr.function.Function4;
-import com.tereigo.expr.function.Function5;
-import com.tereigo.expr.function.StringSupplier;
+import com.tereigo.expr.function.*;
 
 import java.util.HashMap;
-import java.util.Map;
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 import java.util.function.LongSupplier;
@@ -21,7 +13,7 @@ import java.util.function.LongSupplier;
 final class ExprContextBuilderImpl implements ExprContextBuilder {
 
     // Map of "name" -> Function0/1/2/3/4/5 objects
-    private final Map<String, Object> functions = new HashMap<>();
+    private final HashMap<String, Object> functions = new HashMap<>();
 
     ExprContextBuilderImpl(final ExprContextEnricher... enrichers) {
         for (final ExprContextEnricher enricher : enrichers) {

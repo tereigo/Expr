@@ -7,7 +7,7 @@ import java.util.Map;
 
 final class ExprConstantsBuilderImpl implements ExprConstantsBuilder {
 
-    private final Map<String, Expr.Literal> constants = new HashMap<>();
+    private final HashMap<String, Expr.Literal> constants = new HashMap<>();
 
     public Map<String, Expr.Literal> getConstants() {
         return constants;

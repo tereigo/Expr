@@ -324,7 +324,7 @@ public final class ByteBufferUtils {
         if (buffer == other) {
             return true;
         }
-        if (buffer != null) {
+        if (buffer != null && other != null) {
             return (buffer.remaining() == other.remaining()
                     && startsWith(buffer, other, comparator));
         } else {

@@ -70,6 +70,28 @@ class ByteBufferUtilsTest {
         assertEquals(5, buffer.limit());
     }
 
+    @Test
+    void bufferEqualsTests() {
+        assertTrue(ByteBufferUtils.equals((ByteBuffer) null, (ByteBuffer) null));
+        assertFalse(ByteBufferUtils.equals(constant("A"), (ByteBuffer) null));
+        assertFalse(ByteBufferUtils.equals((ByteBuffer) null, constant("A")));
+        assertTrue(ByteBufferUtils.equals(constant("A"), constant("A")));
+        assertTrue(ByteBufferUtils.equals(constant(""), constant("")));
+        assertFalse(ByteBufferUtils.equals(constant("A"), constant("B")));
+        assertFalse(ByteBufferUtils.equals(constant("A"), constant("AB")));
+        final ByteBuffer same = constant("A");
+        assertTrue(ByteBufferUtils.equals(same, same));
+    }
+
+    @Test
+    void bufferEqualsIgnoreCaseTests() {
+        assertFalse(ByteBufferUtils.equalsIgnoreCase(constant("A"), (ByteBuffer) null));
+        assertFalse(ByteBufferUtils.equalsIgnoreCase((ByteBuffer) null, constant("A")));
+        assertTrue(ByteBufferUtils.equalsIgnoreCase(constant("A"), constant("a")));
+        assertTrue(ByteBufferUtils.equalsIgnoreCase(constant("ABC"), constant("abc")));
+        assertFalse(ByteBufferUtils.equalsIgnoreCase(constant("A"), constant("B")));
+    }
+
     @ParameterizedTest
     @CsvSource({
             "'', '', true",

@@ -248,6 +248,157 @@ class ExprNativeFunctionsTest extends ExprEvaluatorTestBase {
     }
 
     @Test
+    void mathFunctionsTest() {
+        assertEquals(Math.sin(0.5), evaluateDouble("sin(0.5)"), EPS);
+        assertEquals(Math.cos(0.5), evaluateDouble("cos(0.5)"), EPS);
+        assertEquals(Math.tan(0.5), evaluateDouble("tan(0.5)"), EPS);
+        assertEquals(Math.asin(0.5), evaluateDouble("asin(0.5)"), EPS);
+        assertEquals(Math.acos(0.5), evaluateDouble("acos(0.5)"), EPS);
+        assertEquals(Math.atan(0.5), evaluateDouble("atan(0.5)"), EPS);
+        assertEquals(Math.sinh(0.5), evaluateDouble("sinh(0.5)"), EPS);
+        assertEquals(Math.cosh(0.5), evaluateDouble("cosh(0.5)"), EPS);
+        assertEquals(Math.tanh(0.5), evaluateDouble("tanh(0.5)"), EPS);
+        assertEquals(Math.hypot(3.0, 4.0), evaluateDouble("hypot(3.0, 4.0)"), EPS);
+        assertEquals(Math.toRadians(180.0), evaluateDouble("toRadians(180.0)"), EPS);
+        assertEquals(Math.toDegrees(Math.PI), evaluateDouble("toDegrees(PI)"), EPS);
+        assertEquals(Math.exp(2.0), evaluateDouble("exp(2.0)"), EPS);
+        assertEquals(Math.expm1(2.0), evaluateDouble("expm1(2.0)"), EPS);
+        assertEquals(Math.log(2.0), evaluateDouble("log(2.0)"), EPS);
+        assertEquals(Math.log10(2.0), evaluateDouble("log10(2.0)"), EPS);
+        assertEquals(Math.log1p(2.0), evaluateDouble("log1p(2.0)"), EPS);
+        assertEquals(Math.sqrt(2.0), evaluateDouble("sqrt(2.0)"), EPS);
+        assertEquals(Math.cbrt(2.0), evaluateDouble("cbrt(2.0)"), EPS);
+        assertEquals(Math.ceil(2.1), evaluateDouble("ceil(2.1)"), EPS);
+        assertEquals(Math.floor(2.9), evaluateDouble("floor(2.9)"), EPS);
+        assertEquals(Math.rint(2.5), evaluateDouble("rint(2.5)"), EPS);
+        assertEquals(Math.atan2(3.0, 4.0), evaluateDouble("atan2(3.0, 4.0)"), EPS);
+        assertEquals(Math.pow(2.0, 10.0), evaluateDouble("pow(2.0, 10.0)"), EPS);
+        assertEquals(Math.signum(-2.0), evaluateDouble("signum(-2.0)"), EPS);
+        assertEquals(Math.signum(2.0), evaluateDouble("signum(2.0)"), EPS);
+        assertEquals(Math.getExponent(8.0), evaluateLong("getExponent(8.0)"));
+        assertEquals(Math.scalb(2.0, 3), evaluateDouble("scalb(2.0, 3)"), EPS);
+
+        final double random = evaluateDouble("random()");
+        assertTrue(random >= 0.0 && random < 1.0);
+
+        assertEquals(50.0, evaluateDouble("percentOf(5, 1000)"), EPS);
+        assertEquals(50.0, evaluateDouble("5.pctOf(1000)"), EPS);
+        assertEquals(50.0, evaluateDouble("pctOf(5, 1000)"), EPS);
+    }
+
+    @Test
+    void stringEqualsFunctionsTest() {
+        // equals(): all 4 combinations of STRING/BYTE_BUFFER operands
+        assertTrue(evaluateBool("equals(\"ABC\", \"ABC\")"));
+        assertFalse(evaluateBool("equals(\"ABC\", \"abc\")"));
+        assertTrue(evaluateBool("\"ABC\".equals(\"ABC\")"));
+        assertTrue(evaluateBool("equals('ABC', bufABC())", byteBufferCtx()));
+        assertFalse(evaluateBool("equals('abc', bufABC())", byteBufferCtx()));
+        assertTrue(evaluateBool("equals(bufABC(), 'ABC')", byteBufferCtx()));
+        assertFalse(evaluateBool("equals(bufABC(), 'abc')", byteBufferCtx()));
+        assertTrue(evaluateBool("equals(bufABC(), bufABC())", byteBufferCtx()));
+
+        RuntimeError runErr = assertThrows(RuntimeError.class, () -> evaluate("equals(1, \"A\")"));
+        assertEquals("Expression evaluation error [line 1, pos 1]: RuntimeException in function 'equals': Operands must be a STRING or BYTE_BUFFER in expression 'equals(1, \"A\")'", runErr.getMessage());
+
+        // equalsIgnoreCase(): all 4 combinations
+        assertTrue(evaluateBool("equalsIgnoreCase(\"ABC\", \"abc\")"));
+        assertFalse(evaluateBool("equalsIgnoreCase(\"ABC\", \"abd\")"));
+        assertTrue(evaluateBool("equalsIgnoreCase('abc', bufABC())", byteBufferCtx()));
+        assertTrue(evaluateBool("equalsIgnoreCase(bufABC(), 'abc')", byteBufferCtx()));
+        assertTrue(evaluateBool("equalsIgnoreCase(bufABC(), bufABC())", byteBufferCtx()));
+
+        runErr = assertThrows(RuntimeError.class, () -> evaluate("equalsIgnoreCase(1, \"A\")"));
+        assertEquals("Expression evaluation error [line 1, pos 1]: RuntimeException in function 'equalsIgnoreCase': Operand must be a STRING or BYTE_BUFFER in expression 'equalsIgnoreCase(1, \"A\")'", runErr.getMessage());
+    }
+
+    @Test
+    void stringStartsEndsWithFunctionsTest() {
+        final ExprContext ctx = byteBufferCtx();
+
+        // startsWith() / startsWithIgnoreCase(): all 4 combinations
+        assertTrue(evaluateBool("startsWith(\"ABC\", \"AB\")"));
+        assertFalse(evaluateBool("startsWith(\"ABC\", \"ab\")"));
+        assertTrue(evaluateBool("startsWith('ABC', bufAB())", ctx));
+        assertTrue(evaluateBool("startsWith(bufABC(), 'AB')", ctx));
+        assertTrue(evaluateBool("startsWith(bufABC(), bufAB())", ctx));
+
+        assertTrue(evaluateBool("startsWithIgnoreCase(\"ABC\", \"ab\")"));
+        assertTrue(evaluateBool("startsWithIgnoreCase('ABC', bufAB())", ctx));
+        assertTrue(evaluateBool("startsWithIgnoreCase(bufABC(), 'ab')", ctx));
+        assertTrue(evaluateBool("startsWithIgnoreCase(bufABC(), bufAB())", ctx));
+
+        // endsWith() / endsWithIgnoreCase(): all 4 combinations
+        assertTrue(evaluateBool("endsWith(\"ABC\", \"BC\")"));
+        assertFalse(evaluateBool("endsWith(\"ABC\", \"bc\")"));
+        assertTrue(evaluateBool("endsWith('ABC', bufBC())", ctx));
+        assertTrue(evaluateBool("endsWith(bufABC(), 'BC')", ctx));
+        assertTrue(evaluateBool("endsWith(bufABC(), bufBC())", ctx));
+
+        assertTrue(evaluateBool("endsWithIgnoreCase(\"ABC\", \"bc\")"));
+        assertTrue(evaluateBool("endsWithIgnoreCase('ABC', bufBC())", ctx));
+        assertTrue(evaluateBool("endsWithIgnoreCase(bufABC(), 'bc')", ctx));
+        assertTrue(evaluateBool("endsWithIgnoreCase(bufABC(), bufBC())", ctx));
+    }
+
+    @Test
+    void stringIndexOfContainsIgnoreCaseFunctionsTest() {
+        final ExprContext ctx = byteBufferCtx();
+
+        // indexOf() / indexOfIgnoreCase(): all 4 combinations
+        assertEquals(1, evaluateLong("indexOf(\"ABC\", \"BC\")"));
+        assertEquals(1, evaluateLong("indexOf('ABC', bufBC())", ctx));
+        assertEquals(1, evaluateLong("indexOf(bufABC(), 'BC')", ctx));
+        assertEquals(1, evaluateLong("indexOf(bufABC(), bufBC())", ctx));
+
+        assertEquals(1, evaluateLong("indexOfIgnoreCase(\"ABC\", \"bc\")"));
+        assertEquals(1, evaluateLong("indexOfIgnoreCase('ABC', bufBC())", ctx));
+        assertEquals(1, evaluateLong("indexOfIgnoreCase(bufABC(), 'bc')", ctx));
+        assertEquals(1, evaluateLong("indexOfIgnoreCase(bufABC(), bufBC())", ctx));
+
+        // containsIgnoreCase(): all 4 combinations (contains() with STRING/STRING and STRING/BYTE_BUFFER etc already tested elsewhere)
+        assertTrue(evaluateBool("containsIgnoreCase(\"ABC\", \"bc\")"));
+        assertTrue(evaluateBool("containsIgnoreCase('ABC', bufBC())", ctx));
+        assertTrue(evaluateBool("containsIgnoreCase(bufABC(), 'bc')", ctx));
+        assertTrue(evaluateBool("containsIgnoreCase(bufABC(), bufBC())", ctx));
+
+        final RuntimeError runErr = assertThrows(RuntimeError.class, () -> evaluate("length(1)"));
+        assertEquals("Expression evaluation error [line 1, pos 1]: RuntimeException in function 'length': Operand must be a STRING or BYTE_BUFFER in expression 'length(1)'", runErr.getMessage());
+    }
+
+    @Test
+    void stringFunctionsTypeErrorsTest() {
+        final ExprContext ctx = byteBufferCtx();
+
+        assertThrows(RuntimeError.class, () -> evaluate("isEmpty(1)"));
+
+        // contains(): all combinations that report a type error, plus the previously-uncovered ByteBuffer/ByteBuffer success case
+        assertTrue(evaluateBool("contains(bufABC(), bufBC())", ctx));
+        assertThrows(RuntimeError.class, () -> evaluate("contains(1, \"A\")"));
+        assertThrows(RuntimeError.class, () -> evaluate("contains(\"A\", 1)"));
+        assertThrows(RuntimeError.class, () -> evaluateBool("contains(bufABC(), 1)", ctx));
+
+        assertThrows(RuntimeError.class, () -> evaluate("containsIgnoreCase(1, \"A\")"));
+        assertThrows(RuntimeError.class, () -> evaluate("startsWith(1, \"A\")"));
+        assertThrows(RuntimeError.class, () -> evaluate("startsWithIgnoreCase(1, \"A\")"));
+        assertThrows(RuntimeError.class, () -> evaluate("endsWith(1, \"A\")"));
+        assertThrows(RuntimeError.class, () -> evaluate("endsWithIgnoreCase(1, \"A\")"));
+
+        assertThrows(RuntimeError.class, () -> evaluate("indexOf(1, \"A\")"));
+        assertThrows(RuntimeError.class, () -> evaluate("indexOf(\"A\", 1)"));
+        assertThrows(RuntimeError.class, () -> evaluateBool("indexOf(bufABC(), 1) >= 0", ctx));
+        assertThrows(RuntimeError.class, () -> evaluate("indexOfIgnoreCase(1, \"A\")"));
+    }
+
+    private static ExprContext byteBufferCtx() {
+        final ExprContextBuilder ctx = ExprContextFactory.globalContext();
+        ctx.addFunction("bufABC", result -> result.accept(constant("ABC")));
+        ctx.addFunction("bufAB", result -> result.accept(constant("AB")));
+        ctx.addFunction("bufBC", result -> result.accept(constant("BC")));
+        return ctx.getAsExprContext();
+    }
+
+    @Test
     void stringFunctionsTest() {
         RuntimeError runErr;
 

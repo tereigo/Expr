@@ -19,6 +19,7 @@ import java.nio.ByteBuffer;
 import static com.tereigo.expr.utils.ByteBufferUtils.constant;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -272,6 +273,12 @@ class ExprUserFunctionsTest extends ExprEvaluatorTestBase {
         assertFalse(evaluateBool("func3($productId, PI, $enabled)", ctx));
         assertTrue(evaluateBool("func3($productId, PI, not($enabled))", ctx));
 
+        // let's try the alternative (dot-chain) syntax: "this" becomes the 1st param, exercising the 3-total-params object-call path
+        assertTrue(evaluateBool("10.func3(1.0, true)", ctx));
+        assertFalse(evaluateBool("10.func3(1.0, false)", ctx));
+        assertFalse(evaluateBool("1.func3(10.0, true)", ctx));
+        assertTrue(evaluateBool("$productId.func3(PI, not($enabled))", ctx));
+
         assertTrue(evaluateBool("func4(10, 1.0, true, \"A\")", ctx));
         assertFalse(evaluateBool("func4(10, 1.0, true, \"\")", ctx));
         assertFalse(evaluateBool("func4(10, 1.0, false, \"A\")", ctx));
@@ -288,6 +295,12 @@ class ExprUserFunctionsTest extends ExprEvaluatorTestBase {
         assertFalse(evaluateBool("func4($productId, PI, $enabled, \"\")", ctx));
         assertFalse(evaluateBool("func4($productId, PI, not($enabled), \"\")", ctx));
         assertFalse(evaluateBool("func4($productId, PI, not($enabled), \"\")", ctx));
+
+        // let's try the alternative (dot-chain) syntax: exercises the 4-total-params object-call path
+        assertTrue(evaluateBool("10.func4(1.0, true, \"A\")", ctx));
+        assertFalse(evaluateBool("10.func4(1.0, true, \"\")", ctx));
+        assertFalse(evaluateBool("1.func4(10.0, true, \"A\")", ctx));
+        assertTrue(evaluateBool("$productId.func4(PI, not($enabled), $ric)", ctx));
 
         assertTrue(evaluateBool("func5(10, 1.0, true, \"A\", $tuid)", ctx));
         assertFalse(evaluateBool("func5(10, 1.0, true, \"\", $tuid)", ctx));
@@ -306,6 +319,16 @@ class ExprUserFunctionsTest extends ExprEvaluatorTestBase {
         assertTrue(evaluateBool("func5(func1(100), func2(func1(10), PI), not($enabled), $ric, $tuid)", ctx));
         assertTrue(evaluateBool("func5(func1(100), func2(func1(10), func2(10, 1.0)), not($enabled), $ric, $tuid)", ctx));
         assertTrue(evaluateBool("func5(func1(100), func2(func1(10), func2(10, 1)), not($enabled), $ric, $tuid)", ctx));
+
+        // let's try the alternative (dot-chain) syntax: exercises the 5-total-params object-call path
+        assertTrue(evaluateBool("10.func5(1.0, true, \"A\", $tuid)", ctx));
+        assertFalse(evaluateBool("10.func5(1.0, true, \"\", $tuid)", ctx));
+        assertFalse(evaluateBool("1.func5(10.0, true, \"A\", $tuid)", ctx));
+        assertTrue(evaluateBool("$productId.func5(PI, not($enabled), $ric, $tuid)", ctx));
+
+        // calling an unknown function via dot-chain syntax on a non-ExprContext object
+        final RuntimeError runErr = assertThrows(RuntimeError.class, () -> evaluateBool("1.unknownFunc()", ctx));
+        assertEquals("Expression evaluation error [line 1, pos 3]: Unknown function 'unknownFunc' in expression '1.unknownFunc()'", runErr.getMessage());
     }
 
     @Test

@@ -115,6 +115,30 @@ class ExprPrinterTest extends ExprEvaluatorTestBase {
                 "│\n" +
                 "├── [1, 2]", printer.print(ExprCompiler.compile("1 between [1, 2]")));
 
+        // dynamic (non-literal bounds) within/between - exercises the WithinOperator/BetweenOperator visitor,
+        // as opposed to the StaticWithinOperator/StaticBetweenOperator one used above
+        final ExprContext dynCtx = getEvaluationContext();
+        assertEquals("within\n" +
+                "│\n" +
+                "├── 1\n" +
+                "│\n" +
+                "├── [$id, $curTime]", printer.print(ExprCompiler.compile("1 within [$id, $curTime]")));
+        assertEquals("within\n" +
+                "│\n" +
+                "├── 1\n" +
+                "│\n" +
+                "├── [$id, $curTime]", printer.print(ExprOptimizer.optimize(ExprCompiler.compile("1 within [$id, $curTime]"), dynCtx)));
+        assertEquals("between\n" +
+                "│\n" +
+                "├── 1\n" +
+                "│\n" +
+                "├── [$id, $curTime]", printer.print(ExprCompiler.compile("1 between [$id, $curTime]")));
+        assertEquals("between\n" +
+                "│\n" +
+                "├── 1\n" +
+                "│\n" +
+                "├── [$id, $curTime]", printer.print(ExprOptimizer.optimize(ExprCompiler.compile("1 between [$id, $curTime]"), dynCtx)));
+
         assertEquals("==\n" +
                 "│\n" +
                 "├── call func($id, 1)\n" +
@@ -184,6 +208,11 @@ class ExprPrinterTest extends ExprEvaluatorTestBase {
         assertEquals("(in A [A, B])", printer.print(ExprCompiler.compile("\"A\" in [\"A\", \"B\"]")));
         assertEquals("(within 1 [1, 2])", printer.print(ExprCompiler.compile("1 within [1, 2]")));
         assertEquals("(between 1 [1, 2])", printer.print(ExprCompiler.compile("1 between [1, 2]")));
+        final ExprContext dynCtx = getEvaluationContext();
+        assertEquals("(within 1 [$id, $curTime])", printer.print(ExprCompiler.compile("1 within [$id, $curTime]")));
+        assertEquals("(within 1 [$id, $curTime])", printer.print(ExprOptimizer.optimize(ExprCompiler.compile("1 within [$id, $curTime]"), dynCtx)));
+        assertEquals("(between 1 [$id, $curTime])", printer.print(ExprCompiler.compile("1 between [$id, $curTime]")));
+        assertEquals("(between 1 [$id, $curTime])", printer.print(ExprOptimizer.optimize(ExprCompiler.compile("1 between [$id, $curTime]"), dynCtx)));
         final ExprContext ctx = getEvaluationContext();
         assertEquals("(== call func($id, 1) $curTime)", printer.print(ExprCompiler.compile("func($id, 1) == $curTime")));
         assertEquals("(== call func($id, 1) $curTime)", printer.print(ExprOptimizer.optimize(ExprCompiler.compile("func($id, 1) == $curTime"), ctx)));

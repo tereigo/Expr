@@ -1,12 +1,17 @@
 package com.tereigo.expr.variant;
 
+import com.tereigo.expr.ExprContext;
+import com.tereigo.expr.ExprContextFactory;
 import org.junit.jupiter.api.Test;
 
 import java.nio.ByteBuffer;
 
 import static com.tereigo.expr.utils.ByteBufferUtils.constant;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class VariantImplTest {
 
@@ -152,5 +157,61 @@ class VariantImplTest {
         assertEquals(VariantFactory.createString("A").hashCode(), createByteBuffer(constant("A")).hashCode());
         assertEquals(VariantFactory.createString("ABC").hashCode(), createByteBuffer(constant("ABC")).hashCode());
         assertEquals(createByteBuffer(constant("A")).hashCode(), VariantFactory.createString("A").hashCode());
+    }
+
+    @Test
+    void testEqualsSpecialCases() {
+        final Variant v = VariantFactory.createLong(1);
+        // reflexive equality must actually invoke equals(), not just identity comparison
+        assertTrue(v.equals(v));
+        // equals() must gracefully handle null and other types, not throw
+        assertFalse(v.equals(null));
+        assertFalse(v.equals("not a variant"));
+        assertFalse(v.equals(42));
+    }
+
+    @Test
+    void testCloneViaFactory() {
+        final Variant original = VariantFactory.createLong(123);
+        final Variant clone = VariantFactory.clone(original);
+        assertEquals(original, clone);
+        assertEquals(original.hashCode(), clone.hashCode());
+
+        final Variant originalDouble = VariantFactory.createDouble(1.5);
+        assertEquals(originalDouble, VariantFactory.clone(originalDouble));
+
+        final Variant originalString = VariantFactory.createString("ABC");
+        assertEquals(originalString, VariantFactory.clone(originalString));
+
+        final Variant originalBool = VariantFactory.createBoolean(true);
+        assertEquals(originalBool, VariantFactory.clone(originalBool));
+
+        final Variant originalEmpty = VariantFactory.createEmpty();
+        assertEquals(originalEmpty, VariantFactory.clone(originalEmpty));
+    }
+
+    @Test
+    void testGetAsObjectOnEmptyVariantThrows() {
+        final MutableVariant empty = VariantFactory.createEmpty();
+        final RuntimeException ex = assertThrows(RuntimeException.class, empty::getAsObject);
+        assertEquals("Unknown Variant type: null", ex.getMessage());
+    }
+
+    @Test
+    void testHashCodeForExprContextVariant() {
+        final ExprContext ctx1 = ExprContextFactory.globalContext().getAsExprContext();
+        final ExprContext ctx2 = ExprContextFactory.globalContext().getAsExprContext();
+
+        final MutableVariant v1 = VariantFactory.createEmpty();
+        v1.accept(ctx1);
+        final MutableVariant v2 = VariantFactory.createEmpty();
+        v2.accept(ctx1);
+        final MutableVariant v3 = VariantFactory.createEmpty();
+        v3.accept(ctx2);
+
+        assertEquals(v1.hashCode(), v2.hashCode());
+        assertTrue(v1.equals(v2));
+        assertFalse(v1.equals(v3));
+        assertEquals(ctx1, v1.getAsObject());
     }
 }

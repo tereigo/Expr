@@ -31,6 +31,7 @@ import static com.tereigo.expr.impl.TokenType.STRING;
 import static com.tereigo.expr.impl.TokenType.TRUE;
 import static com.tereigo.expr.impl.TokenType.WITHIN;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class ExprScannerTest {
 
@@ -133,6 +134,60 @@ class ExprScannerTest {
         testScanner("-9223372036854775809", MINUS, DOUBLE_NUMBER);
         testScanner("-9223372036854775809.", MINUS, DOUBLE_NUMBER, DOT);
         testScanner("-9223372036854775809.0", MINUS, DOUBLE_NUMBER);
+    }
+
+    @Test
+    void scanCommentsTest() {
+        testScanner("1 // trailing comment with nothing after it", LONG_NUMBER);
+        testScanner("1 + 2 // comment", LONG_NUMBER, PLUS, LONG_NUMBER);
+        testScanner("1 // comment\n+ 2", LONG_NUMBER, PLUS, LONG_NUMBER);
+    }
+
+    @Test
+    void scanNewlinesTest() {
+        testScanner("1\n+\n2", LONG_NUMBER, PLUS, LONG_NUMBER);
+        testScanner("\n\n1", LONG_NUMBER);
+        final ParseError err = assertThrows(ParseError.class, () -> new ExprScanner("1\n@"));
+        assertEquals("[line 2, pos 3]: Unexpected character", err.getMessage());
+    }
+
+    @Test
+    void scanLoneBangTest() {
+        // '!' as the very last character of the source (isAtEnd() branch inside match())
+        testScanner("!", NOT);
+    }
+
+    @Test
+    void scanInvalidCharacterTest() {
+        final ParseError err = assertThrows(ParseError.class, () -> new ExprScanner("@"));
+        assertEquals("[line 1, pos 1]: Unexpected character", err.getMessage());
+    }
+
+    @Test
+    void scanBadEqualsTest() {
+        final ParseError err = assertThrows(ParseError.class, () -> new ExprScanner("1 = 2"));
+        assertEquals("[line 1, pos 3]: Expected '==' comparison not found", err.getMessage());
+    }
+
+    @Test
+    void scanUnterminatedStringWithNewlineTest() {
+        // exercises the '\n' handling inside string() before the unterminated-string error
+        final ParseError err = assertThrows(ParseError.class, () -> new ExprScanner("\"line1\nline2"));
+        assertEquals("[line 2, pos 1]: Unterminated string", err.getMessage());
+    }
+
+    @Test
+    void scanMultiLineStringTest() {
+        testScanner("\"line1\nline2\"", STRING);
+    }
+
+    @Test
+    void scanInvalidNumberFormatTest() {
+        ParseError err = assertThrows(ParseError.class, () -> new ExprScanner("1e+"));
+        assertEquals("[line 1, pos 1]: Invalid number format", err.getMessage());
+
+        err = assertThrows(ParseError.class, () -> new ExprScanner("1e-"));
+        assertEquals("[line 1, pos 1]: Invalid number format", err.getMessage());
     }
 
     private void testScanner(final String source, final TokenType... expectedTypes) {

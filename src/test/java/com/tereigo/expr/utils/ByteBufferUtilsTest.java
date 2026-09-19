@@ -20,6 +20,7 @@ import static com.tereigo.expr.utils.ByteBufferUtils.startsWith;
 import static com.tereigo.expr.utils.ByteBufferUtils.startsWithIgnoreCase;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @SuppressWarnings("ConstantValue")
@@ -433,5 +434,117 @@ class ByteBufferUtilsTest {
         assertEquals(expected, endsWithIgnoreCase(constant(str), pattern));
         assertEquals(expected, endsWithIgnoreCase(str, constant(pattern)));
         assertEquals(expected, endsWithIgnoreCase(constant(str), constant(pattern)));
+    }
+
+    @Test
+    void equalsCharSequenceOverloadsTests() {
+        assertTrue(ByteBufferUtils.equals("A", constant("A")));
+        assertFalse(ByteBufferUtils.equals("A", constant("B")));
+        assertFalse(ByteBufferUtils.equals("AB", constant("A")));
+        assertTrue(ByteBufferUtils.equals("", constant("")));
+
+        assertTrue(ByteBufferUtils.equalsIgnoreCase(constant("A"), "a"));
+        assertFalse(ByteBufferUtils.equalsIgnoreCase(constant("A"), "b"));
+        assertTrue(ByteBufferUtils.equalsIgnoreCase(constant("ABC"), "abc"));
+
+        assertTrue(ByteBufferUtils.equalsIgnoreCase("a", constant("A")));
+        assertFalse(ByteBufferUtils.equalsIgnoreCase("b", constant("A")));
+        assertTrue(ByteBufferUtils.equalsIgnoreCase("abc", constant("ABC")));
+
+        // both null / only one null, for the CharSequence-comparator-based private equals() helper
+        assertTrue(ByteBufferUtils.equalsIgnoreCase((ByteBuffer) null, (CharSequence) null));
+        assertFalse(ByteBufferUtils.equalsIgnoreCase((ByteBuffer) null, "A"));
+        assertFalse(ByteBufferUtils.equalsIgnoreCase(constant("A"), (CharSequence) null));
+        assertFalse(ByteBufferUtils.equalsIgnoreCase((CharSequence) null, constant("A")));
+
+        // both null / only one null, for the public equals(ByteBuffer, CharSequence) overload
+        assertTrue(ByteBufferUtils.equals((ByteBuffer) null, (CharSequence) null));
+        assertFalse(ByteBufferUtils.equals((ByteBuffer) null, "A"));
+        assertFalse(ByteBufferUtils.equals(constant("A"), (CharSequence) null));
+    }
+
+    @Test
+    void parseStringTests() {
+        assertEquals("", ByteBufferUtils.parseString(constant("")));
+        assertEquals("ABC", ByteBufferUtils.parseString(constant("ABC")));
+        assertEquals("AB", ByteBufferUtils.parseString(constant("ABC"), 2));
+        assertEquals("ABC", ByteBufferUtils.parseString(constant("ABC"), 10));
+
+        final StringBuilder sb1 = new StringBuilder();
+        final ByteBuffer buf1 = constant("ABC");
+        ByteBufferUtils.parseString(buf1, sb1);
+        assertEquals("ABC", sb1.toString());
+        // must not mutate the buffer's position
+        assertEquals(0, buf1.position());
+
+        final StringBuilder sb2 = new StringBuilder();
+        ByteBufferUtils.parseString(constant("ABCDE"), sb2, 3);
+        assertEquals("ABC", sb2.toString());
+
+        final StringBuilder sb3 = new StringBuilder();
+        ByteBufferUtils.parseString(constant("AB"), sb3, 10);
+        assertEquals("AB", sb3.toString());
+    }
+
+    @Test
+    void toByteBufferTests() {
+        final ByteBuffer target = ByteBuffer.allocate(10);
+        final ByteBuffer result = ByteBufferUtils.toByteBuffer("ABC", target);
+        assertEquals("ABC", ByteBufferUtils.parseString(result));
+
+        final ByteBuffer target2 = ByteBuffer.allocate(10);
+        final ByteBuffer result2 = ByteBufferUtils.toByteBuffer("ABCDE", target2, 3);
+        assertEquals("ABC", ByteBufferUtils.parseString(result2));
+
+        final ByteBuffer target3 = ByteBuffer.allocate(3);
+        final ByteBuffer result3 = ByteBufferUtils.toByteBufferSafe("ABCDE", target3);
+        assertEquals("ABC", ByteBufferUtils.parseString(result3));
+    }
+
+    @Test
+    void deepCopyTests() {
+        final ByteBuffer source = constant("ABC");
+        final ByteBuffer target = ByteBuffer.allocate(10);
+        final ByteBuffer result = ByteBufferUtils.deepCopy(source, target);
+        assertEquals("ABC", ByteBufferUtils.parseString(result));
+        // source position/limit must be restored
+        assertEquals(0, source.position());
+        assertEquals(3, source.limit());
+
+        assertEquals(null, ByteBufferUtils.deepCopy(source, null));
+
+        final ByteBuffer tooSmall = ByteBuffer.allocate(1);
+        assertThrows(IllegalArgumentException.class, () -> ByteBufferUtils.deepCopy(constant("ABC"), tooSmall));
+    }
+
+    @Test
+    void cloneTests() {
+        final ByteBuffer original = constant("ABC");
+        final ByteBuffer clone = ByteBufferUtils.clone(original);
+        assertEquals("ABC", ByteBufferUtils.parseString(clone));
+        assertEquals(0, original.position());
+        assertTrue(clone != original);
+
+        final ByteBuffer direct = ByteBuffer.allocateDirect(3);
+        direct.put((byte) 'A').put((byte) 'B').put((byte) 'C');
+        direct.flip();
+        final ByteBuffer directClone = ByteBufferUtils.clone(direct);
+        assertEquals("ABC", ByteBufferUtils.parseString(directClone));
+        assertTrue(directClone.isDirect());
+    }
+
+    @Test
+    void compareTests() {
+        assertEquals(0, ByteBufferUtils.compare(null, null));
+        assertEquals(-1, ByteBufferUtils.compare(null, constant("A")));
+        assertEquals(1, ByteBufferUtils.compare(constant("A"), null));
+        assertEquals(0, ByteBufferUtils.compare(constant("A"), constant("A")));
+        assertTrue(ByteBufferUtils.compare(constant("A"), constant("B")) < 0);
+        assertTrue(ByteBufferUtils.compare(constant("B"), constant("A")) > 0);
+        assertTrue(ByteBufferUtils.compare(constant("AB"), constant("A")) > 0);
+        assertTrue(ByteBufferUtils.compare(constant("A"), constant("AB")) < 0);
+
+        assertEquals(0, ByteBufferUtils.compareCaseInsensitive(constant("ABC"), constant("abc")));
+        assertTrue(ByteBufferUtils.compareCaseInsensitive(constant("A"), constant("b")) < 0);
     }
 }

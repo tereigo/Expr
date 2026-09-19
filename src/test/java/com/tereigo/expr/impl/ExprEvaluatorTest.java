@@ -606,6 +606,108 @@ class ExprEvaluatorTest extends ExprEvaluatorTestBase {
     }
 
     @Test
+    void operatorWithinBetweenOptimizedTest() {
+        final ExprContext ctx = ExprContextFactory.globalContext().getAsExprContext();
+
+        // static bounds (both bracket values are literals) - exercises AstOptimizer.visitStaticWithinOperator/visitStaticBetweenOperator
+        assertTrue(evaluateBoolOptimized(ctx, "1 within [1, 2]"));
+        assertFalse(evaluateBoolOptimized(ctx, "1 within [2, 3]"));
+        assertFalse(evaluateBoolOptimized(ctx, "1 between [1, 2]"));
+        assertTrue(evaluateBoolOptimized(ctx, "1 between [0, 2]"));
+        assertTrue(evaluateBoolOptimized(ctx, "1 not within [2, 3]"));
+        assertTrue(evaluateBoolOptimized(ctx, "1 not between [2, 3]"));
+
+        // dynamic bounds (at least one bracket value is not a literal) - exercises AstOptimizer.visitWithinOperator/visitBetweenOperator
+        // and ExprInterpreter.visitWithinOperator/visitBetweenOperator via the resolved/optimized AST
+        assertTrue(evaluateBoolOptimized(ctx, "3 within [PI - 1, PI]"));
+        assertTrue(evaluateBoolOptimized(ctx, "3 within [E, PI]"));
+        assertFalse(evaluateBoolOptimized(ctx, "1 within [PI - 1, PI]"));
+        assertTrue(evaluateBoolOptimized(ctx, "3 between [PI - 1, PI]"));
+        assertFalse(evaluateBoolOptimized(ctx, "1 between [PI - 1, PI]"));
+    }
+
+    @Test
+    void operatorWithinBetweenTypeMismatchTest() {
+        // exercises the RuntimeException-catch branch of the dynamic WithinOperator/BetweenOperator
+        // (bounds are non-literal, so it's a dynamic WithinOperator/BetweenOperator, and the operand is of the wrong type)
+        RuntimeError runErr = assertThrows(RuntimeError.class, () -> evaluate("\"A\" within [PI - 1, PI]"));
+        assertTrue(runErr.getMessage().startsWith("Expression evaluation error [line 1, pos 5]:"));
+
+        runErr = assertThrows(RuntimeError.class, () -> evaluate("\"A\" between [PI - 1, PI]"));
+        assertTrue(runErr.getMessage().startsWith("Expression evaluation error [line 1, pos 5]:"));
+
+        // same, but with static (both-literal) bounds - exercises the RuntimeException-catch branch of
+        // StaticWithinOperator/StaticBetweenOperator instead
+        runErr = assertThrows(RuntimeError.class, () -> evaluate("\"A\" within [1, 2]"));
+        assertTrue(runErr.getMessage().startsWith("Expression evaluation error [line 1, pos 5]:"));
+
+        runErr = assertThrows(RuntimeError.class, () -> evaluate("\"A\" between [1, 2]"));
+        assertTrue(runErr.getMessage().startsWith("Expression evaluation error [line 1, pos 5]:"));
+    }
+
+    @Test
+    void directConstructionTest() {
+        // package-private single-arg constructors, not reachable through the public ExprEvaluatorFactory API
+        // (which always routes through the (source, constants) constructor, even with an empty constants map)
+        final ExprEvaluatorImpl fromString = new ExprEvaluatorImpl("1 + 1");
+        assertEquals(2, fromString.evaluateLong());
+        assertEquals(2L, fromString.evaluateAsObject());
+        assertEquals(2L, fromString.evaluateAsObject(ExprContextNative.get()));
+
+        final ExprEvaluatorImpl fromByteBuffer = new ExprEvaluatorImpl(constant("1 + 1"));
+        assertEquals(2, fromByteBuffer.evaluateLong());
+
+        final ExprEvaluatorImpl withBytesAndConstants = new ExprEvaluatorImpl(constant("$a + 1"),
+                java.util.Map.of("$a", new Expr.Literal(41L)));
+        assertEquals(42, withBytesAndConstants.evaluateLong());
+
+        // no-arg evaluateByteBuffer() delegates to evaluateByteBuffer(ExprContextNative.get())
+        final RuntimeException ex = assertThrows(RuntimeException.class, () -> new ExprEvaluatorImpl("1").evaluateByteBuffer());
+        assertEquals("Result of an unexpected type: Variant type mismatch: LONG, expected: BYTE_BUFFER", ex.getMessage());
+    }
+
+    @Test
+    void wrapTypeErrorForEveryEvaluateMethodTest() {
+        final ExprContext ctx = ExprContextNative.get();
+
+        // ExprEvaluatorImpl(ctx) - evaluating a LONG result via the "wrong" accessor
+        assertThrows(RuntimeException.class, () -> evaluateBool("1", ctx));
+        assertThrows(RuntimeException.class, () -> evaluateLong("true", ctx));
+        assertThrows(RuntimeException.class, () -> evaluateNumber("true", ctx));
+        assertThrows(RuntimeException.class, () -> evaluateString("1", ctx));
+
+        // ExprEvaluatorOptimized - same, through the optimized evaluator
+        assertThrows(RuntimeException.class, () -> evaluateBoolOptimized(ctx, "1"));
+        assertThrows(RuntimeException.class, () -> evaluateLongOptimized(ctx, "true"));
+        assertThrows(RuntimeException.class, () -> evaluateNumberOptimized(ctx, "\"A\""));
+        assertThrows(RuntimeException.class, () -> evaluateStringOptimized(ctx, "1"));
+        assertThrows(RuntimeException.class, () -> evaluateByteBufferOptimized(ctx, "1"));
+    }
+
+    @Test
+    void ternaryOptimizedTest() {
+        final ExprContext ctx = ExprContextFactory.globalContext().getAsExprContext();
+        assertEquals(1, evaluateLongOptimized(ctx, "true ? 1 : 2"));
+        assertEquals(2, evaluateLongOptimized(ctx, "false ? 1 : 2"));
+        assertEquals(9, evaluateLongOptimized(ctx, "5 + ((1 == 2) ? 3 : 4)"));
+    }
+
+    @Test
+    void identifierSupplierThrowsRuntimeExceptionTest() {
+        // an identifier resolved directly to a value (not a function call) throwing a plain RuntimeException
+        // is NOT wrapped into a RuntimeError by ExprInterpreter - it propagates as a plain RuntimeException,
+        // caught by the generic "catch (RuntimeException ex)" branch in ExprEvaluatorBase.evaluate()
+        final ExprContextBuilder builder = ExprContextFactory.globalContext();
+        builder.addLong("$broken", () -> {
+            throw new RuntimeException("supplier failed");
+        });
+        final ExprContext ctx = builder.getAsExprContext();
+
+        final RuntimeException ex = assertThrows(RuntimeException.class, () -> evaluate("$broken + 1", ctx));
+        assertEquals("Expression evaluation error: supplier failed in expression '$broken + 1'", ex.getMessage());
+    }
+
+    @Test
     void testMalformedExpressions() {
         ParseError err;
         RuntimeError runErr;
@@ -693,6 +795,16 @@ class ExprEvaluatorTest extends ExprEvaluatorTestBase {
         assertEquals("Expression parsing error [line 1, pos 13]: Expect 2 values separated by ',' in range operator in expression '1 between [2]'", err.getMessage());
         err = assertThrows(ParseError.class, () -> evaluate("1 between [2, 3, 4]"));
         assertEquals("Expression parsing error [line 1, pos 16]: Expect ']' after '[' and 2 numbers in expression '1 between [2, 3, 4]'", err.getMessage());
+        err = assertThrows(ParseError.class, () -> evaluate("1 within 5"));
+        assertEquals("Expression parsing error [line 1, pos 10]: Expect '[' after WITHIN/BETWEEN operator in expression '1 within 5'", err.getMessage());
+        err = assertThrows(ParseError.class, () -> evaluate("1 between 5"));
+        assertEquals("Expression parsing error [line 1, pos 11]: Expect '[' after WITHIN/BETWEEN operator in expression '1 between 5'", err.getMessage());
+        err = assertThrows(ParseError.class, () -> evaluate("1 within [true, 2]"));
+        assertEquals("Expression parsing error [line 1, pos 15]: Expect a number inside '[]' for range WITHIN/BETWEEN operator in expression '1 within [true, 2]'", err.getMessage());
+        err = assertThrows(ParseError.class, () -> evaluate("1 within [2, true]"));
+        assertEquals("Expression parsing error [line 1, pos 18]: Expect a number inside '[]' for range WITHIN/BETWEEN operator in expression '1 within [2, true]'", err.getMessage());
+        err = assertThrows(ParseError.class, () -> evaluate("1 between [\"A\", 2]"));
+        assertEquals("Expression parsing error [line 1, pos 15]: Expect a number inside '[]' for range WITHIN/BETWEEN operator in expression '1 between [\"A\", 2]'", err.getMessage());
         err = assertThrows(ParseError.class, () -> evaluate("-not(true)"));
         assertEquals("Expression parsing error [line 1, pos 2]: Expect expression in expression '-not(true)'", err.getMessage());
         err = assertThrows(ParseError.class, () -> evaluate("not-true"));
@@ -835,6 +947,20 @@ class ExprEvaluatorTest extends ExprEvaluatorTestBase {
 
         runErr = assertThrows(RuntimeError.class, () -> evaluate("isEven($tuid)", ctx));
         assertEquals("Expression evaluation error [line 1, pos 1]: RuntimeException in function 'isEven': Variant type mismatch: BYTE_BUFFER, expected: LONG in expression 'isEven($tuid)'", runErr.getMessage());
+
+        // ClassCastException via the dot-chain (object-call) path: func1 is registered as a 1-arg function (Function1),
+        // but calling it as "10.func1(5)" supplies "this" plus 1 explicit arg (2 total), requiring a Function2 cast
+        runErr = assertThrows(RuntimeError.class, () -> evaluate("10.func1(5)", ctx));
+        assertTrue(runErr.getMessage().matches(".*ClassCastException in function 'func1':.*cannot be cast to.*com.tereigo.expr.function.Function2.*"));
+
+        // same, but through the optimized evaluator - exercises ExprInterpreter.visitResolvedObjectCallExpr's ClassCastException catch
+        runErr = assertThrows(RuntimeError.class, () -> evaluateBoolOptimized(ctx, "10.func1(5)"));
+        assertTrue(runErr.getMessage().matches(".*ClassCastException in function 'func1':.*cannot be cast to.*com.tereigo.expr.function.Function2.*"));
+
+        // generic RuntimeException (not ClassCastException) via the dot-chain path on the optimized evaluator -
+        // exercises ExprInterpreter.visitResolvedObjectCallExpr's "catch (RuntimeException runtimeEx)" branch
+        runErr = assertThrows(RuntimeError.class, () -> evaluateDoubleOptimized(ctx, "10.func2(\"A\")"));
+        assertEquals("Expression evaluation error [line 1, pos 4]: RuntimeException in function 'func2': Variant type mismatch: STRING, expected: DOUBLE in expression '10.func2(\"A\")'", runErr.getMessage());
 
         runErr = assertThrows(RuntimeError.class, () -> evaluate("unknownFunction($tuid)", ctx));
         assertEquals("Expression evaluation error [line 1, pos 1]: Unknown function 'unknownFunction' in expression 'unknownFunction($tuid)'", runErr.getMessage());

@@ -724,6 +724,54 @@ public class ExprEvaluatorTest extends ExprEvaluatorTestBase {
     }
 
     @Test
+    void byteBufferLiteralEqualsTest() {
+        // coverage for "field == 'literal'" where the field is BYTE_BUFFER-typed at runtime
+        // (VariantUtils.isEqual's ByteBuffer/String cross-type branch): both operand orders,
+        // case sensitivity, length/prefix mismatches, empty buffers, the "in" operator, and the
+        // optimized (static-context) evaluator.
+        final ExprContextBuilder builder = ExprContextFactory.globalContext();
+        builder.addByteBuffer("ric", () -> constant("VOD.L"));
+        builder.addByteBuffer("empty", () -> constant(""));
+        final ExprContext ctx = builder.getAsExprContext();
+
+        // literal on the right
+        assertTrue(evaluateBool("ric == 'VOD.L'", ctx));
+        assertFalse(evaluateBool("ric == 'BT.L'", ctx));
+        assertFalse(evaluateBool("ric == 'VOD.L '", ctx));    // trailing space -> different length
+        assertFalse(evaluateBool("ric == 'VOD.'", ctx));      // prefix -> different length
+        assertTrue(evaluateBool("ric != 'BT.L'", ctx));
+        assertFalse(evaluateBool("ric != 'VOD.L'", ctx));
+
+        // literal on the left
+        assertTrue(evaluateBool("'VOD.L' == ric", ctx));
+        assertFalse(evaluateBool("'BT.L' == ric", ctx));
+        assertTrue(evaluateBool("'BT.L' != ric", ctx));
+
+        // case sensitivity must be preserved (== is case-sensitive, unlike equalsIgnoreCase())
+        assertFalse(evaluateBool("ric == 'vod.l'", ctx));
+
+        // empty ByteBuffer vs empty string literal
+        assertTrue(evaluateBool("empty == ''", ctx));
+        assertFalse(evaluateBool("empty == 'x'", ctx));
+        assertFalse(evaluateBool("ric == ''", ctx));
+
+        // the "in" operator's list entries hit the same fast path
+        assertTrue(evaluateBool("ric in ['BT.L', 'VOD.L', 'TSCO.L']", ctx));
+        assertFalse(evaluateBool("ric in ['BT.L', 'TSCO.L']", ctx));
+
+        // same assertions through the optimized (static-context) evaluator
+        assertTrue(evaluateBoolOptimized(ctx, "ric == 'VOD.L'"));
+        assertFalse(evaluateBoolOptimized(ctx, "ric == 'BT.L'"));
+        assertTrue(evaluateBoolOptimized(ctx, "'VOD.L' == ric"));
+        assertTrue(evaluateBoolOptimized(ctx, "empty == ''"));
+        assertTrue(evaluateBoolOptimized(ctx, "ric in ['BT.L', 'VOD.L', 'TSCO.L']"));
+
+        // a ByteBuffer compared against an incompatible type is a runtime type-mismatch error
+        final RuntimeError runErr = assertThrows(RuntimeError.class, () -> evaluate("ric == 1", ctx));
+        assertTrue(runErr.getMessage().contains("Operands of different types cannot be compared"));
+    }
+
+    @Test
     void testMalformedExpressions() {
         ParseError err;
         RuntimeError runErr;

@@ -80,8 +80,19 @@ class ByteBufferUtilsTest {
         assertTrue(ByteBufferUtils.equals(constant(""), constant("")));
         assertFalse(ByteBufferUtils.equals(constant("A"), constant("B")));
         assertFalse(ByteBufferUtils.equals(constant("A"), constant("AB")));
+        assertFalse(ByteBufferUtils.equals(constant("AB"), constant("A")));
         final ByteBuffer same = constant("A");
         assertTrue(ByteBufferUtils.equals(same, same));
+
+        // equals() must respect position/limit slicing, not compare from absolute index 0
+        // (regression test for the ByteBuffer.mismatch()-based fast path)
+        final ByteBuffer sliced = ByteBuffer.wrap("XXABCXX".getBytes(StandardCharsets.US_ASCII));
+        sliced.position(2);
+        sliced.limit(5);
+        assertTrue(ByteBufferUtils.equals(sliced, constant("ABC")));
+        assertTrue(ByteBufferUtils.equals(constant("ABC"), sliced));
+        assertFalse(ByteBufferUtils.equals(sliced, constant("XXA")));
+        assertFalse(ByteBufferUtils.equals(constant("XXA"), sliced));
     }
 
     @Test

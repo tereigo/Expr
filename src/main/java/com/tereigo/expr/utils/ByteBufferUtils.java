@@ -301,7 +301,17 @@ public final class ByteBufferUtils {
     ///////////////////////////////////////////////////////////////////////////////////////////////////
 
     public static boolean equals(final ByteBuffer buffer, final ByteBuffer other) {
-        return equals(buffer, other, BYTE_CASE_SENSITIVE_COMPARATOR);
+        if (buffer == other) {
+            return true;
+        }
+        if (buffer == null || other == null) {
+            return false;
+        }
+        // ByteBuffer.mismatch() is a JDK-intrinsified, vectorized bulk compare - faster than the
+        // manual per-byte loop in equals(ByteBuffer, ByteBuffer, ByteComparator) below, and it
+        // already accounts for length differences: it returns -1 only when both buffers have the
+        // same remaining length AND identical content.
+        return buffer.mismatch(other) == -1;
     }
 
     public static boolean equals(final CharSequence str, final ByteBuffer buffer) {

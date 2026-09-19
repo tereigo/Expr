@@ -708,6 +708,22 @@ public class ExprEvaluatorTest extends ExprEvaluatorTestBase {
     }
 
     @Test
+    void identifiersAndFunctionsWithUnderscoresTest() {
+        // end-to-end regression test for the ExprScanner.isAlphaNumeric() bug: identifiers/function
+        // names with an underscore (or '$') anywhere past the first character used to silently
+        // split into two adjacent identifier tokens instead of scanning as a single token.
+        final ExprContextBuilder builder = ExprContextFactory.globalContext();
+        builder.addLong("client_id", () -> 42L);
+        builder.addFunction("my_func", (result, arg1) -> result.accept(arg1.getAsLong() * 2));
+        final ExprContext ctx = builder.getAsExprContext();
+
+        assertEquals(42, evaluateLong("client_id", ctx));
+        assertTrue(evaluateBool("client_id == 42", ctx));
+        assertEquals(84, evaluateLong("my_func(client_id)", ctx));
+        assertTrue(evaluateBool("(client_id == 42) and (my_func(client_id) == 84)", ctx));
+    }
+
+    @Test
     void testMalformedExpressions() {
         ParseError err;
         RuntimeError runErr;

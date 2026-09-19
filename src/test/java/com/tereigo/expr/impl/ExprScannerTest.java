@@ -190,6 +190,37 @@ class ExprScannerTest {
         assertEquals("[line 1, pos 1]: Invalid number format", err.getMessage());
     }
 
+    @Test
+    void scanUnderscoreAndDollarIdentifiersTest() {
+        // isAlpha() allows '_'/'$' to start an identifier, and isAlphaNumeric() must allow them
+        // to continue one too - otherwise e.g. "c_x" silently splits into two adjacent
+        // identifier tokens ("c" and "_x") instead of scanning as a single "c_x" token.
+        testScanner("c_x", IDENTIFIER);
+        testScanner("my_variable_name", IDENTIFIER);
+        testScanner("client_id", IDENTIFIER);
+        testScanner("_leading", IDENTIFIER);
+        testScanner("trailing_", IDENTIFIER);
+        testScanner("$a_b", IDENTIFIER);
+        testScanner("a$b", IDENTIFIER);
+        testScanner("a_b$c_d", IDENTIFIER);
+        testScanner("true and c_x()", TRUE, AND, IDENTIFIER, LEFT_PAREN, RIGHT_PAREN);
+        testScanner("(c_x == 1)", LEFT_PAREN, IDENTIFIER, EQUAL_EQUAL, LONG_NUMBER, RIGHT_PAREN);
+
+        assertLexeme("c_x", "c_x");
+        assertLexeme("my_variable_name", "my_variable_name");
+        assertLexeme("client_id", "client_id");
+        assertLexeme("_leading", "_leading");
+        assertLexeme("trailing_", "trailing_");
+        assertLexeme("$a_b", "$a_b");
+        assertLexeme("a_b$c_d", "a_b$c_d");
+    }
+
+    private void assertLexeme(final String source, final String expectedLexeme) {
+        final ExprScanner scanner = new ExprScanner(source);
+        assertEquals(1, scanner.tokens().size() - 1, "Actual tokens: " + scanner.tokens());
+        assertEquals(expectedLexeme, scanner.tokens().get(0).lexeme);
+    }
+
     private void testScanner(final String source, final TokenType... expectedTypes) {
         final ExprScanner scanner = new ExprScanner(source);
         int i = 0;

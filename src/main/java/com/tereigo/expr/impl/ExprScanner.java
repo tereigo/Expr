@@ -76,7 +76,7 @@ final class ExprScanner {
     }
 
     private static boolean isAlphaNumeric(final char c) {
-        return Character.isLetterOrDigit(c);
+        return Character.isLetterOrDigit(c) || c == '_' || c == '$';
     }
 
     private static boolean isDigit(final char c) {

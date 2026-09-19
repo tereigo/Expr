@@ -1,0 +1,68 @@
+package com.tereigo.expr.algo.vwap;
+
+import com.tereigo.expr.ExprContext;
+import com.tereigo.expr.ExprContextBuilder;
+import com.tereigo.expr.ExprEvaluatorWithContext;
+import com.tereigo.expr.FlatExprEvaluatorFactory;
+import com.tereigo.expr.domains.FalconExprContextBuilder;
+import com.tereigo.expr.domains.order.OrderDomain;
+import com.tereigo.expr.domains.order.OrderFieldResolverImpl;
+import com.tereigo.expr.falcon.utils.ReferenceDataCacheImpl;
+import com.tereigo.expr.order.TestVwapOrder;
+import com.tereigo.expr.utils.ByteBufferUtils;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import java.util.concurrent.TimeUnit;
+
+// Flat-AST evaluator variant of VwapOrderExprContextSimpleBenchmarkTest - same setup, same
+// expression, so the printed timings are directly comparable. This class is just for debugging
+// purposes (see the original for the real JMH benchmark).
+class VwapOrderExprContextSimpleFlatBenchmarkTest {
+
+    ExprContext ctx;
+    ExprEvaluatorWithContext evaluator;
+
+    @BeforeEach
+    void setUp() {
+        final ReferenceDataCacheImpl refData = new ReferenceDataCacheImpl();
+
+        final OrderFieldResolverImpl orderFieldResolver;
+
+        final TestVwapOrder order1 = TestVwapOrder.create()
+                .withProductId(123).withClientId(1).withVolumeLimit(0.1);
+        final TestVwapOrder order2 = TestVwapOrder.create()
+                .withProductId(124).withClientId(2).withVolumeLimit(0.2);
+        final TestVwapOrder order3 = TestVwapOrder.create()
+                .withProductId(124).withClientId(3).withVolumeLimit(0.2);
+
+        refData.addTuid(1, ByteBufferUtils.constant("CLIENT1"));
+        refData.addTuid(2, ByteBufferUtils.constant("CLIENT2"));
+
+        refData.addRic(123, ByteBufferUtils.constant("VOD.L"));
+        refData.addRic(124, ByteBufferUtils.constant("BP.L"));
+
+        OrderDomain.init(refData);
+
+        orderFieldResolver = new OrderFieldResolverImpl();
+        final ExprContextBuilder mutCtx = FalconExprContextBuilder.start().orderWithShortcuts(orderFieldResolver).build();
+        final VwapOrderExprContextCreator creator = new VwapOrderExprContextCreator();
+        creator.enrich(orderFieldResolver, mutCtx);
+
+        ctx = mutCtx.getAsExprContext();
+
+        orderFieldResolver.setOrder(order1);
+
+        evaluator = FlatExprEvaluatorFactory.create("(vwap.volumeLimit == 0.1) and (vwap.ric == 'VOD.L') and (order.ric == 'VOD.L') and (ric == 'VOD.L') and (vwap.tuid == 'CLIENT1') and (order.tuid == 'CLIENT1') and (tuid == 'CLIENT1') and (ric in ['BT.L', 'VOD.L', 'TSCO.L'])");
+    }
+
+    @Test
+    public void benchmarkSimpleExpression() {
+        final long start = System.nanoTime();
+        for (int i = 0; i < 10_000_000; i++) {
+            evaluator.evaluateBool(ctx);
+        }
+        final long end = System.nanoTime();
+        System.out.println("Test took " + TimeUnit.MILLISECONDS.convert(end - start, TimeUnit.NANOSECONDS) + " ms");
+    }
+}

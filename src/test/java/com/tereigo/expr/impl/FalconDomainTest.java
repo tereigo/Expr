@@ -12,7 +12,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-class FalconDomainTest extends ExprEvaluatorTestBase {
+public class FalconDomainTest extends ExprEvaluatorTestBase {
     private boolean optimized;
 
     @Test

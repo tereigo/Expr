@@ -1,6 +1,6 @@
-package com.tereigo.expr.impl;
+package com.tereigo.expr.utils;
 
-class ExceptionUtils {
+public class ExceptionUtils {
 
     private ExceptionUtils() {
     }

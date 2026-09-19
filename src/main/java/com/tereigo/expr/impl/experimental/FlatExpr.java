@@ -1,6 +1,7 @@
-package com.tereigo.expr.impl;
+package com.tereigo.expr.impl.experimental;
 
 import com.tereigo.expr.function.Function0;
+import com.tereigo.expr.impl.Token;
 import com.tereigo.expr.variant.MutableVariant;
 import com.tereigo.expr.variant.Variant;
 import com.tereigo.expr.variant.VariantFactory;

@@ -8,11 +8,11 @@ import com.tereigo.expr.variant.VariantFactory;
 
 import java.util.List;
 
-abstract class Expr {
+public abstract class Expr {
 
-    abstract <R> R accept(Visitor<R> visitor);
+    public abstract <R> R accept(Visitor<R> visitor);
 
-    interface Visitor<R> {
+    public interface Visitor<R> {
         R visitBinaryExpr(Binary expr);     // ==, !=, >, >=, <, <=, +, -, *, /
 
         R visitInOperator(InOperator expr); // in [...]
@@ -46,19 +46,19 @@ abstract class Expr {
         R visitResolvedObjectCallExpr(ResolvedObjectCall expr); // call method from the object
     }
 
-    static abstract class BaseExpr extends Expr {
-        final Token operator;
+    public abstract static class BaseExpr extends Expr {
+        public final Token operator;
         // result of the evaluation of this expression
-        final MutableVariant result = VariantFactory.createEmpty();
+        public final MutableVariant result = VariantFactory.createEmpty();
 
         BaseExpr(final Token operator) {
             this.operator = operator;
         }
     }
 
-    static class Binary extends BaseExpr {
-        final Expr left;
-        final Expr right;
+    public static class Binary extends BaseExpr {
+        public final Expr left;
+        public final Expr right;
 
         Binary(final Expr left, final Token operator, final Expr right) {
             super(operator);
@@ -67,14 +67,14 @@ abstract class Expr {
         }
 
         @Override
-        <R> R accept(final Visitor<R> visitor) {
+        public <R> R accept(final Visitor<R> visitor) {
             return visitor.visitBinaryExpr(this);
         }
     }
 
-    static class InOperator extends BaseExpr {
-        final Expr operand;
-        final List<Expr> values;
+    public static class InOperator extends BaseExpr {
+        public final Expr operand;
+        public final List<Expr> values;
 
         InOperator(final Expr operand, final Token operator, final List<Expr> values) {
             super(operator);
@@ -83,15 +83,15 @@ abstract class Expr {
         }
 
         @Override
-        <R> R accept(final Visitor<R> visitor) {
+        public <R> R accept(final Visitor<R> visitor) {
             return visitor.visitInOperator(this);
         }
     }
 
-    abstract static class RangeOperator extends BaseExpr {
-        final Expr operand;
-        final Expr min;
-        final Expr max;
+    public abstract static class RangeOperator extends BaseExpr {
+        public final Expr operand;
+        public final Expr min;
+        public final Expr max;
 
         RangeOperator(final Expr operand, final Token operator, final Expr min, final Expr max) {
             super(operator);
@@ -101,32 +101,32 @@ abstract class Expr {
         }
     }
 
-    static class WithinOperator extends RangeOperator {
+    public static class WithinOperator extends RangeOperator {
         WithinOperator(final Expr operand, final Token operator, final Expr min, final Expr max) {
             super(operand, operator, min, max);
         }
 
         @Override
-        <R> R accept(final Visitor<R> visitor) {
+        public <R> R accept(final Visitor<R> visitor) {
             return visitor.visitWithinOperator(this);
         }
     }
 
-    static class BetweenOperator extends RangeOperator {
+    public static class BetweenOperator extends RangeOperator {
         BetweenOperator(final Expr operand, final Token operator, final Expr min, final Expr max) {
             super(operand, operator, min, max);
         }
 
         @Override
-        <R> R accept(final Visitor<R> visitor) {
+        public <R> R accept(final Visitor<R> visitor) {
             return visitor.visitBetweenOperator(this);
         }
     }
 
-    abstract static class StaticRangeOperator extends BaseExpr {
-        final Expr operand;
-        final Variant min;
-        final Variant max;
+    public abstract static class StaticRangeOperator extends BaseExpr {
+        public final Expr operand;
+        public final Variant min;
+        public final Variant max;
 
         StaticRangeOperator(final Expr operand, final Token operator, final Variant min, final Variant max) {
             super(operator);
@@ -136,29 +136,29 @@ abstract class Expr {
         }
     }
 
-    static class StaticWithinOperator extends StaticRangeOperator {
+    public static class StaticWithinOperator extends StaticRangeOperator {
         StaticWithinOperator(final Expr operand, final Token operator, final Variant min, final Variant max) {
             super(operand, operator, min, max);
         }
 
         @Override
-        <R> R accept(final Visitor<R> visitor) {
+        public <R> R accept(final Visitor<R> visitor) {
             return visitor.visitStaticWithinOperator(this);
         }
     }
 
-    static class StaticBetweenOperator extends StaticRangeOperator {
+    public static class StaticBetweenOperator extends StaticRangeOperator {
         StaticBetweenOperator(final Expr operand, final Token operator, final Variant min, final Variant max) {
             super(operand, operator, min, max);
         }
 
         @Override
-        <R> R accept(final Visitor<R> visitor) {
+        public <R> R accept(final Visitor<R> visitor) {
             return visitor.visitStaticBetweenOperator(this);
         }
     }
 
-    static class Literal extends Expr implements ExprConstant {
+    public static class Literal extends Expr implements ExprConstant {
         static final Literal BOOL_TRUE = new Expr.Literal(true);
         static final Literal BOOL_FALSE = new Expr.Literal(false);
 
@@ -166,33 +166,33 @@ abstract class Expr {
         static final Literal E = new Expr.Literal(Math.E);
 
         // for Literal it's Variant because it's immutable
-        final Variant result;
+        public final Variant result;
 
-        Literal(final double value) {
+        public Literal(final double value) {
             this.result = VariantFactory.createImmutableDouble(value);
         }
 
-        Literal(final long value) {
+        public Literal(final long value) {
             this.result = VariantFactory.createImmutableLong(value);
         }
 
-        Literal(final boolean value) {
+        public Literal(final boolean value) {
             this.result = VariantFactory.createImmutableBoolean(value);
         }
 
-        Literal(final String value) {
+        public Literal(final String value) {
             this.result = VariantFactory.createImmutableString(value);
         }
 
         @Override
-        <R> R accept(final Visitor<R> visitor) {
+        public <R> R accept(final Visitor<R> visitor) {
             return visitor.visitLiteralExpr(this);
         }
     }
 
-    static class Logical extends BaseExpr {
-        final Expr left;
-        final Expr right;
+    public static class Logical extends BaseExpr {
+        public final Expr left;
+        public final Expr right;
 
         Logical(final Expr left, final Token operator, final Expr right) {
             super(operator);
@@ -201,16 +201,16 @@ abstract class Expr {
         }
 
         @Override
-        <R> R accept(final Visitor<R> visitor) {
+        public <R> R accept(final Visitor<R> visitor) {
             return visitor.visitLogicalExpr(this);
         }
     }
 
-    static class Ternary extends Expr {
-        final Token operator;
-        final Expr condition;
-        final Expr trueExpr;
-        final Expr falseExpr;
+    public static class Ternary extends Expr {
+        public final Token operator;
+        public final Expr condition;
+        public final Expr trueExpr;
+        public final Expr falseExpr;
 
         Ternary(final Token operator, final Expr condition, final Expr trueExpr, final Expr falseExpr) {
             this.operator = operator;
@@ -220,13 +220,13 @@ abstract class Expr {
         }
 
         @Override
-        <R> R accept(final Visitor<R> visitor) {
+        public <R> R accept(final Visitor<R> visitor) {
             return visitor.visitTernaryExpr(this);
         }
     }
 
-    static class Unary extends BaseExpr {
-        final Expr expression;
+    public static class Unary extends BaseExpr {
+        public final Expr expression;
 
         Unary(final Token operator, final Expr expression) {
             super(operator);
@@ -234,24 +234,24 @@ abstract class Expr {
         }
 
         @Override
-        <R> R accept(final Visitor<R> visitor) {
+        public <R> R accept(final Visitor<R> visitor) {
             return visitor.visitUnaryExpr(this);
         }
     }
 
-    static class Identifier extends BaseExpr {
+    public static class Identifier extends BaseExpr {
         Identifier(final Token name) {
             super(name);
         }
 
         @Override
-        <R> R accept(final Visitor<R> visitor) {
+        public <R> R accept(final Visitor<R> visitor) {
             return visitor.visitIdentifierExpr(this);
         }
     }
 
-    static class ResolvedIdentifier extends BaseExpr {
-        final Function0 function;
+    public static class ResolvedIdentifier extends BaseExpr {
+        public final Function0 function;
 
         ResolvedIdentifier(final Token name, final Function0 function) {
             super(name);
@@ -259,13 +259,13 @@ abstract class Expr {
         }
 
         @Override
-        <R> R accept(final Visitor<R> visitor) {
+        public <R> R accept(final Visitor<R> visitor) {
             return visitor.visitResolvedIdentifierExpr(this);
         }
     }
 
-    static class Call extends BaseExpr {
-        final List<Expr> args;
+    public static class Call extends BaseExpr {
+        public final List<Expr> args;
 
         Call(final Token name, final List<Expr> args) {
             super(name);
@@ -273,14 +273,14 @@ abstract class Expr {
         }
 
         @Override
-        <R> R accept(final Visitor<R> visitor) {
+        public <R> R accept(final Visitor<R> visitor) {
             return visitor.visitCallExpr(this);
         }
     }
 
-    static class ResolvedCall extends BaseExpr {
-        final Object function;
-        final List<Expr> args;
+    public static class ResolvedCall extends BaseExpr {
+        public final Object function;
+        public final List<Expr> args;
 
         ResolvedCall(final Token name, final Object function, final List<Expr> args) {
             super(name);
@@ -289,13 +289,13 @@ abstract class Expr {
         }
 
         @Override
-        <R> R accept(final Visitor<R> visitor) {
+        public <R> R accept(final Visitor<R> visitor) {
             return visitor.visitResolvedCallExpr(this);
         }
     }
 
-    static class ObjectCall extends Call {
-        final Expr object;
+    public static class ObjectCall extends Call {
+        public final Expr object;
 
         ObjectCall(final Expr object, final Token name, final List<Expr> args) {
             super(name, args);
@@ -303,13 +303,13 @@ abstract class Expr {
         }
 
         @Override
-        <R> R accept(final Visitor<R> visitor) {
+        public <R> R accept(final Visitor<R> visitor) {
             return visitor.visitObjectCallExpr(this);
         }
     }
 
-    static class ResolvedObjectCall extends ResolvedCall {
-        final Expr object;
+    public static class ResolvedObjectCall extends ResolvedCall {
+        public final Expr object;
 
         ResolvedObjectCall(final Expr object, final Token name, final Object function, final List<Expr> args) {
             super(name, function, args);
@@ -317,7 +317,7 @@ abstract class Expr {
         }
 
         @Override
-        <R> R accept(final Visitor<R> visitor) {
+        public <R> R accept(final Visitor<R> visitor) {
             return visitor.visitResolvedObjectCallExpr(this);
         }
     }

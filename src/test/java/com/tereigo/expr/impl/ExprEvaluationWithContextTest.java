@@ -21,7 +21,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-class ExprEvaluationWithContextTest extends ExprEvaluatorTestBase {
+public class ExprEvaluationWithContextTest extends ExprEvaluatorTestBase {
 
     private static ExprContext createTestObjExprContext(final String nodeName, final ByteBuffer algoType) {
         return ExprContextFactory.localContext()

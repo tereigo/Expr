@@ -8,7 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-class ExprComparisonsTest extends ExprEvaluatorTestBase {
+public class ExprComparisonsTest extends ExprEvaluatorTestBase {
 
     @Test
     void equalityTests() {

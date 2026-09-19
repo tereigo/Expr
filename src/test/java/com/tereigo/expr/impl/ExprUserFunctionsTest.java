@@ -24,7 +24,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-class ExprUserFunctionsTest extends ExprEvaluatorTestBase {
+public class ExprUserFunctionsTest extends ExprEvaluatorTestBase {
     private boolean optimized;
 
     private static ExprContext createContext(final SimpleOrderFieldSupplier orderSupplier) {

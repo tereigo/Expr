@@ -5,7 +5,7 @@ import com.tereigo.expr.ExprContext;
 /*
   Context storage for Expr native functions
  */
-final class ExprContextNative {
+public final class ExprContextNative {
 
     private static final ExprContext INSTANCE;
 

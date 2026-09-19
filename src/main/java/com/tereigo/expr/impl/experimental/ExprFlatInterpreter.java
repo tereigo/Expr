@@ -1,4 +1,4 @@
-package com.tereigo.expr.impl;
+package com.tereigo.expr.impl.experimental;
 
 import com.tereigo.expr.ExprContext;
 import com.tereigo.expr.function.Function0;
@@ -7,11 +7,14 @@ import com.tereigo.expr.function.Function2;
 import com.tereigo.expr.function.Function3;
 import com.tereigo.expr.function.Function4;
 import com.tereigo.expr.function.Function5;
+import com.tereigo.expr.impl.RuntimeError;
+import com.tereigo.expr.impl.Token;
+import com.tereigo.expr.impl.TokenType;
 import com.tereigo.expr.variant.MutableVariant;
 import com.tereigo.expr.variant.Variant;
 import com.tereigo.expr.variant.VariantUtils;
 
-import static com.tereigo.expr.impl.ExceptionUtils.getExceptionMsg;
+import static com.tereigo.expr.utils.ExceptionUtils.getExceptionMsg;
 import static com.tereigo.expr.variant.VariantUtils.isBoolean;
 import static com.tereigo.expr.variant.VariantUtils.isExprContext;
 

@@ -13,7 +13,7 @@ import com.tereigo.expr.variant.VariantUtils;
 
 import java.util.List;
 
-import static com.tereigo.expr.impl.ExceptionUtils.getExceptionMsg;
+import static com.tereigo.expr.utils.ExceptionUtils.getExceptionMsg;
 import static com.tereigo.expr.variant.VariantUtils.isBoolean;
 import static com.tereigo.expr.variant.VariantUtils.isExprContext;
 

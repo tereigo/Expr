@@ -84,4 +84,64 @@ class ExprEvaluatorCacheTest {
         final ExprEvaluatorWithContext evaluator = creator.create("1 + 1");
         assertEquals(2, evaluator.evaluateLong());
     }
+
+    // FlatExprEvaluatorFactory (com.tereigo.expr.impl.experimental) mirrors ExprEvaluatorFactory's API exactly,
+    // and is usable the same way, including as an ExprEvaluatorCreator method reference for caching.
+
+    @Test
+    public void testFlatExprEvaluatorCache() {
+        final ExprEvaluatorSupplier<ExprEvaluator> cache = ExprEvaluatorCacheFactory.create(FlatExprEvaluatorFactory::create);
+        final ExprEvaluator evaluator = cache.getEvaluator(ByteBufferUtils.constant("1 + 1"));
+        assertNotNull(evaluator);
+        assertSame(evaluator, cache.getEvaluator(ByteBufferUtils.constant("1 + 1")));
+        assertEquals(2, evaluator.evaluateLong());
+        final ExprEvaluator evaluator2 = cache.getEvaluator(ByteBufferUtils.constant("1 + 2"));
+        assertNotNull(evaluator2);
+        assertEquals(3, evaluator2.evaluateLong());
+        assertSame(evaluator2, cache.getEvaluator(ByteBufferUtils.constant("1 + 2")));
+        assertNotSame(evaluator, evaluator2);
+    }
+
+    @Test
+    public void testFlatExprEvaluatorCacheWithStaticContext() {
+        final ExprContext ctx = ExprContextFactory.globalContext().addLong("a", () -> 1).getAsExprContext();
+        final ExprEvaluatorSupplier<ExprEvaluator> cache = ExprEvaluatorCacheFactory.create(source -> FlatExprEvaluatorFactory.create(ctx, source));
+        final ExprEvaluator evaluator = cache.getEvaluator(ByteBufferUtils.constant("a + 1"));
+        assertNotNull(evaluator);
+        assertEquals(2, evaluator.evaluateLong());
+    }
+
+    @Test
+    public void testFlatExprEvaluatorFactoryByteBufferWithConstants() {
+        final Map<String, ExprConstant> constants = ExprConstantsFactory.create()
+                .addLong("$a", 41L)
+                .build();
+
+        final ExprEvaluatorWithContext evaluator = FlatExprEvaluatorFactory.create(ByteBufferUtils.constant("$a + 1"), constants);
+        assertEquals(42, evaluator.evaluateLong());
+
+        final ExprEvaluatorWithContext evaluatorFromString = FlatExprEvaluatorFactory.create("$a + 1", constants);
+        assertEquals(42, evaluatorFromString.evaluateLong());
+    }
+
+    @Test
+    public void testFlatExprEvaluatorFactoryOptimizedByteBufferWithConstants() {
+        final ExprContext ctx = ExprContextFactory.globalContext().getAsExprContext();
+        final Map<String, ExprConstant> constants = ExprConstantsFactory.create()
+                .addLong("$a", 41L)
+                .build();
+
+        final ExprEvaluator evaluator = FlatExprEvaluatorFactory.create(ctx, ByteBufferUtils.constant("$a + 1"), constants);
+        assertEquals(42, evaluator.evaluateLong());
+
+        final ExprEvaluator evaluatorFromString = FlatExprEvaluatorFactory.create(ctx, "$a + 1", constants);
+        assertEquals(42, evaluatorFromString.evaluateLong());
+    }
+
+    @Test
+    public void testFlatExprEvaluatorCreatorDefaultStringMethod() {
+        final ExprEvaluatorCreator<ExprEvaluatorWithContext> creator = FlatExprEvaluatorFactory::create;
+        final ExprEvaluatorWithContext evaluator = creator.create("1 + 1");
+        assertEquals(2, evaluator.evaluateLong());
+    }
 }

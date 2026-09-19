@@ -1,18 +1,21 @@
-package com.tereigo.expr.impl;
+package com.tereigo.expr.impl.experimental;
 
 import com.tereigo.expr.ExprContext;
 import com.tereigo.expr.utils.ExceptionUtils;
+import com.tereigo.expr.impl.RuntimeError;
 import com.tereigo.expr.variant.Variant;
 
-import static com.tereigo.expr.utils.ExceptionUtils.getExceptionMsg;
-
-abstract class ExprEvaluatorBase {
+/*
+  Experimental: mirrors com.tereigo.expr.impl.ExprEvaluatorBase, but evaluates a FlatAST via
+  ExprFlatInterpreter instead of walking the Expr tree via ExprInterpreter.
+ */
+abstract class FlatExprEvaluatorBase {
     private final String source;
-    private final ExprInterpreter interpreter;
+    private final ExprFlatInterpreter interpreter;
 
-    ExprEvaluatorBase(final ASTRoot root) {
-        this.source = root.source();
-        this.interpreter = new ExprInterpreter(root.expr());
+    FlatExprEvaluatorBase(final FlatAST flatAST, final String source) {
+        this.source = source;
+        this.interpreter = new ExprFlatInterpreter(flatAST);
     }
 
     protected Variant evaluate(final ExprContext ctx) throws RuntimeException {
@@ -35,6 +38,6 @@ abstract class ExprEvaluatorBase {
     }
 
     protected static RuntimeException wrapTypeError(final RuntimeException ex) {
-        return new RuntimeException("Result of an unexpected type: " + getExceptionMsg(ex), ex);
+        return new RuntimeException("Result of an unexpected type: " + ExceptionUtils.getExceptionMsg(ex), ex);
     }
 }

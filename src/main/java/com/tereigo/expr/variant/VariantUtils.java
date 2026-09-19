@@ -1,6 +1,5 @@
 package com.tereigo.expr.variant;
 
-import com.tereigo.expr.impl.ExprType;
 import com.tereigo.expr.utils.ByteBufferUtils;
 
 public final class VariantUtils {

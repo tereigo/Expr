@@ -2,6 +2,7 @@ package com.tereigo.expr.impl;
 
 import com.tereigo.expr.ExprContext;
 import com.tereigo.expr.function.Function0;
+import com.tereigo.expr.variant.ExprType;
 
 import java.util.ArrayList;
 import java.util.List;

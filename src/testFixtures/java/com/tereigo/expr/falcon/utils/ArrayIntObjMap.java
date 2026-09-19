@@ -3,13 +3,15 @@ package com.tereigo.expr.falcon.utils;
 public class ArrayIntObjMap<T> {
     private T[] values;
 
+    @SuppressWarnings("unchecked")
     public ArrayIntObjMap(final int maxKey) {
         this.values = (T[]) new Object[maxKey];
     }
 
+    @SuppressWarnings("unchecked")
     public void put(final int key, final T value) {
         if (key >= values.length) {
-            final T[] newValues = (T[]) new Object[key];
+            final T[] newValues = (T[]) new Object[key + 1];
             System.arraycopy(values, 0, newValues, 0, values.length);
             values = newValues;
         }

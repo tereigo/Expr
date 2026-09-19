@@ -11,6 +11,7 @@ import com.tereigo.expr.order.SampleOrderInstruction;
 import com.tereigo.expr.order.SimpleOrderFieldSupplier;
 import com.tereigo.expr.order.TestOrder;
 import com.tereigo.expr.utils.ByteBufferUtils;
+import com.tereigo.expr.variant.ExprType;
 import org.junit.jupiter.api.Test;
 
 import java.nio.ByteBuffer;

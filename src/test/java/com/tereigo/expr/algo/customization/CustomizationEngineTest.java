@@ -35,7 +35,7 @@ class CustomizationEngineTest {
 
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
         when(refData.getTuidByClientId(1)).thenReturn(constant("CLIENT1"));
         when(refData.getTuidByClientId(2)).thenReturn(constant("CLIENT2"));
         when(refData.getTuidByClientId(3)).thenReturn(null);

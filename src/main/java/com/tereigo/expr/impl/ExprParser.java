@@ -1,5 +1,6 @@
 package com.tereigo.expr.impl;
 
+import com.tereigo.expr.variant.ExprType;
 import com.tereigo.expr.variant.MutableVariant;
 import com.tereigo.expr.variant.Variant;
 import com.tereigo.expr.variant.VariantFactory;

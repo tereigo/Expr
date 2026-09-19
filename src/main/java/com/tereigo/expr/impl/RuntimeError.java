@@ -1,7 +1,9 @@
 package com.tereigo.expr.impl;
 
 class RuntimeError extends RuntimeException {
-    final Token token;
+    private static final long serialVersionUID = 1L;
+
+    final transient Token token;
 
     RuntimeError(final Token token, final String message) {
         super(message);

@@ -7,15 +7,15 @@ public final class VariantFactory {
     private VariantFactory() {
     }
 
-    public static VariantImpl createEmpty() {
+    public static MutableVariant createEmpty() {
         return new VariantImpl();
     }
 
-    public static VariantImpl clone(final Variant var) {
+    public static MutableVariant clone(final Variant var) {
         return new VariantImpl(var);
     }
 
-    public static VariantImpl createDouble(final double value) {
+    public static MutableVariant createDouble(final double value) {
         return new VariantImpl(value);
     }
 
@@ -23,7 +23,7 @@ public final class VariantFactory {
         return createDouble(value);
     }
 
-    public static VariantImpl createLong(final long value) {
+    public static MutableVariant createLong(final long value) {
         return new VariantImpl(value);
     }
 
@@ -31,7 +31,7 @@ public final class VariantFactory {
         return createLong(value);
     }
 
-    public static VariantImpl createBoolean(final boolean value) {
+    public static MutableVariant createBoolean(final boolean value) {
         return new VariantImpl(value);
     }
 
@@ -39,7 +39,7 @@ public final class VariantFactory {
         return value ? BOOL_TRUE : BOOL_FALSE;
     }
 
-    public static VariantImpl createString(final String value) {
+    public static MutableVariant createString(final String value) {
         return new VariantImpl(value);
     }
 

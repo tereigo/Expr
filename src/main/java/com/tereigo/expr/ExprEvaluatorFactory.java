@@ -68,8 +68,12 @@ public final class ExprEvaluatorFactory {
         return ExprEvaluatorAccessor.create(PASS, ctx, source, constants);
     }
 
+    // Private constructor so only ExprEvaluatorFactory itself can create a Pass instance,
+    // which is what actually restricts ExprEvaluatorAccessor to being called via this factory.
+    public static class Pass {
+        private Pass() { }
+    }
     private static final Pass PASS = new Pass();
-    public static class Pass { }
 
     private ExprEvaluatorFactory() { }
 }

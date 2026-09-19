@@ -26,7 +26,11 @@ public final class ExprContextFactory {
         return ctx;
     }
 
-    public static class Pass { }
+    // Private constructor so only ExprContextFactory itself can create a Pass instance,
+    // which is what actually restricts ExprContextAccessor to being called via this factory.
+    public static class Pass {
+        private Pass() { }
+    }
     private static final Pass PASS = new Pass();
 
     private ExprContextFactory() { }

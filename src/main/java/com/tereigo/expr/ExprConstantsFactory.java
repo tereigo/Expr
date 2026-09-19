@@ -8,7 +8,11 @@ public final class ExprConstantsFactory {
         return ExprConstantsAccessor.create(PASS);
     }
 
-    public static class Pass { }
+    // Private constructor so only ExprConstantsFactory itself can create a Pass instance,
+    // which is what actually restricts ExprConstantsAccessor to being called via this factory.
+    public static class Pass {
+        private Pass() { }
+    }
     private static final Pass PASS = new Pass();
 
     private ExprConstantsFactory() { }

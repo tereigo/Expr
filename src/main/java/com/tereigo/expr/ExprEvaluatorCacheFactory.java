@@ -8,7 +8,11 @@ public final class ExprEvaluatorCacheFactory {
         return ExprEvaluatorCacheAccessor.create(PASS, creator);
     }
 
-    public static class Pass { }
+    // Private constructor so only ExprEvaluatorCacheFactory itself can create a Pass instance,
+    // which is what actually restricts ExprEvaluatorCacheAccessor to being called via this factory.
+    public static class Pass {
+        private Pass() { }
+    }
     private static final Pass PASS = new Pass();
 
     private ExprEvaluatorCacheFactory() { }

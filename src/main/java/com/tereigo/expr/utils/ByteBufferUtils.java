@@ -594,7 +594,7 @@ public final class ByteBufferUtils {
     }
 
     private static int indexOf(final ByteBuffer str, final CharSequence pattern, final ByteComparator comparator) {
-        if (pattern.length() == 0) {
+        if (pattern.isEmpty()) {
             return 0;
         }
 
@@ -703,7 +703,7 @@ public final class ByteBufferUtils {
     }
 
     private static int indexOf(final CharSequence str, final CharSequence pattern, final ByteComparator comparator) {
-        if (pattern.length() == 0) {
+        if (pattern.isEmpty()) {
             return 0;
         }
 

@@ -103,6 +103,23 @@ class ExprPrinterTest extends ExprEvaluatorTestBase {
                 "│\n" +
                 "├── [A, B]", printer.print(ExprCompiler.compile("\"A\" in [\"A\", \"B\"]")));
 
+        // a literal-only list is printed via StaticInOperator's own visitor - note the values come out
+        // sorted (binary-search order), not in original declaration order, since that's the actual
+        // compiled representation now used at evaluation time
+        assertEquals("in\n" +
+                "│\n" +
+                "├── B\n" +
+                "│\n" +
+                "├── [A, B]", printer.print(ExprCompiler.compile("\"B\" in [\"B\", \"A\"]")));
+
+        // a non-literal entry ($id) keeps the dynamic InOperator (and its original declaration order),
+        // since it can't be precomputed at parse time
+        assertEquals("in\n" +
+                "│\n" +
+                "├── 1\n" +
+                "│\n" +
+                "├── [2, $id]", printer.print(ExprCompiler.compile("1 in [2, $id]")));
+
         assertEquals("within\n" +
                 "│\n" +
                 "├── 1\n" +
@@ -206,6 +223,8 @@ class ExprPrinterTest extends ExprEvaluatorTestBase {
         assertEquals("(in 1.0 [2.0, 3.0])", printer.print(ExprCompiler.compile("1.0 in [2.0, 3.0]")));
         assertEquals("(in 1 [2])", printer.print(ExprCompiler.compile("1 in [2]")));
         assertEquals("(in A [A, B])", printer.print(ExprCompiler.compile("\"A\" in [\"A\", \"B\"]")));
+        assertEquals("(in B [A, B])", printer.print(ExprCompiler.compile("\"B\" in [\"B\", \"A\"]")));
+        assertEquals("(in 1 [2, $id])", printer.print(ExprCompiler.compile("1 in [2, $id]")));
         assertEquals("(within 1 [1, 2])", printer.print(ExprCompiler.compile("1 within [1, 2]")));
         assertEquals("(between 1 [1, 2])", printer.print(ExprCompiler.compile("1 between [1, 2]")));
         final ExprContext dynCtx = getEvaluationContext();

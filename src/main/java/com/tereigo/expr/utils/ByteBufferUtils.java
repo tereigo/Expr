@@ -203,6 +203,19 @@ public final class ByteBufferUtils {
         return true;
     }
 
+    public static boolean startsWith(final CharSequence source, final CharSequence key) {
+        final int keySize = key.length();
+        if (keySize > source.length()) {
+            return false;
+        }
+        for (int i = 0; i < keySize; i++) {
+            if (source.charAt(i) != key.charAt(i)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     public static boolean startsWithIgnoreCase(final CharSequence source, final CharSequence key) {
         final int keySize = key.length();
         if (keySize > source.length()) {
@@ -284,6 +297,20 @@ public final class ByteBufferUtils {
         final int keyPos = key.position();
         for (int i = keySize - 1, j = srcSize - 1; i >= 0; i--, j--) {
             if (comparator.compare((byte) (source.charAt(j) & 0xFF), key.get(keyPos + i)) != 0) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public static boolean endsWith(final CharSequence source, final CharSequence key) {
+        final int keySize = key.length();
+        final int srcSize = source.length();
+        if (keySize > srcSize) {
+            return false;
+        }
+        for (int i = keySize - 1, j = srcSize - 1; i >= 0; i--, j--) {
+            if (source.charAt(j) != key.charAt(i)) {
                 return false;
             }
         }
@@ -375,6 +402,42 @@ public final class ByteBufferUtils {
         return equals(buffer, chars, BYTE_CASE_SENSITIVE_COMPARATOR);
     }
 
+    public static boolean equals(final CharSequence a, final CharSequence b) {
+        if (a == null && b == null) {
+            return true;
+        }
+        if (a == null || b == null) {
+            return false;
+        }
+        if (a.length() != b.length()) {
+            return false;
+        }
+        for (int i = 0; i < a.length(); i++) {
+            if (a.charAt(i) != b.charAt(i)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public static boolean equalsIgnoreCase(final CharSequence a, final CharSequence b) {
+        if (a == null && b == null) {
+            return true;
+        }
+        if (a == null || b == null) {
+            return false;
+        }
+        if (a.length() != b.length()) {
+            return false;
+        }
+        for (int i = 0; i < a.length(); i++) {
+            if (Character.toLowerCase(a.charAt(i)) != Character.toLowerCase(b.charAt(i))) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     // hashCode
     ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -430,6 +493,47 @@ public final class ByteBufferUtils {
         return buffer.remaining() - other.remaining();
     }
 
+    public static int compare(final ByteBuffer buffer, final CharSequence chars) {
+        if (buffer == null && chars == null) {
+            return 0;
+        } else if (buffer == null) {
+            return -1;
+        } else if (chars == null) {
+            return 1;
+        }
+        final int pos = buffer.position();
+        final int n = Math.min(buffer.remaining(), chars.length());
+        for (int i = 0; i < n; i++) {
+            final int cmp = BYTE_CASE_SENSITIVE_COMPARATOR.compare(buffer.get(pos + i), (byte) (chars.charAt(i) & 0xFF));
+            if (cmp != 0) {
+                return cmp;
+            }
+        }
+        return buffer.remaining() - chars.length();
+    }
+
+    public static int compare(final CharSequence chars, final ByteBuffer buffer) {
+        return -compare(buffer, chars);
+    }
+
+    public static int compare(final CharSequence a, final CharSequence b) {
+        if (a == null && b == null) {
+            return 0;
+        } else if (a == null) {
+            return -1;
+        } else if (b == null) {
+            return 1;
+        }
+        final int n = Math.min(a.length(), b.length());
+        for (int i = 0; i < n; i++) {
+            final int cmp = BYTE_CASE_SENSITIVE_COMPARATOR.compare((byte) (a.charAt(i) & 0xFF), (byte) (b.charAt(i) & 0xFF));
+            if (cmp != 0) {
+                return cmp;
+            }
+        }
+        return a.length() - b.length();
+    }
+
     public static void toString(final ByteBuffer buffer, final StringBuilder sb) {
         int pos = buffer.position();
         final int lim = buffer.limit();
@@ -449,11 +553,11 @@ public final class ByteBufferUtils {
     // contains / indexOf
     ///////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public static boolean contains(final ByteBuffer str, final String pattern) {
+    public static boolean contains(final ByteBuffer str, final CharSequence pattern) {
         return indexOf(str, pattern) > -1;
     }
 
-    public static boolean contains(final String str, final ByteBuffer pattern) {
+    public static boolean contains(final CharSequence str, final ByteBuffer pattern) {
         return indexOf(str, pattern) > -1;
     }
 
@@ -461,11 +565,15 @@ public final class ByteBufferUtils {
         return indexOf(str, pattern) > -1;
     }
 
-    public static boolean containsIgnoreCase(final ByteBuffer str, final String pattern) {
+    public static boolean contains(final CharSequence str, final CharSequence pattern) {
+        return indexOf(str, pattern) > -1;
+    }
+
+    public static boolean containsIgnoreCase(final ByteBuffer str, final CharSequence pattern) {
         return indexOfIgnoreCase(str, pattern) > -1;
     }
 
-    public static boolean containsIgnoreCase(final String str, final ByteBuffer pattern) {
+    public static boolean containsIgnoreCase(final CharSequence str, final ByteBuffer pattern) {
         return indexOfIgnoreCase(str, pattern) > -1;
     }
 
@@ -473,20 +581,20 @@ public final class ByteBufferUtils {
         return indexOfIgnoreCase(str, pattern) > -1;
     }
 
-    public static boolean containsIgnoreCase(final String str, final String pattern) {
+    public static boolean containsIgnoreCase(final CharSequence str, final CharSequence pattern) {
         return indexOfIgnoreCase(str, pattern) > -1;
     }
 
-    public static int indexOf(final ByteBuffer str, final String pattern) {
+    public static int indexOf(final ByteBuffer str, final CharSequence pattern) {
         return indexOf(str, pattern, BYTE_CASE_SENSITIVE_COMPARATOR);
     }
 
-    public static int indexOfIgnoreCase(final ByteBuffer str, final String pattern) {
+    public static int indexOfIgnoreCase(final ByteBuffer str, final CharSequence pattern) {
         return indexOf(str, pattern, BYTE_CASE_INSENSITIVE_COMPARATOR);
     }
 
-    private static int indexOf(final ByteBuffer str, final String pattern, final ByteComparator comparator) {
-        if (pattern.isEmpty()) {
+    private static int indexOf(final ByteBuffer str, final CharSequence pattern, final ByteComparator comparator) {
+        if (pattern.length() == 0) {
             return 0;
         }
 
@@ -513,15 +621,15 @@ public final class ByteBufferUtils {
         return -1;
     }
 
-    public static int indexOf(final String str, final ByteBuffer pattern) {
+    public static int indexOf(final CharSequence str, final ByteBuffer pattern) {
         return indexOf(str, pattern, BYTE_CASE_SENSITIVE_COMPARATOR);
     }
 
-    public static int indexOfIgnoreCase(final String str, final ByteBuffer pattern) {
+    public static int indexOfIgnoreCase(final CharSequence str, final ByteBuffer pattern) {
         return indexOf(str, pattern, BYTE_CASE_INSENSITIVE_COMPARATOR);
     }
 
-    private static int indexOf(final String str, final ByteBuffer pattern, final ByteComparator comparator) {
+    private static int indexOf(final CharSequence str, final ByteBuffer pattern, final ByteComparator comparator) {
         if (!pattern.hasRemaining()) {
             return 0;
         }
@@ -586,12 +694,16 @@ public final class ByteBufferUtils {
         return -1;
     }
 
-    public static int indexOfIgnoreCase(final String str, final String pattern) {
+    public static int indexOf(final CharSequence str, final CharSequence pattern) {
+        return indexOf(str, pattern, BYTE_CASE_SENSITIVE_COMPARATOR);
+    }
+
+    public static int indexOfIgnoreCase(final CharSequence str, final CharSequence pattern) {
         return indexOf(str, pattern, BYTE_CASE_INSENSITIVE_COMPARATOR);
     }
 
-    private static int indexOf(final String str, final String pattern, final ByteComparator comparator) {
-        if (pattern.isEmpty()) {
+    private static int indexOf(final CharSequence str, final CharSequence pattern, final ByteComparator comparator) {
+        if (pattern.length() == 0) {
             return 0;
         }
 

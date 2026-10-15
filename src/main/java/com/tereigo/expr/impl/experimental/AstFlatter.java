@@ -58,6 +58,17 @@ final class AstFlatter implements Expr.Visitor<FlatExpr> {
     }
 
     @Override
+    public FlatExpr visitStaticInOperator(final Expr.StaticInOperator expr) {
+        final FlatExpr.StaticInOperator newNode = new FlatExpr.StaticInOperator(expr.operator, nodes.size() + queue.size() + 1,
+                expr.longValues, expr.stringValues, expr.otherValues, expr.representative);
+        nodes.add(newNode);
+
+        queue.add(expr.operand);
+
+        return newNode;
+    }
+
+    @Override
     public FlatExpr visitWithinOperator(final Expr.WithinOperator expr) {
         final FlatExpr.WithinOperator newNode = new FlatExpr.WithinOperator(expr.operator, nodes.size() + queue.size() + 1);
         nodes.add(newNode);

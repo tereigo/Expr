@@ -8,20 +8,8 @@ import org.junit.jupiter.params.provider.ValueSource;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 
-import static com.tereigo.expr.utils.ByteBufferUtils.constant;
-import static com.tereigo.expr.utils.ByteBufferUtils.contains;
-import static com.tereigo.expr.utils.ByteBufferUtils.containsIgnoreCase;
-import static com.tereigo.expr.utils.ByteBufferUtils.endsWith;
-import static com.tereigo.expr.utils.ByteBufferUtils.endsWithIgnoreCase;
-import static com.tereigo.expr.utils.ByteBufferUtils.indexOf;
-import static com.tereigo.expr.utils.ByteBufferUtils.indexOfIgnoreCase;
-import static com.tereigo.expr.utils.ByteBufferUtils.isEmpty;
-import static com.tereigo.expr.utils.ByteBufferUtils.startsWith;
-import static com.tereigo.expr.utils.ByteBufferUtils.startsWithIgnoreCase;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static com.tereigo.expr.utils.ByteBufferUtils.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 @SuppressWarnings("ConstantValue")
 class ByteBufferUtilsTest {
@@ -523,6 +511,39 @@ class ByteBufferUtilsTest {
         assertFalse(ByteBufferUtils.equals(constant("A"), (CharSequence) null));
     }
 
+    // these cover the case-sensitive CharSequence/CharSequence methods added to let a StringBuilder-
+    // backed Variant (external function/identifier content) compare correctly against a String
+    @Test
+    void charSequenceCharSequenceOverloadsTests() {
+        assertTrue(ByteBufferUtils.equals("ABC", new StringBuilder("ABC")));
+        assertFalse(ByteBufferUtils.equals("ABC", new StringBuilder("abc")));
+        assertFalse(ByteBufferUtils.equals("ABC", new StringBuilder("AB")));
+        assertTrue(ByteBufferUtils.equals((CharSequence) null, (CharSequence) null));
+        assertFalse(ByteBufferUtils.equals("ABC", (CharSequence) null));
+        assertFalse(ByteBufferUtils.equals((CharSequence) null, "ABC"));
+
+        assertTrue(ByteBufferUtils.equalsIgnoreCase("ABC", new StringBuilder("abc")));
+        assertFalse(ByteBufferUtils.equalsIgnoreCase("ABC", new StringBuilder("abd")));
+        assertTrue(ByteBufferUtils.equalsIgnoreCase((CharSequence) null, (CharSequence) null));
+        assertFalse(ByteBufferUtils.equalsIgnoreCase("ABC", (CharSequence) null));
+
+        assertTrue(ByteBufferUtils.startsWith(new StringBuilder("ABC"), "AB"));
+        assertFalse(ByteBufferUtils.startsWith(new StringBuilder("ABC"), "ab"));
+        assertFalse(ByteBufferUtils.startsWith(new StringBuilder("AB"), "ABC"));
+
+        assertTrue(ByteBufferUtils.endsWith(new StringBuilder("ABC"), "BC"));
+        assertFalse(ByteBufferUtils.endsWith(new StringBuilder("ABC"), "bc"));
+        assertFalse(ByteBufferUtils.endsWith(new StringBuilder("BC"), "ABC"));
+
+        assertTrue(ByteBufferUtils.contains(new StringBuilder("ABCDE"), "BCD"));
+        assertFalse(ByteBufferUtils.contains(new StringBuilder("ABCDE"), "bcd"));
+        assertTrue(ByteBufferUtils.containsIgnoreCase(new StringBuilder("ABCDE"), "bcd"));
+
+        assertEquals(1, ByteBufferUtils.indexOf(new StringBuilder("ABCDE"), "BCD"));
+        assertEquals(-1, ByteBufferUtils.indexOf(new StringBuilder("ABCDE"), "bcd"));
+        assertEquals(1, ByteBufferUtils.indexOfIgnoreCase(new StringBuilder("ABCDE"), "bcd"));
+    }
+
     @Test
     void equalsHandlesHighBitBytesTest() {
         // regression test: equals(ByteBuffer, CharSequence) must not sign-extend the ByteBuffer side
@@ -615,9 +636,9 @@ class ByteBufferUtilsTest {
 
     @Test
     void compareTests() {
-        assertEquals(0, ByteBufferUtils.compare(null, null));
-        assertEquals(-1, ByteBufferUtils.compare(null, constant("A")));
-        assertEquals(1, ByteBufferUtils.compare(constant("A"), null));
+        assertEquals(0, ByteBufferUtils.compare((ByteBuffer) null, (ByteBuffer) null));
+        assertEquals(-1, ByteBufferUtils.compare((ByteBuffer) null, constant("A")));
+        assertEquals(1, ByteBufferUtils.compare(constant("A"), (ByteBuffer) null));
         assertEquals(0, ByteBufferUtils.compare(constant("A"), constant("A")));
         assertTrue(ByteBufferUtils.compare(constant("A"), constant("B")) < 0);
         assertTrue(ByteBufferUtils.compare(constant("B"), constant("A")) > 0);
@@ -626,5 +647,38 @@ class ByteBufferUtilsTest {
 
         assertEquals(0, ByteBufferUtils.compareCaseInsensitive(constant("ABC"), constant("abc")));
         assertTrue(ByteBufferUtils.compareCaseInsensitive(constant("A"), constant("b")) < 0);
+    }
+
+    @Test
+    void compareCharSequenceOverloadsTests() {
+        assertEquals(0, ByteBufferUtils.compare((CharSequence) null, (CharSequence) null));
+        assertEquals(-1, ByteBufferUtils.compare((CharSequence) null, "A"));
+        assertEquals(1, ByteBufferUtils.compare("A", (CharSequence) null));
+        assertEquals(0, ByteBufferUtils.compare("A", "A"));
+        assertTrue(ByteBufferUtils.compare("A", "B") < 0);
+        assertTrue(ByteBufferUtils.compare("B", "A") > 0);
+        assertTrue(ByteBufferUtils.compare("AB", "A") > 0);
+        assertTrue(ByteBufferUtils.compare("A", "AB") < 0);
+
+        assertEquals(0, ByteBufferUtils.compare(constant("A"), (CharSequence) "A"));
+        assertEquals(0, ByteBufferUtils.compare((CharSequence) "A", constant("A")));
+        assertTrue(ByteBufferUtils.compare(constant("A"), (CharSequence) "B") < 0);
+        assertTrue(ByteBufferUtils.compare((CharSequence) "A", constant("B")) < 0);
+        assertTrue(ByteBufferUtils.compare(constant("AB"), (CharSequence) "A") > 0);
+        assertTrue(ByteBufferUtils.compare((CharSequence) "AB", constant("A")) > 0);
+
+        // compare(bufferA, charsB) and compare(charsA, bufferB) ask the same question ("A vs B", in
+        // the same argument order) with the representation types swapped - they must agree exactly
+        assertEquals(ByteBufferUtils.compare(constant("A"), (CharSequence) "B"), ByteBufferUtils.compare((CharSequence) "A", constant("B")));
+
+        // must respect position/limit slicing, not compare from absolute index 0
+        final ByteBuffer sliced = ByteBuffer.wrap("XXABCXX".getBytes(StandardCharsets.US_ASCII));
+        sliced.position(2);
+        sliced.limit(5); // view == "ABC"
+        assertEquals(0, ByteBufferUtils.compare(sliced, (CharSequence) "ABC"));
+        assertEquals(0, ByteBufferUtils.compare((CharSequence) "ABC", sliced));
+        assertTrue(ByteBufferUtils.compare(sliced, (CharSequence) "ABD") < 0);
+        assertEquals(2, sliced.position());
+        assertEquals(5, sliced.limit());
     }
 }

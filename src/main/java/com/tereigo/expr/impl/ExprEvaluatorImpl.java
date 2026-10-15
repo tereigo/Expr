@@ -99,7 +99,7 @@ final class ExprEvaluatorImpl extends ExprEvaluatorBase implements ExprEvaluator
     public String evaluateString(final ExprContext ctx) {
         final Variant result = evaluate(ctx);
         try {
-            return result.getAsString();
+            return result.getAsCharSequence().toString();
         } catch (final RuntimeException ex) {
             throw wrapTypeError(ex);
         }

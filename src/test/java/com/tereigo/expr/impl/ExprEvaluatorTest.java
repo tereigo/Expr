@@ -9,11 +9,7 @@ import org.junit.jupiter.api.Test;
 import java.nio.ByteBuffer;
 
 import static com.tereigo.expr.utils.ByteBufferUtils.constant;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class ExprEvaluatorTest extends ExprEvaluatorTestBase {
 
@@ -529,6 +525,48 @@ public class ExprEvaluatorTest extends ExprEvaluatorTestBase {
         assertTrue(evaluateBool("(1 not in [1]) == not(1 in [1])"));
     }
 
+    // When every value in an "in [...]" list is a literal, the parser builds a StaticInOperator
+    // (sorted primitive arrays + binary search) instead of the generic InOperator - these tests target
+    // that fast path specifically, beyond the general correctness already covered by operatorInTest().
+    @Test
+    void staticInOperatorFastPathTests() {
+        final ExprContext ctx = createContext();
+
+        // a non-literal entry ($productId/$ric is an identifier) keeps the generic, dynamic InOperator -
+        // not the literal-only StaticInOperator fast path - since it can only be evaluated at runtime
+        assertTrue(evaluateBool("$productId in [$productId, 1]", ctx));
+        assertTrue(evaluateBool("$productId in [1, $productId]", ctx));
+        assertTrue(evaluateBool("$ric in [\"X\", $ric]", ctx));
+
+        // a single BOOL literal is a valid (degenerate) literal list too
+        assertTrue(evaluateBool("true in [true]"));
+        assertFalse(evaluateBool("false in [true]"));
+        assertTrue(evaluateBool("not (false in [true])"));
+
+        // a ByteBuffer operand against a literal STRING list hits the binary-search fast path
+        // (see also ExprEvaluatorTest's "ric in [...]" assertions elsewhere in this file)
+        assertTrue(evaluateBool("$tuid in [\"CLIENT0\", \"CLIENT1\", \"CLIENT2\"]", ctx));
+        assertFalse(evaluateBool("$tuid in [\"CLIENT0\", \"CLIENT2\"]", ctx));
+
+        // larger literal lists, declared out of sorted order, to exercise binary search beyond a
+        // handful of elements and confirm declaration order doesn't matter
+        assertTrue(evaluateBool("50 in [90, 80, 70, 60, 50, 40, 30, 20, 10, 0]"));
+        assertFalse(evaluateBool("55 in [90, 80, 70, 60, 50, 40, 30, 20, 10, 0]"));
+        assertTrue(evaluateBool("\"m\" in [\"z\",\"y\",\"x\",\"w\",\"v\",\"u\",\"t\",\"s\",\"r\",\"q\",\"p\",\"o\",\"n\",\"m\",\"l\",\"k\"]"));
+        assertFalse(evaluateBool("\"a\" in [\"z\",\"y\",\"x\",\"w\",\"v\",\"u\",\"t\",\"s\",\"r\",\"q\",\"p\",\"o\",\"n\",\"m\",\"l\",\"k\"]"));
+
+        // precision boundary (2^53): an operand must never falsely match a LONG literal list via the
+        // lossy double conversion a naive implementation would use (see VariantUtils.isExactLongValue)
+        assertFalse(evaluateBool("9007199254740992.0 in [9007199254740993]"));
+        assertTrue(evaluateBool("9007199254740994.0 in [9007199254740994]"));
+        assertTrue(evaluateBool("9007199254740994 in [1, 9007199254740994, 3]"));
+
+        // an operand whose type is incompatible with every value in the list still throws, exactly as
+        // the generic per-element loop would have (see VariantUtils.isInStaticSet's "representative" check)
+        final RuntimeError runErr = assertThrows(RuntimeError.class, () -> evaluate("true in [1, 2, 3]"));
+        assertTrue(runErr.getMessage().contains("Operands of different types cannot be compared"));
+    }
+
     @Test
     void operatorWithinTest() {
         assertTrue(evaluateBool("1 within [1, 2]"));
@@ -909,7 +947,7 @@ public class ExprEvaluatorTest extends ExprEvaluatorTestBase {
             final long l = arg1.getAsLong();
             final double d = arg2.getAsDouble();
             final boolean bool = arg3.getAsBoolean();
-            final String s = arg4.getAsString();
+            final String s = arg4.getAsCharSequence().toString();
             final ByteBuffer bb = arg5.getAsByteBuffer();
             result.accept(l > d && bool && !s.isEmpty() && ByteBufferUtils.startsWith(bb, "CLIENT"));
         });

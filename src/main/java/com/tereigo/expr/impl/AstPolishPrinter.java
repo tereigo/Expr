@@ -1,5 +1,7 @@
 package com.tereigo.expr.impl;
 
+import com.tereigo.expr.variant.Variant;
+
 import java.util.List;
 
 /*
@@ -29,6 +31,41 @@ final class AstPolishPrinter implements Expr.Visitor<String> {
             if (i < expr.values.size() - 1) {
                 builder.append(", ");
             }
+        }
+        builder.append("])");
+
+        return builder.toString();
+    }
+
+    @Override
+    public String visitStaticInOperator(final Expr.StaticInOperator expr) {
+        final StringBuilder builder = new StringBuilder();
+
+        builder.append("(").append(expr.operator.lexeme);
+        builder.append(" ");
+        builder.append(expr.operand.accept(this));
+        builder.append(" [");
+        boolean first = true;
+        for (final long v : expr.longValues) {
+            if (!first) {
+                builder.append(", ");
+            }
+            builder.append(v);
+            first = false;
+        }
+        for (final String v : expr.stringValues) {
+            if (!first) {
+                builder.append(", ");
+            }
+            builder.append(v);
+            first = false;
+        }
+        for (final Variant v : expr.otherValues) {
+            if (!first) {
+                builder.append(", ");
+            }
+            builder.append(v.getAsObject());
+            first = false;
         }
         builder.append("])");
 

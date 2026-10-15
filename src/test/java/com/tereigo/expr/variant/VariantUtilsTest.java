@@ -12,10 +12,7 @@ import java.util.stream.Stream;
 
 import static com.tereigo.expr.utils.ByteBufferUtils.constant;
 import static com.tereigo.expr.variant.VariantImplTest.createImmutableByteBuffer;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -168,6 +165,30 @@ class VariantUtilsTest {
     void isEqual_oneNullString_isFalse() {
         assertFalse(VariantUtils.isEqual(VariantFactory.createString(null), VariantFactory.createImmutableString("A")));
         assertFalse(VariantUtils.isEqual(VariantFactory.createImmutableString("A"), VariantFactory.createString(null)));
+    }
+
+    // regression tests: a STRING variant's content may come from any CharSequence (e.g. a
+    // StringBuilder supplied by an external function/identifier), and isEqual must compare it
+    // correctly against String literals and ByteBuffer-backed fields alike.
+    @Test
+    void isEqual_stringBuilderBackedVariant_matchesStringAndByteBuffer() {
+        final Variant fromStringBuilder = VariantFactory.createString(new StringBuilder("VOD.L"));
+
+        assertTrue(VariantUtils.isEqual(fromStringBuilder, VariantFactory.createImmutableString("VOD.L")));
+        assertTrue(VariantUtils.isEqual(VariantFactory.createImmutableString("VOD.L"), fromStringBuilder));
+        assertTrue(VariantUtils.isEqual(fromStringBuilder, createImmutableByteBuffer(constant("VOD.L"))));
+        assertTrue(VariantUtils.isEqual(createImmutableByteBuffer(constant("VOD.L")), fromStringBuilder));
+
+        assertFalse(VariantUtils.isEqual(fromStringBuilder, VariantFactory.createImmutableString("OTHER")));
+        assertFalse(VariantUtils.isEqual(fromStringBuilder, createImmutableByteBuffer(constant("OTHER"))));
+    }
+
+    @Test
+    void isEqual_twoDifferentStringBuilderInstancesWithSameContent_areEqual() {
+        final Variant v1 = VariantFactory.createString(new StringBuilder("VOD.L"));
+        final Variant v2 = VariantFactory.createString(new StringBuilder("VOD.L"));
+
+        assertTrue(VariantUtils.isEqual(v1, v2));
     }
 
     // ---------------------------------------------------------------------
@@ -501,5 +522,95 @@ class VariantUtilsTest {
         // NaN is never "close" to anything, including itself: Math.abs(NaN - NaN) is NaN,
         // and any comparison with NaN is false
         assertFalse(VariantUtils.epsilonEquals(Double.NaN, Double.NaN));
+    }
+
+    // ---------------------------------------------------------------------
+    // isExactLongValue / toExactLongValue
+    // ---------------------------------------------------------------------
+
+    @Test
+    void isExactLongValue_boundaryCases() {
+        assertTrue(VariantUtils.isExactLongValue(0.0));
+        assertTrue(VariantUtils.isExactLongValue(-0.0));
+        assertTrue(VariantUtils.isExactLongValue(9007199254740994.0));
+        assertEquals(9007199254740994L, VariantUtils.toExactLongValue(9007199254740994.0));
+        assertTrue(VariantUtils.isExactLongValue(-9223372036854775808.0));
+        assertEquals(Long.MIN_VALUE, VariantUtils.toExactLongValue(-9223372036854775808.0));
+
+        assertFalse(VariantUtils.isExactLongValue(1.5));
+        assertFalse(VariantUtils.isExactLongValue(Double.NaN));
+        assertFalse(VariantUtils.isExactLongValue(Double.POSITIVE_INFINITY));
+        assertFalse(VariantUtils.isExactLongValue(Double.NEGATIVE_INFINITY));
+        // 2^63: one greater than any long (Long.MAX_VALUE itself rounds up to this, see isInLongRange)
+        assertFalse(VariantUtils.isExactLongValue(9223372036854775808.0));
+        assertFalse(VariantUtils.isExactLongValue(Math.nextDown(-9223372036854775808.0)));
+    }
+
+    // ---------------------------------------------------------------------
+    // isInStaticSet: the "in [...]" literal fast path (see Expr.StaticInOperator)
+    // ---------------------------------------------------------------------
+
+    @Test
+    void isInStaticSet_longBucket_matchesLongAndDoubleOperand() {
+        final long[] longValues = {1L, 3L, 9007199254740994L};
+        final String[] none = {};
+        final Variant[] noneV = {};
+
+        assertTrue(VariantUtils.isInStaticSet(VariantFactory.createImmutableLong(3), longValues, none, noneV, VariantFactory.createImmutableLong(1)));
+        assertFalse(VariantUtils.isInStaticSet(VariantFactory.createImmutableLong(2), longValues, none, noneV, VariantFactory.createImmutableLong(1)));
+        // exact long/double cross-type match, no precision loss
+        assertTrue(VariantUtils.isInStaticSet(VariantFactory.createImmutableDouble(9007199254740994.0), longValues, none, noneV, VariantFactory.createImmutableLong(1)));
+        // would falsely match under a naive (double) conversion of 9007199254740994L's neighbor odd long
+        assertFalse(VariantUtils.isInStaticSet(VariantFactory.createImmutableDouble(9007199254740993.0), longValues, none, noneV, VariantFactory.createImmutableLong(1)));
+    }
+
+    @Test
+    void isInStaticSet_stringBucket_matchesStringAndByteBufferOperand() {
+        final long[] none = {};
+        final String[] stringValues = {"A", "B", "C"};
+        final Variant[] noneV = {};
+        final Variant representative = VariantFactory.createImmutableString("A");
+
+        assertTrue(VariantUtils.isInStaticSet(VariantFactory.createImmutableString("B"), none, stringValues, noneV, representative));
+        assertFalse(VariantUtils.isInStaticSet(VariantFactory.createImmutableString("D"), none, stringValues, noneV, representative));
+        assertTrue(VariantUtils.isInStaticSet(createImmutableByteBuffer(constant("B")), none, stringValues, noneV, representative));
+        assertFalse(VariantUtils.isInStaticSet(createImmutableByteBuffer(constant("D")), none, stringValues, noneV, representative));
+    }
+
+    // regression test: the "in [...]" fast path's string bucket does a binary search against
+    // operand.getAsString(), which may now be backed by a StringBuilder rather than a String.
+    @Test
+    void isInStaticSet_stringBucket_matchesStringBuilderBackedOperand() {
+        final long[] none = {};
+        final String[] stringValues = {"A", "B", "C"};
+        final Variant[] noneV = {};
+        final Variant representative = VariantFactory.createImmutableString("A");
+
+        assertTrue(VariantUtils.isInStaticSet(VariantFactory.createString(new StringBuilder("B")), none, stringValues, noneV, representative));
+        assertFalse(VariantUtils.isInStaticSet(VariantFactory.createString(new StringBuilder("D")), none, stringValues, noneV, representative));
+    }
+
+    @Test
+    void isInStaticSet_otherBucket_usesEpsilonEqualsForDoubles() {
+        final long[] none = {};
+        final String[] noneS = {};
+        final Variant[] otherValues = {VariantFactory.createImmutableDouble(1.5), VariantFactory.createImmutableDouble(2.5)};
+        final Variant representative = otherValues[0];
+
+        assertTrue(VariantUtils.isInStaticSet(VariantFactory.createImmutableDouble(2.5), none, noneS, otherValues, representative));
+        assertFalse(VariantUtils.isInStaticSet(VariantFactory.createImmutableDouble(3.5), none, noneS, otherValues, representative));
+        // epsilon tolerance preserved for the fallback bucket (unlike the exact longValues bucket)
+        assertTrue(VariantUtils.isInStaticSet(VariantFactory.createImmutableDouble(2.5 + 1e-9), none, noneS, otherValues, representative));
+    }
+
+    @Test
+    void isInStaticSet_incompatibleOperandType_throwsLikeAPlainIsEqualScan() {
+        final long[] longValues = {1L, 2L, 3L};
+        final String[] none = {};
+        final Variant[] noneV = {};
+        final Variant representative = VariantFactory.createImmutableLong(1);
+
+        assertThrows(RuntimeException.class,
+                () -> VariantUtils.isInStaticSet(VariantFactory.createImmutableBoolean(true), longValues, none, noneV, representative));
     }
 }

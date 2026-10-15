@@ -17,10 +17,7 @@ import org.junit.jupiter.api.Test;
 import java.nio.ByteBuffer;
 
 import static com.tereigo.expr.utils.ByteBufferUtils.constant;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -67,7 +64,7 @@ public class ExprUserFunctionsTest extends ExprEvaluatorTestBase {
             final boolean bool = arg3.getAsBoolean();
             // we accept both String and ByteBuffer for 4th arg
             if (arg4.exprType() == ExprType.STRING) {
-                final String s = arg4.getAsString();
+                final String s = arg4.getAsCharSequence().toString();
                 result.accept(l > d && bool && !s.isEmpty());
             } else {
                 final ByteBuffer bb = arg4.getAsByteBuffer();
@@ -79,7 +76,7 @@ public class ExprUserFunctionsTest extends ExprEvaluatorTestBase {
             final long l = arg1.getAsLong();
             final double d = arg2.getAsDouble();
             final boolean bool = arg3.getAsBoolean();
-            final String s = arg4.getAsString();
+            final String s = arg4.getAsCharSequence().toString();
             final ByteBuffer bb = arg5.getAsByteBuffer();
             result.accept(l > d && bool && !s.isEmpty() && ByteBufferUtils.startsWith(bb, "CLIENT"));
         });
@@ -337,7 +334,7 @@ public class ExprUserFunctionsTest extends ExprEvaluatorTestBase {
         final ExprContextBuilder mutCtx = ExprContextFactory.globalContext();
         mutCtx.addString("region", () -> "EMEA");
         mutCtx.addFunction("algoType", result -> result.accept(constant("Algo1")));
-        mutCtx.addFunction("stringFunc", (result, arg1) -> result.accept(arg1.getAsString()));
+        mutCtx.addFunction("stringFunc", (result, arg1) -> result.accept(arg1.getAsCharSequence()));
         mutCtx.addFunction("byteBufferFunc", (result, arg1) -> result.accept(arg1.getAsByteBuffer()));
 
         final ExprContext ctx = mutCtx.getAsExprContext();
@@ -354,7 +351,7 @@ public class ExprUserFunctionsTest extends ExprEvaluatorTestBase {
         final ExprContextBuilder mutCtx = ExprContextFactory.globalContext();
         mutCtx.addString("region", () -> "EMEA");
         mutCtx.addFunction("algoType", result -> result.accept(constant("Algo1")));
-        mutCtx.addFunction("stringFunc", (result, arg1) -> result.accept(arg1.getAsString()));
+        mutCtx.addFunction("stringFunc", (result, arg1) -> result.accept(arg1.getAsCharSequence()));
         mutCtx.addFunction("byteBufferFunc", (result, arg1) -> result.accept(arg1.getAsByteBuffer()));
 
         final ExprContext ctx = mutCtx.getAsExprContext();

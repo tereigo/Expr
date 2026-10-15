@@ -51,7 +51,7 @@ final class VariantImpl implements MutableVariant {
         accept(value);
     }
 
-    VariantImpl(final String value) {
+    VariantImpl(final CharSequence value) {
         accept(value);
     }
 
@@ -111,9 +111,9 @@ final class VariantImpl implements MutableVariant {
     }
 
     @Override
-    public String getAsString() {
+    public CharSequence getAsCharSequence() {
         sanityCheck(ExprType.STRING);
-        return (String) objVal;
+        return (CharSequence) objVal;
     }
 
     @Override
@@ -168,7 +168,7 @@ final class VariantImpl implements MutableVariant {
     }
 
     @Override
-    public void accept(final String value) {
+    public void accept(final CharSequence value) {
         // reused instances must not carry over longVal from a previous LONG/DOUBLE/BOOL accept(),
         // otherwise equals()/hashCode() can diverge for variants holding identical STRING content
         this.longVal = 0;
@@ -218,9 +218,14 @@ final class VariantImpl implements MutableVariant {
 
         // see "IMPORTANT NOTE" above
         if (type == ExprType.STRING && variant.type == ExprType.BYTE_BUFFER) {
-            return ByteBufferUtils.equals((ByteBuffer) variant.objVal, (String) objVal);
+            return ByteBufferUtils.equals((ByteBuffer) variant.objVal, (CharSequence) objVal);
         } else if (type == ExprType.BYTE_BUFFER && variant.type == ExprType.STRING) {
-            return ByteBufferUtils.equals((ByteBuffer) objVal, (String) variant.objVal);
+            return ByteBufferUtils.equals((ByteBuffer) objVal, (CharSequence) variant.objVal);
+        } else if (type == ExprType.STRING && variant.type == ExprType.STRING) {
+            // objVal may be a String or any other CharSequence (e.g. a caller-supplied, possibly
+            // reused StringBuilder) - StringBuilder doesn't override Object.equals()/hashCode(), so
+            // this must be a content comparison, never the generic Objects.equals() fallback below
+            return ByteBufferUtils.equals((CharSequence) objVal, (CharSequence) variant.objVal);
         }
         return type == variant.type &&
                 longVal == variant.longVal &&
@@ -244,7 +249,7 @@ final class VariantImpl implements MutableVariant {
             return 0;
         }
         if (type == ExprType.STRING) {
-            return ByteBufferUtils.hashCode((String) objVal);
+            return ByteBufferUtils.hashCode((CharSequence) objVal);
         }
         if (type == ExprType.BYTE_BUFFER) {
             return ByteBufferUtils.hashCode((ByteBuffer) objVal);

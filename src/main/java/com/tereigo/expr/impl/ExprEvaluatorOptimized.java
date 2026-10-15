@@ -68,7 +68,7 @@ final class ExprEvaluatorOptimized extends ExprEvaluatorBase implements ExprEval
     public String evaluateString() {
         final Variant result = evaluate(ctx);
         try {
-            return result.getAsString();
+            return result.getAsCharSequence().toString();
         } catch (final RuntimeException ex) {
             throw wrapTypeError(ex);
         }

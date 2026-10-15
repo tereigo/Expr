@@ -1,12 +1,6 @@
 package com.tereigo.expr.impl;
 
-import com.tereigo.expr.ExprConstant;
-import com.tereigo.expr.ExprConstantsFactory;
-import com.tereigo.expr.ExprContext;
-import com.tereigo.expr.ExprContextBuilder;
-import com.tereigo.expr.ExprContextFactory;
-import com.tereigo.expr.ExprEvaluator;
-import com.tereigo.expr.ExprEvaluatorFactory;
+import com.tereigo.expr.*;
 import com.tereigo.expr.order.SimpleOrderFieldSupplier;
 import com.tereigo.expr.order.TestOrder;
 import org.junit.jupiter.api.Test;
@@ -16,10 +10,7 @@ import java.util.Map;
 
 import static com.tereigo.expr.utils.ByteBufferUtils.constant;
 import static com.tereigo.expr.utils.ByteBufferUtils.parseString;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class ExprEvaluationWithContextTest extends ExprEvaluatorTestBase {
 
@@ -379,5 +370,34 @@ public class ExprEvaluationWithContextTest extends ExprEvaluatorTestBase {
         assertFalse(evaluateBoolOptimized(ctx, "$tuid in ['CLIENT0', 'CLIENT2']"));
         assertEquals(constant("CLIENT1"), evaluateByteBufferOptimized(ctx, "$tuid"));
         assertEquals("CLIENT1", parseString(evaluateByteBufferOptimized(ctx, "$tuid")));
+    }
+
+    // End-to-end coverage for supplying string content via a StringBuilder rather than a String:
+    // the external supplier can hand over a mutable, reused StringBuilder (the actual GC-free pattern
+    // this capability exists for), and every evaluation must reflect its current content correctly
+    // against String literals, a ByteBuffer-backed field, and the literal "in [...]" fast path.
+    @Test
+    void stringBuilderBackedIdentifierTests() {
+        final StringBuilder name = new StringBuilder("VOD.L");
+        final ExprContext ctx = ExprContextFactory.globalContext()
+                .addString("$name", () -> name)
+                .addByteBuffer("$ric", () -> constant("VOD.L"))
+                .getAsExprContext();
+
+        final ExprEvaluatorWithContext isVodL = createEvaluator("$name == \"VOD.L\"");
+        assertTrue(isVodL.evaluateBool(ctx));
+        assertTrue(createEvaluator("$name != \"OTHER\"").evaluateBool(ctx));
+        assertTrue(createEvaluator("$name == $ric").evaluateBool(ctx));
+        assertTrue(createEvaluator("$name in [\"OTHER\", \"VOD.L\"]").evaluateBool(ctx));
+        assertFalse(createEvaluator("$name in [\"OTHER\", \"ELSEWHERE\"]").evaluateBool(ctx));
+
+        // mutate and reuse the same StringBuilder instance - every subsequent evaluation (including
+        // re-evaluating the already-built "isVodL" evaluator) must reflect the new content
+        name.setLength(0);
+        name.append("BARC.L");
+        assertFalse(isVodL.evaluateBool(ctx));
+        assertTrue(createEvaluator("$name == \"BARC.L\"").evaluateBool(ctx));
+        assertFalse(createEvaluator("$name == $ric").evaluateBool(ctx));
+        assertTrue(createEvaluator("$name in [\"BARC.L\", \"OTHER\"]").evaluateBool(ctx));
     }
 }

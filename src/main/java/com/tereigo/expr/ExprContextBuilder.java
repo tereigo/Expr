@@ -8,7 +8,7 @@ import com.tereigo.expr.function.Function2;
 import com.tereigo.expr.function.Function3;
 import com.tereigo.expr.function.Function4;
 import com.tereigo.expr.function.Function5;
-import com.tereigo.expr.function.StringSupplier;
+import com.tereigo.expr.function.CharSequenceSupplier;
 
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
@@ -20,7 +20,7 @@ public interface ExprContextBuilder extends ExprContextSupplier {
 
     ExprContextBuilder addDouble(final String name, final DoubleSupplier supplier);
 
-    ExprContextBuilder addString(final String name, final StringSupplier supplier);
+    ExprContextBuilder addString(final String name, final CharSequenceSupplier supplier);
 
     ExprContextBuilder addByteBuffer(final String name, final ByteBufferSupplier supplier);
 

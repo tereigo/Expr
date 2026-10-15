@@ -6,10 +6,7 @@ import com.tereigo.expr.ExprContextFactory;
 import org.junit.jupiter.api.Test;
 
 import static com.tereigo.expr.utils.ByteBufferUtils.constant;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class ExprNativeFunctionsTest extends ExprEvaluatorTestBase {
 
@@ -396,6 +393,52 @@ public class ExprNativeFunctionsTest extends ExprEvaluatorTestBase {
         ctx.addFunction("bufAB", result -> result.accept(constant("AB")));
         ctx.addFunction("bufBC", result -> result.accept(constant("BC")));
         return ctx.getAsExprContext();
+    }
+
+    private static ExprContext stringBuilderCtx() {
+        final ExprContextBuilder ctx = ExprContextFactory.globalContext();
+        // an external identifier supplying a StringBuilder, not a String, via addString()
+        ctx.addString("sb", () -> new StringBuilder("ABC"));
+        ctx.addFunction("bufABC", result -> result.accept(constant("ABC")));
+        ctx.addFunction("bufAB", result -> result.accept(constant("AB")));
+        ctx.addFunction("bufBC", result -> result.accept(constant("BC")));
+        return ctx.getAsExprContext();
+    }
+
+    // Native string functions, == / !=, and the "in [...]" literal fast path, all exercised against
+    // a context identifier backed by a StringBuilder rather than a String - the exact scenario this
+    // CharSequence-widening work enables, with no behavior change vs. a String-backed identifier.
+    @Test
+    void stringBuilderBackedOperandFunctionsTest() {
+        final ExprContext ctx = stringBuilderCtx();
+
+        assertTrue(evaluateBool("sb == \"ABC\"", ctx));
+        assertFalse(evaluateBool("sb == \"abc\"", ctx));
+        assertTrue(evaluateBool("sb != \"abc\"", ctx));
+
+        assertTrue(evaluateBool("equals(sb, \"ABC\")", ctx));
+        assertFalse(evaluateBool("equals(sb, \"abc\")", ctx));
+        assertTrue(evaluateBool("equalsIgnoreCase(sb, \"abc\")", ctx));
+        assertTrue(evaluateBool("equals(sb, bufABC())", ctx));
+
+        assertTrue(evaluateBool("startsWith(sb, \"AB\")", ctx));
+        assertTrue(evaluateBool("startsWith(sb, bufAB())", ctx));
+        assertTrue(evaluateBool("endsWith(sb, \"BC\")", ctx));
+        assertTrue(evaluateBool("endsWith(sb, bufBC())", ctx));
+
+        assertTrue(evaluateBool("contains(sb, \"B\")", ctx));
+        assertTrue(evaluateBool("containsIgnoreCase(sb, \"b\")", ctx));
+
+        assertEquals(1, evaluateLong("indexOf(sb, \"BC\")", ctx));
+        assertEquals(1, evaluateLong("indexOfIgnoreCase(sb, \"bc\")", ctx));
+
+        assertFalse(evaluateBool("isEmpty(sb)", ctx));
+        assertEquals(3, evaluateLong("length(sb)", ctx));
+
+        // literal "in [...]" list - exercises the StaticInOperator fast path's string bucket
+        // (sorted String[] binary search) against a StringBuilder-backed operand
+        assertTrue(evaluateBool("sb in [\"XYZ\", \"ABC\"]", ctx));
+        assertFalse(evaluateBool("sb in [\"XYZ\", \"QRS\"]", ctx));
     }
 
     @Test

@@ -76,7 +76,7 @@ final class FlatExprEvaluatorOptimized extends FlatExprEvaluatorBase implements 
     public String evaluateString() {
         final Variant result = evaluate(ctx);
         try {
-            return result.getAsString();
+            return result.getAsCharSequence().toString();
         } catch (final RuntimeException ex) {
             throw wrapTypeError(ex);
         }

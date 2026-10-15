@@ -1,12 +1,7 @@
 package com.tereigo.expr.impl;
 
 import com.tereigo.expr.ExprContext;
-import com.tereigo.expr.function.Function0;
-import com.tereigo.expr.function.Function1;
-import com.tereigo.expr.function.Function2;
-import com.tereigo.expr.function.Function3;
-import com.tereigo.expr.function.Function4;
-import com.tereigo.expr.function.Function5;
+import com.tereigo.expr.function.*;
 import com.tereigo.expr.variant.MutableVariant;
 import com.tereigo.expr.variant.Variant;
 import com.tereigo.expr.variant.VariantUtils;
@@ -99,6 +94,21 @@ final class ExprInterpreter implements Expr.Visitor<Variant> {
                     expr.result.accept(true);
                     return expr.result;
                 }
+            }
+        } catch (final RuntimeException ex) {
+            throw new RuntimeError(expr.operator, getExceptionMsg(ex), ex);
+        }
+        expr.result.accept(false);
+        return expr.result;
+    }
+
+    @Override
+    public Variant visitStaticInOperator(final Expr.StaticInOperator expr) {
+        final Variant operand = evaluate(expr.operand);
+        try {
+            if (VariantUtils.isInStaticSet(operand, expr.longValues, expr.stringValues, expr.otherValues, expr.representative)) {
+                expr.result.accept(true);
+                return expr.result;
             }
         } catch (final RuntimeException ex) {
             throw new RuntimeError(expr.operator, getExceptionMsg(ex), ex);

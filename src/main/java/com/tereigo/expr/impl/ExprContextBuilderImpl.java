@@ -10,7 +10,7 @@ import com.tereigo.expr.function.Function2;
 import com.tereigo.expr.function.Function3;
 import com.tereigo.expr.function.Function4;
 import com.tereigo.expr.function.Function5;
-import com.tereigo.expr.function.StringSupplier;
+import com.tereigo.expr.function.CharSequenceSupplier;
 
 import java.util.HashMap;
 import java.util.function.BooleanSupplier;
@@ -40,8 +40,8 @@ final class ExprContextBuilderImpl implements ExprContextBuilder {
     }
 
     @Override
-    public ExprContextBuilder addString(final String name, final StringSupplier supplier) {
-        return addFunction(name, result -> result.accept(supplier.getAsString()));
+    public ExprContextBuilder addString(final String name, final CharSequenceSupplier supplier) {
+        return addFunction(name, result -> result.accept(supplier.getAsCharSequence()));
     }
 
     @Override

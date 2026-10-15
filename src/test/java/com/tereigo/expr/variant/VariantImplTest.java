@@ -10,6 +10,7 @@ import static com.tereigo.expr.utils.ByteBufferUtils.constant;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -192,6 +193,61 @@ class VariantImplTest {
 
         assertEquals(v1, v2);
         assertEquals(v1.hashCode(), v2.hashCode());
+    }
+
+    // regression tests: objVal may now be any CharSequence, not just String (e.g. a caller-supplied
+    // StringBuilder), so that external functions/identifiers can hand over string content without
+    // forcing a String allocation. StringBuilder does not override Object.equals()/hashCode() (identity
+    // semantics), so VariantImpl.equals()/hashCode() must never fall back to Objects.equals(objVal, ...)
+    // for STRING content - they must always go through ByteBufferUtils.equals/hashCode(CharSequence),
+    // which compares by content regardless of the concrete backing type.
+    @Test
+    void testStringBuilderBackedVariantEqualsStringBackedVariant() {
+        final Variant fromString = VariantFactory.createImmutableString("VOD.L");
+        final Variant fromStringBuilder = VariantFactory.createString(new StringBuilder("VOD.L"));
+
+        assertEquals(fromString, fromStringBuilder);
+        assertEquals(fromStringBuilder, fromString);
+        assertEquals(fromString.hashCode(), fromStringBuilder.hashCode());
+    }
+
+    @Test
+    void testTwoDifferentStringBuilderInstancesWithSameContentAreEqual() {
+        // the exact case Objects.equals(objVal, ...) would get wrong: two distinct StringBuilder
+        // instances holding identical text are NOT .equals() under Object's default identity semantics,
+        // but they must be VariantImpl-equal since the expression language compares by content
+        final Variant v1 = VariantFactory.createString(new StringBuilder("VOD.L"));
+        final Variant v2 = VariantFactory.createString(new StringBuilder("VOD.L"));
+
+        assertNotSame(v1, v2);
+        assertEquals(v1, v2);
+        assertEquals(v1.hashCode(), v2.hashCode());
+    }
+
+    @Test
+    void testStringBuilderBackedVariantEqualsByteBufferBackedVariant() {
+        final Variant fromStringBuilder = VariantFactory.createString(new StringBuilder("VOD.L"));
+        final Variant fromByteBuffer = createByteBuffer(constant("VOD.L"));
+
+        assertEquals(fromStringBuilder, fromByteBuffer);
+        assertEquals(fromByteBuffer, fromStringBuilder);
+        assertEquals(fromStringBuilder.hashCode(), fromByteBuffer.hashCode());
+    }
+
+    @Test
+    void testMutatedAndReusedStringBuilderReflectsCurrentContentOnEachAccept() {
+        // the actual GC-free reuse pattern this feature exists for: a caller-owned StringBuilder
+        // mutated and re-accept()-ed into the same MutableVariant instance across repeated evaluations
+        final StringBuilder buffer = new StringBuilder("VOD.L");
+        final MutableVariant v = VariantFactory.createEmpty();
+        v.accept(buffer);
+        assertEquals(VariantFactory.createImmutableString("VOD.L"), v);
+
+        buffer.setLength(0);
+        buffer.append("BARC.L");
+        v.accept(buffer);
+        assertEquals(VariantFactory.createImmutableString("BARC.L"), v);
+        assertNotEquals(VariantFactory.createImmutableString("VOD.L"), v);
     }
 
     @Test

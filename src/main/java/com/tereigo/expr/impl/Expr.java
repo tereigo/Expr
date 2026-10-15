@@ -17,6 +17,8 @@ public abstract class Expr {
 
         R visitInOperator(InOperator expr); // in [...]
 
+        R visitStaticInOperator(StaticInOperator expr); // in [...] - every value is a literal, known at parse time
+
         R visitWithinOperator(WithinOperator expr); // within [...] - including boundaries
 
         R visitBetweenOperator(BetweenOperator expr); // between [...] - excluding boundaries
@@ -85,6 +87,32 @@ public abstract class Expr {
         @Override
         public <R> R accept(final Visitor<R> visitor) {
             return visitor.visitInOperator(this);
+        }
+    }
+
+    // Built instead of InOperator when every value in the list is a literal (see ExprParser):
+    // the values are partitioned once at parse time into sorted primitive arrays, so evaluation does
+    // a binary search instead of re-evaluating and linearly scanning the original value expressions.
+    public static class StaticInOperator extends BaseExpr {
+        public final Expr operand;
+        public final long[] longValues;     // sorted ascending; empty if no LONG literal was present
+        public final String[] stringValues; // sorted via ByteBufferUtils.compare; empty if none
+        public final Variant[] otherValues; // DOUBLE/BOOL literals not covered by the buckets above
+        public final Variant representative; // one original literal value; see VariantUtils.isInStaticSet
+
+        StaticInOperator(final Expr operand, final Token operator, final long[] longValues, final String[] stringValues,
+                          final Variant[] otherValues, final Variant representative) {
+            super(operator);
+            this.operand = operand;
+            this.longValues = longValues;
+            this.stringValues = stringValues;
+            this.otherValues = otherValues;
+            this.representative = representative;
+        }
+
+        @Override
+        public <R> R accept(final Visitor<R> visitor) {
+            return visitor.visitStaticInOperator(this);
         }
     }
 

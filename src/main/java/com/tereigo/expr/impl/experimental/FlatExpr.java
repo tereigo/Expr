@@ -21,6 +21,8 @@ abstract class FlatExpr {
 
         R visitInOperator(InOperator expr); // in [...]
 
+        R visitStaticInOperator(StaticInOperator expr); // in [...] - every value is a literal, known at parse time
+
         R visitWithinOperator(WithinOperator expr); // within [...] - including boundaries
 
         R visitBetweenOperator(BetweenOperator expr); // between [...] - excluding boundaries
@@ -96,6 +98,27 @@ abstract class FlatExpr {
         @Override
         <R> R accept(final Visitor<R> visitor) {
             return visitor.visitInOperator(this);
+        }
+    }
+
+    static class StaticInOperator extends BaseExpr {
+        final long[] longValues;
+        final String[] stringValues;
+        final Variant[] otherValues;
+        final Variant representative;
+
+        StaticInOperator(final Token operator, final int startChild, final long[] longValues, final String[] stringValues,
+                          final Variant[] otherValues, final Variant representative) {
+            super(operator, 1, startChild);
+            this.longValues = longValues;
+            this.stringValues = stringValues;
+            this.otherValues = otherValues;
+            this.representative = representative;
+        }
+
+        @Override
+        <R> R accept(final Visitor<R> visitor) {
+            return visitor.visitStaticInOperator(this);
         }
     }
 

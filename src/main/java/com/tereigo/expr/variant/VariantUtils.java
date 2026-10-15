@@ -2,6 +2,9 @@ package com.tereigo.expr.variant;
 
 import com.tereigo.expr.utils.ByteBufferUtils;
 
+import java.nio.ByteBuffer;
+import java.util.Arrays;
+
 public final class VariantUtils {
     private static final double EPSILON = 1e-6;
 
@@ -64,13 +67,22 @@ public final class VariantUtils {
         return d >= LONG_MIN_VALUE_AS_DOUBLE && d < LONG_RANGE_UPPER_BOUND_EXCLUSIVE;
     }
 
+    // Whether d is exactly equal to some long value (a whole number within isInLongRange()) - in
+    // which case toExactLongValue(d) below is always exact (no rounding/clamping).
+    public static boolean isExactLongValue(final double d) {
+        return isInLongRange(d) && d == Math.floor(d);
+    }
+
+    // The long value d is exactly equal to. Only valid when isExactLongValue(d) is true.
+    public static long toExactLongValue(final double d) {
+        return (long) d;
+    }
+
     // Exact long/double equality check. Naively converting l to double (as left.getAsNumber() /
     // right.getAsNumber() do) silently loses precision for magnitudes beyond 2^53 - e.g.
     // 9007199254740993L would round to 9007199254740992.0 and incorrectly compare equal to it.
-    // A double can only equal a long if it holds a whole number within isInLongRange(), in which
-    // case the (long) cast below is always exact (no rounding/clamping), so this never loses precision.
     private static boolean longEqualsDouble(final long l, final double d) {
-        return isInLongRange(d) && d == Math.floor(d) && l == (long) d;
+        return isExactLongValue(d) && l == toExactLongValue(d);
     }
 
     // Exact 3-way comparison of a long and a FINITE double, without ever converting l to double.
@@ -104,10 +116,10 @@ public final class VariantUtils {
         }
 
         if (isString(left) && isString(right)) {
-            if (left.getAsString() == null && right.getAsString() == null) {
+            if (left.getAsCharSequence() == null && right.getAsCharSequence() == null) {
                 return true;
             }
-            if (left.getAsString() == null || right.getAsString() == null) {
+            if (left.getAsCharSequence() == null || right.getAsCharSequence() == null) {
                 return false;
             }
             return left.equals(right);
@@ -118,10 +130,10 @@ public final class VariantUtils {
             return ByteBufferUtils.equals(left.getAsByteBuffer(), right.getAsByteBuffer());
         }
         if (isByteBuffer(left) && isString(right)) {
-            return ByteBufferUtils.equals(left.getAsByteBuffer(), right.getAsString());
+            return ByteBufferUtils.equals(left.getAsByteBuffer(), right.getAsCharSequence());
         }
         if (isString(left) && isByteBuffer(right)) {
-            return ByteBufferUtils.equals(right.getAsByteBuffer(), left.getAsString());
+            return ByteBufferUtils.equals(right.getAsByteBuffer(), left.getAsCharSequence());
         }
         if (isLong(left) && isLong(right)) {
             return left.getAsLong() == right.getAsLong();
@@ -139,6 +151,77 @@ public final class VariantUtils {
             return left.getAsBoolean() == right.getAsBoolean();
         }
         throw new RuntimeException("Operands of different types cannot be compared: " + left.exprType() + " and " + right.exprType());
+    }
+
+    /**
+     * Exact membership test against a literal "in [...]" list, pre-partitioned and sorted once at
+     * parse time (see Expr.StaticInOperator / FlatExpr.StaticInOperator) so evaluation never has to
+     * re-evaluate the list or re-scan it linearly for the common homogeneous-type case:
+     * - longValues: sorted ascending; matched via binary search for a LONG or DOUBLE operand (long/double
+     *   equality is already exact, never epsilon-based - see isExactLongValue/longEqualsDouble above).
+     * - stringValues: sorted via ByteBufferUtils.compare; matched via binary search for a STRING or
+     *   BYTE_BUFFER operand.
+     * - otherValues: anything that doesn't fit the fast-path buckets above (DOUBLE literals, so that
+     *   double-double matching keeps its existing epsilon tolerance rather than exact binary search;
+     *   and the rare single-BOOL-literal list) - checked linearly via isEqual, same as before.
+     * - representative: one original literal value, used only to reproduce the same "incompatible
+     *   operand type" exception a plain per-element isEqual() scan would have thrown when nothing
+     *   above matches.
+     */
+    public static boolean isInStaticSet(final Variant operand, final long[] longValues, final String[] stringValues,
+                                         final Variant[] otherValues, final Variant representative) {
+        if (longValues.length > 0) {
+            if (isLong(operand)) {
+                if (Arrays.binarySearch(longValues, operand.getAsLong()) >= 0) {
+                    return true;
+                }
+            } else if (isDouble(operand)) {
+                final double d = operand.getAsDouble();
+                if (isExactLongValue(d) && Arrays.binarySearch(longValues, toExactLongValue(d)) >= 0) {
+                    return true;
+                }
+            }
+        }
+        if (stringValues.length > 0) {
+            if (isString(operand)) {
+                if (Arrays.binarySearch(stringValues, operand.getAsCharSequence(), ByteBufferUtils::compare) >= 0) {
+                    return true;
+                }
+            } else if (isByteBuffer(operand)) {
+                if (binarySearchByteBuffer(stringValues, operand.getAsByteBuffer()) >= 0) {
+                    return true;
+                }
+            }
+        }
+        for (int i = 0; i < otherValues.length; i++) {
+            if (isEqual(operand, otherValues[i])) {
+                return true;
+            }
+        }
+        if (representative != null) {
+            // every value in the original list shared one type category (enforced at parse time), so
+            // this reproduces the exact exception a linear isEqual() scan would have hit on its very
+            // first comparison when the operand's type is fundamentally incompatible with the list
+            isEqual(operand, representative);
+        }
+        return false;
+    }
+
+    private static int binarySearchByteBuffer(final String[] sortedValues, final ByteBuffer key) {
+        int lo = 0;
+        int hi = sortedValues.length - 1;
+        while (lo <= hi) {
+            final int mid = (lo + hi) >>> 1;
+            final int cmp = ByteBufferUtils.compare(key, sortedValues[mid]);
+            if (cmp > 0) {
+                lo = mid + 1;
+            } else if (cmp < 0) {
+                hi = mid - 1;
+            } else {
+                return mid;
+            }
+        }
+        return -1;
     }
 
     public static Variant min(final Variant left, final Variant right) {

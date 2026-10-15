@@ -170,7 +170,7 @@ final class ExprContextNativeEnricher implements ExprContextEnricher {
 
         ctx.addFunction("isEmpty", (result, arg) -> {
             if (VariantUtils.isString(arg)) {
-                result.accept(arg.getAsString().isEmpty());
+                result.accept(arg.getAsCharSequence().length() == 0);
             } else if (VariantUtils.isByteBuffer(arg)) {
                 result.accept(ByteBufferUtils.isEmpty(arg.getAsByteBuffer()));
             } else {
@@ -180,7 +180,7 @@ final class ExprContextNativeEnricher implements ExprContextEnricher {
 
         ctx.addFunction("length", (result, arg) -> {
             if (VariantUtils.isString(arg)) {
-                result.accept(arg.getAsString().length());
+                result.accept(arg.getAsCharSequence().length());
             } else if (VariantUtils.isByteBuffer(arg)) {
                 result.accept(arg.getAsByteBuffer().remaining());
             } else {
@@ -190,11 +190,11 @@ final class ExprContextNativeEnricher implements ExprContextEnricher {
 
         ctx.addFunction("equals", (result, arg1, arg2) -> {
             if (VariantUtils.isString(arg1) && VariantUtils.isString(arg2)) {
-                result.accept(arg1.getAsString().equals(arg2.getAsString()));
+                result.accept(ByteBufferUtils.equals(arg1.getAsCharSequence(), arg2.getAsCharSequence()));
             } else if (VariantUtils.isString(arg1) && VariantUtils.isByteBuffer(arg2)) {
-                result.accept(ByteBufferUtils.equals(arg1.getAsString(), arg2.getAsByteBuffer()));
+                result.accept(ByteBufferUtils.equals(arg1.getAsCharSequence(), arg2.getAsByteBuffer()));
             } else if (VariantUtils.isByteBuffer(arg1) && VariantUtils.isString(arg2)) {
-                result.accept(ByteBufferUtils.equals(arg1.getAsByteBuffer(), arg2.getAsString()));
+                result.accept(ByteBufferUtils.equals(arg1.getAsByteBuffer(), arg2.getAsCharSequence()));
             } else if (VariantUtils.isByteBuffer(arg1) && VariantUtils.isByteBuffer(arg2)) {
                 result.accept(ByteBufferUtils.equals(arg1.getAsByteBuffer(), arg2.getAsByteBuffer()));
             } else {
@@ -204,11 +204,11 @@ final class ExprContextNativeEnricher implements ExprContextEnricher {
 
         ctx.addFunction("equalsIgnoreCase", (result, arg1, arg2) -> {
             if (VariantUtils.isString(arg1) && VariantUtils.isString(arg2)) {
-                result.accept(arg1.getAsString().equalsIgnoreCase(arg2.getAsString()));
+                result.accept(ByteBufferUtils.equalsIgnoreCase(arg1.getAsCharSequence(), arg2.getAsCharSequence()));
             } else if (VariantUtils.isString(arg1) && VariantUtils.isByteBuffer(arg2)) {
-                result.accept(ByteBufferUtils.equalsIgnoreCase(arg1.getAsString(), arg2.getAsByteBuffer()));
+                result.accept(ByteBufferUtils.equalsIgnoreCase(arg1.getAsCharSequence(), arg2.getAsByteBuffer()));
             } else if (VariantUtils.isByteBuffer(arg1) && VariantUtils.isString(arg2)) {
-                result.accept(ByteBufferUtils.equalsIgnoreCase(arg1.getAsByteBuffer(), arg2.getAsString()));
+                result.accept(ByteBufferUtils.equalsIgnoreCase(arg1.getAsByteBuffer(), arg2.getAsCharSequence()));
             } else if (VariantUtils.isByteBuffer(arg1) && VariantUtils.isByteBuffer(arg2)) {
                 result.accept(ByteBufferUtils.equalsIgnoreCase(arg1.getAsByteBuffer(), arg2.getAsByteBuffer()));
             } else {
@@ -220,15 +220,15 @@ final class ExprContextNativeEnricher implements ExprContextEnricher {
             // alternative syntax. I'm not sure it's better
             if (VariantUtils.isString(arg1)) {
                 if (VariantUtils.isString(arg2)) {
-                    result.accept(arg1.getAsString().contains(arg2.getAsString()));
+                    result.accept(ByteBufferUtils.contains(arg1.getAsCharSequence(), arg2.getAsCharSequence()));
                 } else if (VariantUtils.isByteBuffer(arg2)) {
-                    result.accept(ByteBufferUtils.contains(arg1.getAsString(), arg2.getAsByteBuffer()));
+                    result.accept(ByteBufferUtils.contains(arg1.getAsCharSequence(), arg2.getAsByteBuffer()));
                 } else {
                     throw new RuntimeException("Operand must be a STRING or BYTE_BUFFER");
                 }
             } else if (VariantUtils.isByteBuffer(arg1)) {
                 if (VariantUtils.isString(arg2)) {
-                    result.accept(ByteBufferUtils.contains(arg1.getAsByteBuffer(), arg2.getAsString()));
+                    result.accept(ByteBufferUtils.contains(arg1.getAsByteBuffer(), arg2.getAsCharSequence()));
                 } else if (VariantUtils.isByteBuffer(arg2)) {
                     result.accept(ByteBufferUtils.contains(arg1.getAsByteBuffer(), arg2.getAsByteBuffer()));
                 } else {
@@ -241,11 +241,11 @@ final class ExprContextNativeEnricher implements ExprContextEnricher {
 
         ctx.addFunction("containsIgnoreCase", (result, arg1, arg2) -> {
             if (VariantUtils.isString(arg1) && VariantUtils.isString(arg2)) {
-                result.accept(ByteBufferUtils.containsIgnoreCase(arg1.getAsString(), arg2.getAsString()));
+                result.accept(ByteBufferUtils.containsIgnoreCase(arg1.getAsCharSequence(), arg2.getAsCharSequence()));
             } else if (VariantUtils.isString(arg1) && VariantUtils.isByteBuffer(arg2)) {
-                result.accept(ByteBufferUtils.containsIgnoreCase(arg1.getAsString(), arg2.getAsByteBuffer()));
+                result.accept(ByteBufferUtils.containsIgnoreCase(arg1.getAsCharSequence(), arg2.getAsByteBuffer()));
             } else if (VariantUtils.isByteBuffer(arg1) && VariantUtils.isString(arg2)) {
-                result.accept(ByteBufferUtils.containsIgnoreCase(arg1.getAsByteBuffer(), arg2.getAsString()));
+                result.accept(ByteBufferUtils.containsIgnoreCase(arg1.getAsByteBuffer(), arg2.getAsCharSequence()));
             } else if (VariantUtils.isByteBuffer(arg1) && VariantUtils.isByteBuffer(arg2)) {
                 result.accept(ByteBufferUtils.containsIgnoreCase(arg1.getAsByteBuffer(), arg2.getAsByteBuffer()));
             } else {
@@ -255,11 +255,11 @@ final class ExprContextNativeEnricher implements ExprContextEnricher {
 
         ctx.addFunction("startsWith", (result, arg1, arg2) -> {
             if (VariantUtils.isString(arg1) && VariantUtils.isString(arg2)) {
-                result.accept(arg1.getAsString().startsWith(arg2.getAsString()));
+                result.accept(ByteBufferUtils.startsWith(arg1.getAsCharSequence(), arg2.getAsCharSequence()));
             } else if (VariantUtils.isString(arg1) && VariantUtils.isByteBuffer(arg2)) {
-                result.accept(ByteBufferUtils.startsWith(arg1.getAsString(), arg2.getAsByteBuffer()));
+                result.accept(ByteBufferUtils.startsWith(arg1.getAsCharSequence(), arg2.getAsByteBuffer()));
             } else if (VariantUtils.isByteBuffer(arg1) && VariantUtils.isString(arg2)) {
-                result.accept(ByteBufferUtils.startsWith(arg1.getAsByteBuffer(), arg2.getAsString()));
+                result.accept(ByteBufferUtils.startsWith(arg1.getAsByteBuffer(), arg2.getAsCharSequence()));
             } else if (VariantUtils.isByteBuffer(arg1) && VariantUtils.isByteBuffer(arg2)) {
                 result.accept(ByteBufferUtils.startsWith(arg1.getAsByteBuffer(), arg2.getAsByteBuffer()));
             } else {
@@ -269,11 +269,11 @@ final class ExprContextNativeEnricher implements ExprContextEnricher {
 
         ctx.addFunction("startsWithIgnoreCase", (result, arg1, arg2) -> {
             if (VariantUtils.isString(arg1) && VariantUtils.isString(arg2)) {
-                result.accept(ByteBufferUtils.startsWithIgnoreCase(arg1.getAsString(), arg2.getAsString()));
+                result.accept(ByteBufferUtils.startsWithIgnoreCase(arg1.getAsCharSequence(), arg2.getAsCharSequence()));
             } else if (VariantUtils.isString(arg1) && VariantUtils.isByteBuffer(arg2)) {
-                result.accept(ByteBufferUtils.startsWithIgnoreCase(arg1.getAsString(), arg2.getAsByteBuffer()));
+                result.accept(ByteBufferUtils.startsWithIgnoreCase(arg1.getAsCharSequence(), arg2.getAsByteBuffer()));
             } else if (VariantUtils.isByteBuffer(arg1) && VariantUtils.isString(arg2)) {
-                result.accept(ByteBufferUtils.startsWithIgnoreCase(arg1.getAsByteBuffer(), arg2.getAsString()));
+                result.accept(ByteBufferUtils.startsWithIgnoreCase(arg1.getAsByteBuffer(), arg2.getAsCharSequence()));
             } else if (VariantUtils.isByteBuffer(arg1) && VariantUtils.isByteBuffer(arg2)) {
                 result.accept(ByteBufferUtils.startsWithIgnoreCase(arg1.getAsByteBuffer(), arg2.getAsByteBuffer()));
             } else {
@@ -283,11 +283,11 @@ final class ExprContextNativeEnricher implements ExprContextEnricher {
 
         ctx.addFunction("endsWith", (result, arg1, arg2) -> {
             if (VariantUtils.isString(arg1) && VariantUtils.isString(arg2)) {
-                result.accept(arg1.getAsString().endsWith(arg2.getAsString()));
+                result.accept(ByteBufferUtils.endsWith(arg1.getAsCharSequence(), arg2.getAsCharSequence()));
             } else if (VariantUtils.isString(arg1) && VariantUtils.isByteBuffer(arg2)) {
-                result.accept(ByteBufferUtils.endsWith(arg1.getAsString(), arg2.getAsByteBuffer()));
+                result.accept(ByteBufferUtils.endsWith(arg1.getAsCharSequence(), arg2.getAsByteBuffer()));
             } else if (VariantUtils.isByteBuffer(arg1) && VariantUtils.isString(arg2)) {
-                result.accept(ByteBufferUtils.endsWith(arg1.getAsByteBuffer(), arg2.getAsString()));
+                result.accept(ByteBufferUtils.endsWith(arg1.getAsByteBuffer(), arg2.getAsCharSequence()));
             } else if (VariantUtils.isByteBuffer(arg1) && VariantUtils.isByteBuffer(arg2)) {
                 result.accept(ByteBufferUtils.endsWith(arg1.getAsByteBuffer(), arg2.getAsByteBuffer()));
             } else {
@@ -297,11 +297,11 @@ final class ExprContextNativeEnricher implements ExprContextEnricher {
 
         ctx.addFunction("endsWithIgnoreCase", (result, arg1, arg2) -> {
             if (VariantUtils.isString(arg1) && VariantUtils.isString(arg2)) {
-                result.accept(ByteBufferUtils.endsWithIgnoreCase(arg1.getAsString(), arg2.getAsString()));
+                result.accept(ByteBufferUtils.endsWithIgnoreCase(arg1.getAsCharSequence(), arg2.getAsCharSequence()));
             } else if (VariantUtils.isString(arg1) && VariantUtils.isByteBuffer(arg2)) {
-                result.accept(ByteBufferUtils.endsWithIgnoreCase(arg1.getAsString(), arg2.getAsByteBuffer()));
+                result.accept(ByteBufferUtils.endsWithIgnoreCase(arg1.getAsCharSequence(), arg2.getAsByteBuffer()));
             } else if (VariantUtils.isByteBuffer(arg1) && VariantUtils.isString(arg2)) {
-                result.accept(ByteBufferUtils.endsWithIgnoreCase(arg1.getAsByteBuffer(), arg2.getAsString()));
+                result.accept(ByteBufferUtils.endsWithIgnoreCase(arg1.getAsByteBuffer(), arg2.getAsCharSequence()));
             } else if (VariantUtils.isByteBuffer(arg1) && VariantUtils.isByteBuffer(arg2)) {
                 result.accept(ByteBufferUtils.endsWithIgnoreCase(arg1.getAsByteBuffer(), arg2.getAsByteBuffer()));
             } else {
@@ -313,15 +313,15 @@ final class ExprContextNativeEnricher implements ExprContextEnricher {
             // alternative syntax. I'm not sure it's better
             if (VariantUtils.isString(arg1)) {
                 if (VariantUtils.isString(arg2)) {
-                    result.accept(arg1.getAsString().indexOf(arg2.getAsString()));
+                    result.accept(ByteBufferUtils.indexOf(arg1.getAsCharSequence(), arg2.getAsCharSequence()));
                 } else if (VariantUtils.isByteBuffer(arg2)) {
-                    result.accept(ByteBufferUtils.indexOf(arg1.getAsString(), arg2.getAsByteBuffer()));
+                    result.accept(ByteBufferUtils.indexOf(arg1.getAsCharSequence(), arg2.getAsByteBuffer()));
                 } else {
                     throw new RuntimeException("Operand must be a STRING or BYTE_BUFFER");
                 }
             } else if (VariantUtils.isByteBuffer(arg1)) {
                 if (VariantUtils.isString(arg2)) {
-                    result.accept(ByteBufferUtils.indexOf(arg1.getAsByteBuffer(), arg2.getAsString()));
+                    result.accept(ByteBufferUtils.indexOf(arg1.getAsByteBuffer(), arg2.getAsCharSequence()));
                 } else if (VariantUtils.isByteBuffer(arg2)) {
                     result.accept(ByteBufferUtils.indexOf(arg1.getAsByteBuffer(), arg2.getAsByteBuffer()));
                 } else {
@@ -334,11 +334,11 @@ final class ExprContextNativeEnricher implements ExprContextEnricher {
 
         ctx.addFunction("indexOfIgnoreCase", (result, arg1, arg2) -> {
             if (VariantUtils.isString(arg1) && VariantUtils.isString(arg2)) {
-                result.accept(ByteBufferUtils.indexOfIgnoreCase(arg1.getAsString(), arg2.getAsString()));
+                result.accept(ByteBufferUtils.indexOfIgnoreCase(arg1.getAsCharSequence(), arg2.getAsCharSequence()));
             } else if (VariantUtils.isString(arg1) && VariantUtils.isByteBuffer(arg2)) {
-                result.accept(ByteBufferUtils.indexOfIgnoreCase(arg1.getAsString(), arg2.getAsByteBuffer()));
+                result.accept(ByteBufferUtils.indexOfIgnoreCase(arg1.getAsCharSequence(), arg2.getAsByteBuffer()));
             } else if (VariantUtils.isByteBuffer(arg1) && VariantUtils.isString(arg2)) {
-                result.accept(ByteBufferUtils.indexOfIgnoreCase(arg1.getAsByteBuffer(), arg2.getAsString()));
+                result.accept(ByteBufferUtils.indexOfIgnoreCase(arg1.getAsByteBuffer(), arg2.getAsCharSequence()));
             } else if (VariantUtils.isByteBuffer(arg1) && VariantUtils.isByteBuffer(arg2)) {
                 result.accept(ByteBufferUtils.indexOfIgnoreCase(arg1.getAsByteBuffer(), arg2.getAsByteBuffer()));
             } else {

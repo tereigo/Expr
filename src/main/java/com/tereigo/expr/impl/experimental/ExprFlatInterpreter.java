@@ -1,12 +1,7 @@
 package com.tereigo.expr.impl.experimental;
 
 import com.tereigo.expr.ExprContext;
-import com.tereigo.expr.function.Function0;
-import com.tereigo.expr.function.Function1;
-import com.tereigo.expr.function.Function2;
-import com.tereigo.expr.function.Function3;
-import com.tereigo.expr.function.Function4;
-import com.tereigo.expr.function.Function5;
+import com.tereigo.expr.function.*;
 import com.tereigo.expr.impl.RuntimeError;
 import com.tereigo.expr.impl.Token;
 import com.tereigo.expr.impl.TokenType;
@@ -107,6 +102,22 @@ final class ExprFlatInterpreter implements FlatExpr.Visitor<Variant> {
                     expr.result.accept(true);
                     return expr.result;
                 }
+            }
+        } catch (final RuntimeException ex) {
+            throw new RuntimeError(expr.operator, getExceptionMsg(ex), ex);
+        }
+        expr.result.accept(false);
+        return expr.result;
+    }
+
+    @Override
+    public Variant visitStaticInOperator(final FlatExpr.StaticInOperator expr) {
+        final short childPos = expr.startChild;
+        final Variant operand = evaluate(flatAST.getNodes()[childPos]);
+        try {
+            if (VariantUtils.isInStaticSet(operand, expr.longValues, expr.stringValues, expr.otherValues, expr.representative)) {
+                expr.result.accept(true);
+                return expr.result;
             }
         } catch (final RuntimeException ex) {
             throw new RuntimeError(expr.operator, getExceptionMsg(ex), ex);

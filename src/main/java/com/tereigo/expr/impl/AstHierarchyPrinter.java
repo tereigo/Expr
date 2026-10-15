@@ -1,5 +1,7 @@
 package com.tereigo.expr.impl;
 
+import com.tereigo.expr.variant.Variant;
+
 import java.util.List;
 
 /*
@@ -34,6 +36,49 @@ final class AstHierarchyPrinter implements Expr.Visitor<String> {
         builder.append(ident).append('│').append("\n");
         builder.append(ident).append("├── ").append(formatList(expr.values));
         level--;
+        return builder.toString();
+    }
+
+    @Override
+    public String visitStaticInOperator(final Expr.StaticInOperator expr) {
+        final StringBuilder builder = new StringBuilder();
+        final String ident = generateIdent(level);
+        builder.append(expr.operator.lexeme).append("\n");
+        builder.append(ident).append('│').append("\n");
+        level++;
+        builder.append(ident).append("├── ").append(expr.operand.accept(this)).append("\n");
+        builder.append(ident).append('│').append("\n");
+        builder.append(ident).append("├── ").append(formatStaticInValues(expr));
+        level--;
+        return builder.toString();
+    }
+
+    private String formatStaticInValues(final Expr.StaticInOperator expr) {
+        final StringBuilder builder = new StringBuilder();
+        builder.append("[");
+        boolean first = true;
+        for (final long v : expr.longValues) {
+            if (!first) {
+                builder.append(", ");
+            }
+            builder.append(v);
+            first = false;
+        }
+        for (final String v : expr.stringValues) {
+            if (!first) {
+                builder.append(", ");
+            }
+            builder.append(v);
+            first = false;
+        }
+        for (final Variant v : expr.otherValues) {
+            if (!first) {
+                builder.append(", ");
+            }
+            builder.append(v.getAsObject());
+            first = false;
+        }
+        builder.append("]");
         return builder.toString();
     }
 

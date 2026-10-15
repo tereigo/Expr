@@ -1,47 +1,11 @@
 package com.tereigo.expr.impl;
 
+import com.tereigo.expr.utils.ByteBufferUtils;
 import com.tereigo.expr.variant.*;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
-import static com.tereigo.expr.impl.TokenType.AND;
-import static com.tereigo.expr.impl.TokenType.BETWEEN;
-import static com.tereigo.expr.impl.TokenType.COMMA;
-import static com.tereigo.expr.impl.TokenType.DIV;
-import static com.tereigo.expr.impl.TokenType.DOT;
-import static com.tereigo.expr.impl.TokenType.DOUBLE_NUMBER;
-import static com.tereigo.expr.impl.TokenType.EOF;
-import static com.tereigo.expr.impl.TokenType.EQUAL_EQUAL;
-import static com.tereigo.expr.impl.TokenType.FALSE;
-import static com.tereigo.expr.impl.TokenType.GREATER;
-import static com.tereigo.expr.impl.TokenType.GREATER_EQUAL;
-import static com.tereigo.expr.impl.TokenType.IDENTIFIER;
-import static com.tereigo.expr.impl.TokenType.IN;
-import static com.tereigo.expr.impl.TokenType.LEFT_BRACKET;
-import static com.tereigo.expr.impl.TokenType.LEFT_PAREN;
-import static com.tereigo.expr.impl.TokenType.LESS;
-import static com.tereigo.expr.impl.TokenType.LESS_EQUAL;
-import static com.tereigo.expr.impl.TokenType.LONG_NUMBER;
-import static com.tereigo.expr.impl.TokenType.MATH_E;
-import static com.tereigo.expr.impl.TokenType.MATH_PI;
-import static com.tereigo.expr.impl.TokenType.MINUS;
-import static com.tereigo.expr.impl.TokenType.MODULUS;
-import static com.tereigo.expr.impl.TokenType.MUL;
-import static com.tereigo.expr.impl.TokenType.NOT;
-import static com.tereigo.expr.impl.TokenType.NOT_EQUAL;
-import static com.tereigo.expr.impl.TokenType.OR;
-import static com.tereigo.expr.impl.TokenType.PLUS;
-import static com.tereigo.expr.impl.TokenType.RIGHT_BRACKET;
-import static com.tereigo.expr.impl.TokenType.RIGHT_PAREN;
-import static com.tereigo.expr.impl.TokenType.STRING;
-import static com.tereigo.expr.impl.TokenType.TERNARY_ELSE;
-import static com.tereigo.expr.impl.TokenType.TERNARY_IF;
-import static com.tereigo.expr.impl.TokenType.TRUE;
-import static com.tereigo.expr.impl.TokenType.WITHIN;
+import static com.tereigo.expr.impl.TokenType.*;
 
 /*
     This Expr module is largely based on the brilliant book "Crafting interpreters" by Bob Nystrom
@@ -182,16 +146,59 @@ final class ExprParser {
         return expr;
     }
 
-    private Expr.InOperator parseInOperands(final Expr expr) {
+    private Expr.BaseExpr parseInOperands(final Expr expr) {
         final Token operator = previous();
         if (match(LEFT_BRACKET)) {
             final List<Expr> values = list();
             consume(RIGHT_BRACKET, "Expect ']' after '['");
             validateInValues(values);
-            return new Expr.InOperator(expr, operator, values);
+            return buildInOperator(expr, operator, values);
         } else {
             throw error(peek(), "Expect '[' after IN operator");
         }
+    }
+
+    // Builds a StaticInOperator (sorted primitive arrays + binary-search membership, no re-evaluation
+    // of the value expressions at runtime) when every value in the list is a literal, which is known
+    // at parse time; otherwise falls back to the generic InOperator, unchanged.
+    private Expr.BaseExpr buildInOperator(final Expr operand, final Token operator, final List<Expr> values) {
+        for (int i = 0; i < values.size(); i++) {
+            if (!(values.get(i) instanceof Expr.Literal)) {
+                return new Expr.InOperator(operand, operator, values);
+            }
+        }
+
+        int longCount = 0;
+        int stringCount = 0;
+        for (int i = 0; i < values.size(); i++) {
+            final ExprType type = ((Expr.Literal) values.get(i)).result.exprType();
+            if (type == ExprType.LONG) {
+                longCount++;
+            } else if (type == ExprType.STRING) {
+                stringCount++;
+            }
+        }
+
+        final long[] longValues = new long[longCount];
+        final String[] stringValues = new String[stringCount];
+        final Variant[] otherValues = new Variant[values.size() - longCount - stringCount];
+        int li = 0;
+        int si = 0;
+        int oi = 0;
+        for (int i = 0; i < values.size(); i++) {
+            final Variant val = ((Expr.Literal) values.get(i)).result;
+            if (val.exprType() == ExprType.LONG) {
+                longValues[li++] = val.getAsLong();
+            } else if (val.exprType() == ExprType.STRING) {
+                stringValues[si++] = val.getAsCharSequence().toString();
+            } else {
+                otherValues[oi++] = val;
+            }
+        }
+        Arrays.sort(longValues);
+        Arrays.sort(stringValues, ByteBufferUtils::compare);
+        final Variant representative = values.isEmpty() ? null : ((Expr.Literal) values.get(0)).result;
+        return new Expr.StaticInOperator(operand, operator, longValues, stringValues, otherValues, representative);
     }
 
     private void validateInValues(final List<Expr> values) {

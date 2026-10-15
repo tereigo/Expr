@@ -39,11 +39,11 @@ public final class VariantFactory {
         return value ? BOOL_TRUE : BOOL_FALSE;
     }
 
-    public static MutableVariant createString(final String value) {
+    public static MutableVariant createString(final CharSequence value) {
         return new VariantImpl(value);
     }
 
-    public static Variant createImmutableString(final String value) {
+    public static Variant createImmutableString(final CharSequence value) {
         return createString(value);
     }
 

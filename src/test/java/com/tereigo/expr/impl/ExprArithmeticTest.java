@@ -194,6 +194,22 @@ public class ExprArithmeticTest extends ExprEvaluatorTestBase {
     }
 
     @Test
+    void subtractionOfUnsignedLongMinValueLiteralTests() {
+        // regression test: "a - 9223372036854775808" must evaluate as a normal binary subtraction,
+        // not have its "-" silently swallowed by the scanner's Long.MIN_VALUE special-case
+        // (see ExprScannerTest.scanBinaryMinusBeforeLongMinValueLiteralTest for the tokenization check)
+        final double unsignedLongMinValueMagnitude = Math.pow(2, 63);
+        assertEquals(0.0 - unsignedLongMinValueMagnitude, evaluateDouble("0 - 9223372036854775808"), EPS);
+        assertEquals(1.0 - unsignedLongMinValueMagnitude, evaluateDouble("1 - 9223372036854775808"), EPS);
+
+        final ExprContext ctx = createContext();
+        assertEquals(123.0 - unsignedLongMinValueMagnitude, evaluateDouble("$productId - 9223372036854775808", ctx), EPS);
+
+        // unchanged behavior: a genuinely unary minus still folds into the Long.MIN_VALUE literal
+        assertEquals(Long.MIN_VALUE, evaluateLong("-9223372036854775808"));
+    }
+
+    @Test
     void subtractionWithContextTests() {
         final ExprContext ctx = createContext();
         RuntimeError runErr;

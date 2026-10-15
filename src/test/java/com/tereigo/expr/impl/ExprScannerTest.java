@@ -2,34 +2,7 @@ package com.tereigo.expr.impl;
 
 import org.junit.jupiter.api.Test;
 
-import static com.tereigo.expr.impl.TokenType.AND;
-import static com.tereigo.expr.impl.TokenType.BETWEEN;
-import static com.tereigo.expr.impl.TokenType.COMMA;
-import static com.tereigo.expr.impl.TokenType.DIV;
-import static com.tereigo.expr.impl.TokenType.DOT;
-import static com.tereigo.expr.impl.TokenType.DOUBLE_NUMBER;
-import static com.tereigo.expr.impl.TokenType.EOF;
-import static com.tereigo.expr.impl.TokenType.EQUAL_EQUAL;
-import static com.tereigo.expr.impl.TokenType.FALSE;
-import static com.tereigo.expr.impl.TokenType.GREATER;
-import static com.tereigo.expr.impl.TokenType.IDENTIFIER;
-import static com.tereigo.expr.impl.TokenType.IN;
-import static com.tereigo.expr.impl.TokenType.LEFT_BRACKET;
-import static com.tereigo.expr.impl.TokenType.LEFT_PAREN;
-import static com.tereigo.expr.impl.TokenType.LESS;
-import static com.tereigo.expr.impl.TokenType.LONG_NUMBER;
-import static com.tereigo.expr.impl.TokenType.MINUS;
-import static com.tereigo.expr.impl.TokenType.MODULUS;
-import static com.tereigo.expr.impl.TokenType.MUL;
-import static com.tereigo.expr.impl.TokenType.NOT;
-import static com.tereigo.expr.impl.TokenType.NOT_EQUAL;
-import static com.tereigo.expr.impl.TokenType.OR;
-import static com.tereigo.expr.impl.TokenType.PLUS;
-import static com.tereigo.expr.impl.TokenType.RIGHT_BRACKET;
-import static com.tereigo.expr.impl.TokenType.RIGHT_PAREN;
-import static com.tereigo.expr.impl.TokenType.STRING;
-import static com.tereigo.expr.impl.TokenType.TRUE;
-import static com.tereigo.expr.impl.TokenType.WITHIN;
+import static com.tereigo.expr.impl.TokenType.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -134,6 +107,26 @@ class ExprScannerTest {
         testScanner("-9223372036854775809", MINUS, DOUBLE_NUMBER);
         testScanner("-9223372036854775809.", MINUS, DOUBLE_NUMBER, DOT);
         testScanner("-9223372036854775809.0", MINUS, DOUBLE_NUMBER);
+    }
+
+    @Test
+    void scanBinaryMinusBeforeLongMinValueLiteralTest() {
+        // regression test: a MINUS immediately preceding the unsigned magnitude of Long.MIN_VALUE
+        // ("9223372036854775808") must only be absorbed into a single LONG_NUMBER token when it's a
+        // unary (sign) minus. When it's a binary subtraction operator, it must remain a separate
+        // MINUS token, with the (unsigned, overflowing) literal falling through to the DOUBLE_NUMBER
+        // fallback - previously the MINUS was unconditionally swallowed in both cases.
+        testScanner("1 - 9223372036854775808", LONG_NUMBER, MINUS, DOUBLE_NUMBER);
+        testScanner("$a - 9223372036854775808", IDENTIFIER, MINUS, DOUBLE_NUMBER);
+        testScanner("(1) - 9223372036854775808", LEFT_PAREN, LONG_NUMBER, RIGHT_PAREN, MINUS, DOUBLE_NUMBER);
+        testScanner("true - 9223372036854775808", TRUE, MINUS, DOUBLE_NUMBER);
+        testScanner("\"A\" - 9223372036854775808", STRING, MINUS, DOUBLE_NUMBER);
+
+        // unchanged behavior: a genuinely unary minus (not preceded by a value-producing token)
+        // still correctly folds into the single Long.MIN_VALUE token
+        testScanner("-9223372036854775808", LONG_NUMBER);
+        testScanner("1 * -9223372036854775808", LONG_NUMBER, MUL, LONG_NUMBER);
+        testScanner("(-9223372036854775808)", LEFT_PAREN, LONG_NUMBER, RIGHT_PAREN);
     }
 
     @Test

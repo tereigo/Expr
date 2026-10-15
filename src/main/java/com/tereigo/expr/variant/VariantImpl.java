@@ -169,18 +169,23 @@ final class VariantImpl implements MutableVariant {
 
     @Override
     public void accept(final String value) {
+        // reused instances must not carry over longVal from a previous LONG/DOUBLE/BOOL accept(),
+        // otherwise equals()/hashCode() can diverge for variants holding identical STRING content
+        this.longVal = 0;
         this.objVal = value;
         this.type = ExprType.STRING;
     }
 
     @Override
     public void accept(final ByteBuffer value) {
+        this.longVal = 0;
         this.objVal = value;
         this.type = ExprType.BYTE_BUFFER;
     }
 
     @Override
     public void accept(final ExprContext value) {
+        this.longVal = 0;
         this.objVal = value;
         this.type = ExprType.EXPR_CONTEXT;
     }

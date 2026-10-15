@@ -149,8 +149,10 @@ public final class ByteBufferUtils {
         if (keySize > source.remaining()) {
             return false;
         }
+        final int srcPos = source.position();
+        final int keyPos = key.position();
         for (int i = 0; i < keySize; i++) {
-            if (comparator.compare(source.get(i), key.get(i)) != 0) {
+            if (comparator.compare(source.get(srcPos + i), key.get(keyPos + i)) != 0) {
                 return false;
             }
         }
@@ -170,8 +172,9 @@ public final class ByteBufferUtils {
         if (keySize > source.remaining()) {
             return false;
         }
+        final int srcPos = source.position();
         for (int i = 0; i < keySize; i++) {
-            if (comparator.compare(source.get(i), (byte) (key.charAt(i) & 0xFF)) != 0) {
+            if (comparator.compare(source.get(srcPos + i), (byte) (key.charAt(i) & 0xFF)) != 0) {
                 return false;
             }
         }
@@ -191,8 +194,9 @@ public final class ByteBufferUtils {
         if (keySize > source.length()) {
             return false;
         }
+        final int keyPos = key.position();
         for (int i = 0; i < keySize; i++) {
-            if (comparator.compare((byte) (source.charAt(i) & 0xFF), key.get(i)) != 0) {
+            if (comparator.compare((byte) (source.charAt(i) & 0xFF), key.get(keyPos + i)) != 0) {
                 return false;
             }
         }
@@ -230,8 +234,10 @@ public final class ByteBufferUtils {
         if (keySize > srcSize) {
             return false;
         }
+        final int srcPos = source.position();
+        final int keyPos = key.position();
         for (int i = keySize - 1, j = srcSize - 1; i >= 0; i--, j--) {
-            if (comparator.compare(source.get(j), key.get(i)) != 0) {
+            if (comparator.compare(source.get(srcPos + j), key.get(keyPos + i)) != 0) {
                 return false;
             }
         }
@@ -252,8 +258,9 @@ public final class ByteBufferUtils {
         if (keySize > srcSize) {
             return false;
         }
+        final int srcPos = source.position();
         for (int i = keySize - 1, j = srcSize - 1; i >= 0; i--, j--) {
-            if (comparator.compare(source.get(j), (byte) (key.charAt(i) & 0xFF)) != 0) {
+            if (comparator.compare(source.get(srcPos + j), (byte) (key.charAt(i) & 0xFF)) != 0) {
                 return false;
             }
         }
@@ -274,8 +281,9 @@ public final class ByteBufferUtils {
         if (keySize > srcSize) {
             return false;
         }
+        final int keyPos = key.position();
         for (int i = keySize - 1, j = srcSize - 1; i >= 0; i--, j--) {
-            if (comparator.compare((byte) (source.charAt(j) & 0xFF), key.get(i)) != 0) {
+            if (comparator.compare((byte) (source.charAt(j) & 0xFF), key.get(keyPos + i)) != 0) {
                 return false;
             }
         }
@@ -364,27 +372,7 @@ public final class ByteBufferUtils {
     }
 
     public static boolean equals(final ByteBuffer buffer, final CharSequence chars) {
-        if (buffer == null && chars == null) {
-            return true;
-        }
-
-        if (buffer != null && chars != null) {
-            final int pos = buffer.position();
-            final int lim = buffer.limit();
-            if (chars.length() != (lim - pos)) {
-                return false;
-            }
-
-            for (int i = 0; i < chars.length(); i++) {
-                if ((chars.charAt(i) & 0xFF) != buffer.get(pos + i)) {
-                    return false;
-                }
-            }
-
-            return true;
-        } else {
-            return false;
-        }
+        return equals(buffer, chars, BYTE_CASE_SENSITIVE_COMPARATOR);
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -502,19 +490,20 @@ public final class ByteBufferUtils {
             return 0;
         }
 
+        final int strPos = str.position();
         final byte firstByte = (byte) (pattern.charAt(0) & 0xFF);
         final int max = str.remaining() - pattern.length();
 
         for (int i = 0; i <= max; i++) {
             // search for the first same character in str
-            if (comparator.compare(str.get(i), firstByte) != 0) {
-                while (++i <= max && comparator.compare(str.get(i), firstByte) != 0) ;
+            if (comparator.compare(str.get(strPos + i), firstByte) != 0) {
+                while (++i <= max && comparator.compare(str.get(strPos + i), firstByte) != 0) ;
             }
 
             if (i <= max) {
                 int j = i + 1;
                 final int end = j + pattern.length() - 1;
-                for (int k = 1; j < end && comparator.compare(str.get(j), (byte) (pattern.charAt(k) & 0xFF)) == 0; j++, k++) ;
+                for (int k = 1; j < end && comparator.compare(str.get(strPos + j), (byte) (pattern.charAt(k) & 0xFF)) == 0; j++, k++) ;
 
                 if (j == end) {
                     return i;
@@ -537,7 +526,8 @@ public final class ByteBufferUtils {
             return 0;
         }
 
-        final byte firstByte = pattern.get(0);
+        final int patPos = pattern.position();
+        final byte firstByte = pattern.get(patPos);
         final int max = str.length() - pattern.remaining();
 
         for (int i = 0; i <= max; i++) {
@@ -549,7 +539,7 @@ public final class ByteBufferUtils {
             if (i <= max) {
                 int j = i + 1;
                 final int end = j + pattern.remaining() - 1;
-                for (int k = 1; j < end && comparator.compare((byte) (str.charAt(j) & 0xFF), pattern.get(k)) == 0; j++, k++) ;
+                for (int k = 1; j < end && comparator.compare((byte) (str.charAt(j) & 0xFF), pattern.get(patPos + k)) == 0; j++, k++) ;
 
                 if (j == end) {
                     return i;
@@ -572,19 +562,21 @@ public final class ByteBufferUtils {
             return 0;
         }
 
-        final byte firstByte = pattern.get(0);
+        final int strPos = str.position();
+        final int patPos = pattern.position();
+        final byte firstByte = pattern.get(patPos);
         final int max = str.remaining() - pattern.remaining();
 
         for (int i = 0; i <= max; i++) {
             // search for the first same character in str
-            if (comparator.compare(str.get(i), firstByte) != 0) {
-                while (++i <= max && comparator.compare(str.get(i), firstByte) != 0) ;
+            if (comparator.compare(str.get(strPos + i), firstByte) != 0) {
+                while (++i <= max && comparator.compare(str.get(strPos + i), firstByte) != 0) ;
             }
 
             if (i <= max) {
                 int j = i + 1;
                 final int end = j + pattern.remaining() - 1;
-                for (int k = 1; j < end && comparator.compare(str.get(j), pattern.get(k)) == 0; j++, k++) ;
+                for (int k = 1; j < end && comparator.compare(str.get(strPos + j), pattern.get(patPos + k)) == 0; j++, k++) ;
 
                 if (j == end) {
                     return i;

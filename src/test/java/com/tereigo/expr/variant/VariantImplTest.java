@@ -159,6 +159,41 @@ class VariantImplTest {
         assertEquals(createByteBuffer(constant("A")).hashCode(), VariantFactory.createString("A").hashCode());
     }
 
+    // regression test: accept(String/ByteBuffer/ExprContext) must reset the stale longVal left over
+    // from a previous accept(long/double/boolean) call on the same reused MutableVariant instance -
+    // otherwise two variants holding identical STRING/BYTE_BUFFER content can compare unequal or hash
+    // differently purely because of their prior accept() history. Reuse of a single mutable instance
+    // across evaluations (e.g. Expr.BaseExpr.result) is the whole point of the GC-free design, so this
+    // is directly reachable in practice, not just a theoretical edge case.
+    @Test
+    void testReusedMutableVariantStringEqualityIsNotCorruptedByPriorNumericValue() {
+        final MutableVariant v1 = VariantFactory.createEmpty();
+        v1.accept(123L);
+        v1.accept("same");
+
+        final MutableVariant v2 = VariantFactory.createEmpty();
+        v2.accept(1.5);
+        v2.accept("same");
+
+        assertEquals(v1, v2);
+        assertEquals(v1.hashCode(), v2.hashCode());
+        assertTrue(VariantUtils.isEqual(v1, v2));
+    }
+
+    @Test
+    void testReusedMutableVariantByteBufferEqualityIsNotCorruptedByPriorNumericValue() {
+        final MutableVariant v1 = VariantFactory.createEmpty();
+        v1.accept(true);
+        v1.accept(constant("same"));
+
+        final MutableVariant v2 = VariantFactory.createEmpty();
+        v2.accept(999L);
+        v2.accept(constant("same"));
+
+        assertEquals(v1, v2);
+        assertEquals(v1.hashCode(), v2.hashCode());
+    }
+
     @Test
     void testEqualsSpecialCases() {
         final Variant v = VariantFactory.createLong(1);

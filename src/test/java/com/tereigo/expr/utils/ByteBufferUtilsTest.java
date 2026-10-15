@@ -448,6 +448,55 @@ class ByteBufferUtilsTest {
     }
 
     @Test
+    void startsWithEndsWithIndexOfRespectPositionTest() {
+        // regression test: startsWith/endsWith/indexOf/contains must respect ByteBuffer position/limit
+        // on BOTH the source and the key/pattern argument, not read from absolute index 0. A nonzero
+        // position is the normal case here, since Variant's ByteBuffers are always references sliced
+        // only by position/limit, never physically copied (see VariantImpl's "IMPORTANT NOTE").
+        final ByteBuffer sliced = ByteBuffer.wrap("XXABCXX".getBytes(StandardCharsets.US_ASCII));
+        sliced.position(2);
+        sliced.limit(5); // view == "ABC"
+
+        // sliced buffer used as the source/haystack
+        assertTrue(startsWith(sliced, constant("AB")));
+        assertTrue(startsWith(sliced, constant("ABC")));
+        assertFalse(startsWith(sliced, constant("BC")));
+        assertTrue(startsWith(sliced, "AB"));
+        assertFalse(startsWith(sliced, "BC"));
+
+        assertTrue(endsWith(sliced, constant("BC")));
+        assertTrue(endsWith(sliced, constant("ABC")));
+        assertFalse(endsWith(sliced, constant("AB")));
+        assertTrue(endsWith(sliced, "BC"));
+        assertFalse(endsWith(sliced, "AB"));
+
+        assertEquals(1, indexOf(sliced, "BC"));
+        assertEquals(1, indexOf(sliced, constant("BC")));
+        assertEquals(0, indexOf(sliced, "ABC"));
+        assertTrue(contains(sliced, "BC"));
+        assertTrue(contains(sliced, constant("BC")));
+
+        // sliced buffer used as the key/pattern/needle
+        assertTrue(startsWith(constant("ABCXYZ"), sliced));
+        assertTrue(startsWith("ABCXYZ", sliced));
+        assertFalse(startsWith(constant("XYZABC"), sliced));
+        assertFalse(startsWith("XYZABC", sliced));
+
+        assertTrue(endsWith(constant("XYZABC"), sliced));
+        assertTrue(endsWith("XYZABC", sliced));
+        assertFalse(endsWith(constant("ABCXYZ"), sliced));
+        assertFalse(endsWith("ABCXYZ", sliced));
+
+        assertEquals(2, indexOf("XYABCZ", sliced));
+        assertEquals(2, indexOf(constant("XYABCZ"), sliced));
+        assertTrue(contains("XYABCZ", sliced));
+
+        // none of the above may mutate the buffer's position/limit
+        assertEquals(2, sliced.position());
+        assertEquals(5, sliced.limit());
+    }
+
+    @Test
     void equalsCharSequenceOverloadsTests() {
         assertTrue(ByteBufferUtils.equals("A", constant("A")));
         assertFalse(ByteBufferUtils.equals("A", constant("B")));
@@ -472,6 +521,26 @@ class ByteBufferUtilsTest {
         assertTrue(ByteBufferUtils.equals((ByteBuffer) null, (CharSequence) null));
         assertFalse(ByteBufferUtils.equals((ByteBuffer) null, "A"));
         assertFalse(ByteBufferUtils.equals(constant("A"), (CharSequence) null));
+    }
+
+    @Test
+    void equalsHandlesHighBitBytesTest() {
+        // regression test: equals(ByteBuffer, CharSequence) must not sign-extend the ByteBuffer side
+        // when comparing against the unsigned char produced by parseString()'s "(char) (b & 0xFF)"
+        // convention - previously any byte >= 0x80 never compared equal even when content matched.
+        final ByteBuffer buffer = ByteBuffer.allocate(3);
+        buffer.put((byte) 0xC8).put((byte) 0xFF).put((byte) 0x80);
+        buffer.flip();
+        // parseString(ByteBuffer) decodes as US-ASCII (lossy for non-ASCII bytes), so build the
+        // CharSequence using the same "(char) (b & 0xFF)" convention as parseString(ByteBuffer, StringBuilder)
+        final StringBuilder sb = new StringBuilder();
+        ByteBufferUtils.parseString(buffer, sb);
+        final String asChars = sb.toString();
+
+        assertTrue(ByteBufferUtils.equals(buffer, asChars));
+        assertTrue(ByteBufferUtils.equals(asChars, buffer));
+        assertTrue(ByteBufferUtils.equalsIgnoreCase(buffer, asChars));
+        assertFalse(ByteBufferUtils.equals(buffer, "ABC"));
     }
 
     @Test

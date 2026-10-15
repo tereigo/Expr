@@ -208,6 +208,31 @@ final class ExprScanner {
         addToken(type);
     }
 
+    // Returns true if the MINUS token at minusIndex is acting as a unary (sign) minus rather than
+    // binary subtraction, judged by whether the preceding token could itself terminate an expression
+    // (an identifier, literal, "pi"/"e", or a closing paren/bracket) - if so, the minus is binary.
+    private boolean isUnaryMinus(final int minusIndex) {
+        if (minusIndex == 0) {
+            return true;
+        }
+        final TokenType prev = tokens.get(minusIndex - 1).type;
+        switch (prev) {
+            case IDENTIFIER:
+            case LONG_NUMBER:
+            case DOUBLE_NUMBER:
+            case STRING:
+            case TRUE:
+            case FALSE:
+            case MATH_PI:
+            case MATH_E:
+            case RIGHT_PAREN:
+            case RIGHT_BRACKET:
+                return false;
+            default:
+                return true;
+        }
+    }
+
     private void number() {
         // we get here if the current character is a digit
         // The possible options are:
@@ -247,9 +272,14 @@ final class ExprScanner {
         final String literal = source.substring(start, current);
         // this is a special case to be able to parse Long.MIN_VALUE ("-9223372036854775808")
         // this is because Long.parseLong("9223372036854775808") fails because 9223372036854775808 > Long.MAX_VALUE (9223372036854775807)
-        if (literal.equals("9223372036854775808") && tokens.size() > 0 && tokens.get(tokens.size() - 1).type == MINUS) {
+        // NOTE: only applies when the preceding "-" is a unary (sign) minus, e.g. "-9223372036854775808" or "x * -9223372036854775808".
+        // When it's a binary subtraction, e.g. "a - 9223372036854775808", the "-" must stay and the (unsigned) literal
+        // falls through to the double fallback below, since 9223372036854775808 alone doesn't fit in a long.
+        final int lastTokenIndex = tokens.size() - 1;
+        if (literal.equals("9223372036854775808") && lastTokenIndex >= 0 && tokens.get(lastTokenIndex).type == MINUS
+                && isUnaryMinus(lastTokenIndex)) {
             // remove previous "minus"
-            tokens.remove(tokens.size() - 1);
+            tokens.remove(lastTokenIndex);
             addToken(LONG_NUMBER, Long.MIN_VALUE, "-9223372036854775808");
         } else {
             try {

@@ -213,6 +213,116 @@ class VariantUtilsTest {
     }
 
     // ---------------------------------------------------------------------
+    // Mixed long/double comparisons must be exact, never lose precision by converting the long
+    // side to double (magnitudes beyond 2^53 can't be represented exactly as a double).
+    // ---------------------------------------------------------------------
+
+    @Test
+    void isEqual_longDouble_beyondDoublePrecision_isNotFalselyEqual() {
+        // 9007199254740993L (2^53 + 1) is odd and has no exact double representation: naively
+        // converting it to double rounds (ties-to-even) down to 9007199254740992.0 (2^53) - they
+        // must NOT compare equal despite that rounding collision
+        final Variant oddBeyondPrecision = VariantFactory.createImmutableLong(9007199254740993L);
+        final Variant roundedDouble = VariantFactory.createImmutableDouble(9007199254740992.0);
+
+        assertFalse(VariantUtils.isEqual(oddBeyondPrecision, roundedDouble));
+        assertFalse(VariantUtils.isEqual(roundedDouble, oddBeyondPrecision));
+
+        // sanity check: a long that genuinely IS exactly representable as a double at this magnitude
+        // (even, so it falls exactly on the double grid, whose spacing is 2 here) still compares
+        // equal/unequal correctly
+        final Variant evenBeyondPrecision = VariantFactory.createImmutableLong(9007199254740994L);
+        assertTrue(VariantUtils.isEqual(evenBeyondPrecision, VariantFactory.createImmutableDouble(9007199254740994.0)));
+        assertFalse(VariantUtils.isEqual(evenBeyondPrecision, roundedDouble));
+    }
+
+    @Test
+    void isGreaterLess_longDouble_beyondDoublePrecision_isExact() {
+        final Variant justAboveDoublePrecision = VariantFactory.createImmutableLong(9007199254740993L);
+        final Variant roundedDouble = VariantFactory.createImmutableDouble(9007199254740992.0);
+
+        // 9007199254740993 > 9007199254740992.0 - naive double conversion would make them equal
+        // and get both of these wrong (neither strictly greater nor less)
+        assertTrue(VariantUtils.isGreaterNumbers(justAboveDoublePrecision, roundedDouble));
+        assertFalse(VariantUtils.isGreaterNumbers(roundedDouble, justAboveDoublePrecision));
+        assertTrue(VariantUtils.isLessNumbers(roundedDouble, justAboveDoublePrecision));
+        assertFalse(VariantUtils.isLessNumbers(justAboveDoublePrecision, roundedDouble));
+        assertFalse(VariantUtils.isGreaterOrEqualNumbers(roundedDouble, justAboveDoublePrecision));
+        assertFalse(VariantUtils.isLessOrEqualNumbers(justAboveDoublePrecision, roundedDouble));
+    }
+
+    @Test
+    void longDouble_comparisons_withFractionalDouble() {
+        final Variant five = VariantFactory.createImmutableLong(5);
+        final Variant negFive = VariantFactory.createImmutableLong(-5);
+
+        assertFalse(VariantUtils.isEqual(five, VariantFactory.createImmutableDouble(5.5)));
+        assertTrue(VariantUtils.isLessNumbers(five, VariantFactory.createImmutableDouble(5.5)));
+        assertTrue(VariantUtils.isGreaterNumbers(VariantFactory.createImmutableDouble(5.5), five));
+
+        assertFalse(VariantUtils.isEqual(five, VariantFactory.createImmutableDouble(4.5)));
+        assertTrue(VariantUtils.isGreaterNumbers(five, VariantFactory.createImmutableDouble(4.5)));
+        assertTrue(VariantUtils.isLessNumbers(VariantFactory.createImmutableDouble(4.5), five));
+
+        // negative side: l == floor(d) but d's fractional remainder still makes d the larger value
+        assertFalse(VariantUtils.isEqual(negFive, VariantFactory.createImmutableDouble(-4.5)));
+        assertTrue(VariantUtils.isLessNumbers(negFive, VariantFactory.createImmutableDouble(-4.5)));
+        assertFalse(VariantUtils.isEqual(negFive, VariantFactory.createImmutableDouble(-5.5)));
+        assertTrue(VariantUtils.isGreaterNumbers(negFive, VariantFactory.createImmutableDouble(-5.5)));
+    }
+
+    @Test
+    void longDouble_comparisons_atLongRangeBoundaries() {
+        final Variant longMin = VariantFactory.createImmutableLong(Long.MIN_VALUE);
+        final Variant longMax = VariantFactory.createImmutableLong(Long.MAX_VALUE);
+
+        // Long.MIN_VALUE is an exact power of two, so it round-trips through double exactly
+        assertTrue(VariantUtils.isEqual(longMin, VariantFactory.createImmutableDouble(-9223372036854775808.0)));
+
+        // Long.MAX_VALUE has no exact double representation: the literal rounds UP to 2^63,
+        // which is one greater than any long, so it must compare greater than every long - never equal
+        final Variant twoToThe63 = VariantFactory.createImmutableDouble(9223372036854775808.0);
+        assertFalse(VariantUtils.isEqual(longMax, twoToThe63));
+        assertFalse(VariantUtils.isEqual(longMin, twoToThe63));
+        assertTrue(VariantUtils.isLessNumbers(longMax, twoToThe63));
+        assertTrue(VariantUtils.isLessNumbers(longMin, twoToThe63));
+
+        // symmetrically, nothing below Long.MIN_VALUE can equal or be less than any long.
+        // Computed via Math.nextDown rather than a decimal literal, since at this magnitude (ulp=2048)
+        // a hand-written literal like "-9223372036854775809.0" actually rounds back UP to
+        // -9223372036854775808.0 (the nearest representable double, only 1 away) - not below it.
+        final double justBelowLongMinValueAsDouble = Math.nextDown((double) Long.MIN_VALUE);
+        final Variant belowLongMin = VariantFactory.createImmutableDouble(justBelowLongMinValueAsDouble);
+        assertFalse(VariantUtils.isEqual(longMin, belowLongMin));
+        assertTrue(VariantUtils.isGreaterNumbers(longMin, belowLongMin));
+    }
+
+    @Test
+    void longDouble_comparisons_withNaNAndInfinity_areAlwaysFalse() {
+        final Variant five = VariantFactory.createImmutableLong(5);
+        for (final Variant unordered : List.of(
+                VariantFactory.createImmutableDouble(Double.NaN),
+                VariantFactory.createImmutableDouble(Double.POSITIVE_INFINITY),
+                VariantFactory.createImmutableDouble(Double.NEGATIVE_INFINITY))) {
+            if (Double.isNaN(unordered.getAsDouble())) {
+                assertFalse(VariantUtils.isEqual(five, unordered));
+                assertFalse(VariantUtils.isGreaterNumbers(five, unordered));
+                assertFalse(VariantUtils.isGreaterOrEqualNumbers(five, unordered));
+                assertFalse(VariantUtils.isLessNumbers(five, unordered));
+                assertFalse(VariantUtils.isLessOrEqualNumbers(five, unordered));
+            }
+        }
+
+        // +-Infinity are ordered (just not equal to any finite long)
+        final Variant posInf = VariantFactory.createImmutableDouble(Double.POSITIVE_INFINITY);
+        final Variant negInf = VariantFactory.createImmutableDouble(Double.NEGATIVE_INFINITY);
+        assertFalse(VariantUtils.isEqual(five, posInf));
+        assertTrue(VariantUtils.isLessNumbers(five, posInf));
+        assertFalse(VariantUtils.isEqual(five, negInf));
+        assertTrue(VariantUtils.isGreaterNumbers(five, negInf));
+    }
+
+    // ---------------------------------------------------------------------
     // min / max
     // ---------------------------------------------------------------------
 

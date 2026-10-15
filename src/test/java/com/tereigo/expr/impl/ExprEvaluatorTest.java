@@ -302,18 +302,19 @@ public class ExprEvaluatorTest extends ExprEvaluatorTestBase {
     }
 
     @Test
-    void edgeNumberWrongTests() {
-        // TODO:
-        // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        // NOTICE: these tests produce incorrect results
-        // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        // This is due to the limited precision of Double numbers
-        // "9223372036854775806.1" is parsed into the equivalent of "9.223372036854776E18"
-        // and then it tries to converts long value to double: 9.223372036854776E18
-        // and converts double value to double: 9.223372036854776E18
-        // and end up with the identical values
-        assertTrue(evaluateBool("9223372036854775806 == 9223372036854775806.1"));
-        assertFalse(evaluateBool("9223372036854775806 < 9223372036854775806.1"));
+    void edgeNumberFormerlyWrongTests() {
+        // regression test: these used to document a precision bug where comparing a LONG to a
+        // DOUBLE converted the long side to double, losing precision for magnitudes beyond 2^53.
+        // "9223372036854775806.1" has no exact double representation and rounds to 9223372036854775808.0
+        // (2^63); converting the long 9223372036854775806 to double used to ALSO round to 9223372036854775808.0,
+        // making them falsely compare equal. VariantUtils now compares long/double pairs exactly
+        // (see VariantUtils.compareLongToDouble), so the long correctly compares as less than, not equal to,
+        // the double's actual (rounded-up) stored value.
+        assertFalse(evaluateBool("9223372036854775806 == 9223372036854775806.1"));
+        assertTrue(evaluateBool("9223372036854775806 < 9223372036854775806.1"));
+        // both sides here are DOUBLE_NUMBER literals (double-to-double comparison is unaffected by the
+        // fix above): "9223372036854775806.0" and "9223372036854775806.1" both round to the identical
+        // double value (9223372036854775808.0), so they are not "<" of each other
         assertFalse(evaluateBool("9223372036854775806.0 < 9223372036854775806.1"));
     }
 
